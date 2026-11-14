@@ -46,7 +46,7 @@ window.SITE_CONFIG = {
 
   // 메인 3D 연출 마지막 장면을 실제 영상으로 바꾸고 싶다면 mp4 경로 입력 (예: assets/hero/joggers.mp4)
   //  비워두면(권장) 3D로 만든 정면 조깅 남녀 장면이 재생됩니다.
-  heroJoggerVideo: '',
+  heroJoggerVideo: 'assets/hero/joggers.mp4',
 
   contactPhone: '010-9283-1231',
   kakaoId: 'armi1231',
