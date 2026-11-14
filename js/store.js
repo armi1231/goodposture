@@ -75,26 +75,39 @@
     const C = window.SITE_CONFIG;
     const t = now();
     return {
-      version: 2,
+      version: 3,
       settings: {
         formUrl: C.formUrl, eduFee: C.eduFee, bankInfo: C.bankInfo,
         appIos: C.appIos, appAndroid: C.appAndroid, rentalUrl: C.rentalUrl,
         heroJoggerVideo: C.heroJoggerVideo, contactPhone: C.contactPhone, kakaoId: C.kakaoId,
+        quizUrl: C.quizUrl, lecture1Url: C.lecture1Url,
         guideName: C.guide.name, guideTitle: C.guide.title,
         recommenderName: C.recommender.name, recommenderNo: C.recommender.no
       },
       users: [],
       rentalProducts: [
-        { id: uid(), code: 'R1090', name: 'R1090 스킨', color: '스킨', price: 37800, img: 'assets/products/r1090-skin.jpg',
-          desc: '허리·복부·골반을 감싸는 하의형 착용 제품', contractUrl: '', visible: true, order: 1 },
-        { id: uid(), code: 'R1090', name: 'R1090 블랙', color: '블랙', price: 37800, img: 'assets/products/r1090-black.jpg',
-          desc: '허리·복부·골반을 감싸는 하의형 착용 제품', contractUrl: '', visible: true, order: 2 },
-        { id: uid(), code: 'SM880', name: 'SM880', color: '블랙', price: 37800, img: 'assets/products/sm880.jpg',
-          desc: '양면 착용 컬러 스포츠 테이핑, 바른 상체 자세 지원', contractUrl: '', visible: true, order: 3 },
-        { id: uid(), code: 'BB484', name: 'BB484 스킨', color: '스킨', price: 19900, img: 'assets/products/bb484-skin.jpg',
-          desc: '여성의 가슴 무게를 견인·지지해 바른 상체 자세를 돕는 제품', contractUrl: '', visible: true, order: 4 },
-        { id: uid(), code: 'BB484', name: 'BB484 블랙', color: '블랙', price: 19900, img: 'assets/products/bb484-black.jpg',
-          desc: '여성의 가슴 무게를 견인·지지해 바른 상체 자세를 돕는 제품', contractUrl: '', visible: true, order: 5 }
+        { id: uid(), code: 'R1090', name: 'R1090 스킨', color: '스킨', kind: 'single', price: 37800, img: 'assets/products/r1090-skin.jpg',
+          desc: '허리·복부·골반을 감싸는 하의형 착용 제품 (단품 · 중체)', contractUrl: C.qr.R1090, visible: true, order: 1 },
+        { id: uid(), code: 'R1090', name: 'R1090 블랙', color: '블랙', kind: 'single', price: 37800, img: 'assets/products/r1090-black.jpg',
+          desc: '허리·복부·골반을 감싸는 하의형 착용 제품 (단품 · 중체)', contractUrl: C.qr.R1090, visible: true, order: 2 },
+        { id: uid(), code: 'SM880', name: 'SM880', color: '블랙', kind: 'single', price: 37800, img: 'assets/products/sm880.jpg',
+          desc: '양면 착용 컬러 스포츠 테이핑, 바른 상체 자세 지원 (단품 · 상체)', contractUrl: C.qr.SM880, visible: true, order: 3 },
+        { id: uid(), code: 'BB484', name: 'BB484 스킨', color: '스킨', kind: 'single', price: 19900, img: 'assets/products/bb484-skin.jpg',
+          desc: '여성의 가슴 무게를 견인·지지해 바른 상체 자세를 돕는 제품 (단품 · 상체)', contractUrl: C.qr.BB484, visible: true, order: 4 },
+        { id: uid(), code: 'BB484', name: 'BB484 블랙', color: '블랙', kind: 'single', price: 19900, img: 'assets/products/bb484-black.jpg',
+          desc: '여성의 가슴 무게를 견인·지지해 바른 상체 자세를 돕는 제품 (단품 · 상체)', contractUrl: C.qr.BB484, visible: true, order: 5 },
+        { id: uid(), code: 'BB484×2', name: 'BB484 2개 구성', color: '', kind: 'bundle', price: 39800,
+          img: 'assets/products/bb484-skin.jpg', img2: 'assets/products/bb484-black.jpg',
+          desc: '상체 BB484 두 개를 함께 쓰는 2개 구성 (스킨 + 블랙)', contractUrl: C.qr.BB484x2, visible: true, order: 6 },
+        { id: uid(), code: 'BB484+R1090', name: 'BB484 + R1090', color: '', kind: 'bundle', price: 57700,
+          img: 'assets/products/bb484-skin.jpg', img2: 'assets/products/r1090-skin.jpg',
+          desc: '상체 BB484 + 중체 R1090을 함께 쓰는 2개 구성', contractUrl: C.qr.BB484_R1090, visible: true, order: 7 },
+        { id: uid(), code: 'BB484+SM880', name: 'BB484 + SM880', color: '', kind: 'bundle', price: 57700,
+          img: 'assets/products/bb484-skin.jpg', img2: 'assets/products/sm880.jpg',
+          desc: '상체 BB484 + 상체 SM880을 함께 쓰는 2개 구성', contractUrl: C.qr.BB484_SM880, visible: true, order: 8 },
+        { id: uid(), code: 'R1090+SM880', name: 'R1090 + SM880', color: '', kind: 'bundle', price: 75600,
+          img: 'assets/products/r1090-skin.jpg', img2: 'assets/products/sm880.jpg',
+          desc: '중체 R1090 + 상체 SM880을 함께 쓰는 2개 구성', contractUrl: C.qr.R1090_SM880, visible: true, order: 9 }
       ],
       materials: [
         { id: uid(), type: 'doc', title: '착한 창업 안내서 (최종본)', desc: '바른자세 렌탈 플랫폼 창업 안내 · 2026.10.21',
@@ -102,7 +115,9 @@
                   'assets/brochure/p06.jpg', 'assets/brochure/p07.jpg', 'assets/brochure/p08.jpg'], url: '', createdAt: t }
       ],
       lectures: [
-        { id: uid(), part: 1, order: 1, title: '바른자세 렌탈 플랫폼의 이해', minutes: 60, url: '', desc: '착한 창업의 구조와 사업 철학' },
+        { id: uid(), part: 1, order: 1, title: '1강 · 착한 창업과 바른자세 렌탈 플랫폼의 이해', minutes: 60,
+          url: C.lecture1Url, quizUrl: C.quizUrl,
+          desc: '영상 100% 시청 + 퀴즈 12문항 제출까지 완료해야 1강 이수 (온라인 1시간)' },
         { id: uid(), part: 1, order: 2, title: '입는 바른자세 4품목 완전정복', minutes: 60, url: '', desc: 'R1090 · SM880 · BB484 제품 특징과 착용 안내' },
         { id: uid(), part: 1, order: 3, title: '렌탈 계약 · 수수료 · 정산 기준', minutes: 60, url: '', desc: '4배·8배·10배 기준과 월 2회 정산' },
         { id: uid(), part: 2, order: 1, title: '고객 상담과 체험 안내 실전', minutes: 60, url: '', desc: '' },
@@ -153,9 +168,56 @@
         if (!s.kakaoId) s.kakaoId = C.kakaoId;
         if (!s.guideName) s.guideName = C.guide.name;
         if (!s.guideTitle) s.guideTitle = C.guide.title;
-        if (!s.heroJoggerVideo) s.heroJoggerVideo = C.heroJoggerVideo;
+        if (!s.heroJoggerVideo && C.heroJoggerVideo) s.heroJoggerVideo = C.heroJoggerVideo;
         d.rentalProducts.forEach(p => { if (p.code === 'SM880' && p.color === '네이비') p.color = '블랙'; });
         d.version = 2;
+      }
+      /* v3 — (1) 첨부 PDF의 착한렌탈 접속 QR 링크 연결
+                (2) 2개 구성 상품 4종 추가
+                (3) 온라인교육 1강 영상·퀴즈 링크
+                (4) 예전 '수강 완료' 문자열 기록을 시청률 객체로 변환 */
+      if ((d.version || 1) < 3) {
+        const Q = (C && C.qr) || {};
+        const byCode = { R1090: Q.R1090, SM880: Q.SM880, BB484: Q.BB484 };
+        (d.rentalProducts || []).forEach(p => {
+          if (!p.kind) p.kind = 'single';
+          if (!p.contractUrl && p.kind !== 'bundle' && byCode[p.code]) p.contractUrl = byCode[p.code];
+          if (!p.desc) p.desc = '';
+        });
+        const has = code => (d.rentalProducts || []).some(p => p.code === code && p.kind === 'bundle');
+        const bundles = [
+          ['BB484×2', 'BB484 2개 구성', 39800, 'assets/products/bb484-skin.jpg', 'assets/products/bb484-black.jpg',
+            '상체 BB484 두 개를 함께 쓰는 2개 구성 (스킨 + 블랙)', Q.BB484x2],
+          ['BB484+R1090', 'BB484 + R1090', 57700, 'assets/products/bb484-skin.jpg', 'assets/products/r1090-skin.jpg',
+            '상체 BB484 + 중체 R1090을 함께 쓰는 2개 구성', Q.BB484_R1090],
+          ['BB484+SM880', 'BB484 + SM880', 57700, 'assets/products/bb484-skin.jpg', 'assets/products/sm880.jpg',
+            '상체 BB484 + 상체 SM880을 함께 쓰는 2개 구성', Q.BB484_SM880],
+          ['R1090+SM880', 'R1090 + SM880', 75600, 'assets/products/r1090-skin.jpg', 'assets/products/sm880.jpg',
+            '중체 R1090 + 상체 SM880을 함께 쓰는 2개 구성', Q.R1090_SM880]
+        ];
+        let ord = (d.rentalProducts || []).length;
+        bundles.forEach(b => {
+          if (has(b[0])) return;
+          ord += 1;
+          d.rentalProducts.push({ id: uid(), code: b[0], name: b[1], color: '', kind: 'bundle', price: b[2],
+            img: b[3], img2: b[4], desc: b[5], contractUrl: b[6], visible: true, order: ord });
+        });
+        if (!s.quizUrl) s.quizUrl = C.quizUrl;
+        if (!s.lecture1Url) s.lecture1Url = C.lecture1Url;
+        const l1 = (d.lectures || []).filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0];
+        if (l1) {
+          if (!l1.url) l1.url = C.lecture1Url;
+          if (!l1.quizUrl) l1.quizUrl = C.quizUrl;
+          if (l1.minutes !== 60) l1.minutes = 60;
+        }
+        (d.users || []).forEach(u => {
+          if (!u.progress) return;
+          Object.keys(u.progress).forEach(k => {
+            const v = u.progress[k];
+            if (typeof v === 'string') u.progress[k] = { pct: 100, done: true, quizAt: v, updatedAt: v };
+          });
+        });
+        d.version = 3;
       }
     },
 

@@ -1,0 +1,207 @@
+/* =========================================================
+   바른자세 렌탈 플랫폼 — 추가 스타일 (v2)
+   · 히어로 타이핑 연출 / 조깅 캡션
+   · 렌탈 2개구성 · QR 보드
+   · 온라인교육 1강 플레이어 · 시청 게이지 · 퀴즈 게이트
+   · 창업 근거 섹션 (비교표 · 수익구조 · 기술 지표)
+   ========================================================= */
+
+/* ---------- 히어로: 한 글자씩 나타나는 카피 ---------- */
+.hero-live{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--forest);
+  background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.9);border-radius:999px;padding:6px 13px;margin:0 0 14px;box-shadow:var(--shadow)}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#2fd6a0;box-shadow:0 0 0 0 rgba(47,214,160,.7);animation:livePulse 1.8s infinite}
+@keyframes livePulse{70%{box-shadow:0 0 0 8px rgba(47,214,160,0)}100%{box-shadow:0 0 0 0 rgba(47,214,160,0)}}
+
+.hero-type{position:absolute;left:50%;transform:translateX(-50%);bottom:76px;width:min(92%,520px);text-align:center;pointer-events:none;z-index:3}
+.hero-stage[data-phase=run] .hero-type{opacity:0;transition:opacity .5s}
+.st-main{margin:0;font-size:clamp(1.05rem,2.1vw,1.5rem);font-weight:800;letter-spacing:-.02em;color:#fff;
+  text-shadow:0 2px 14px rgba(4,32,34,.85),0 0 1px rgba(4,32,34,.9)}
+.st-sub{margin:6px 0 0;font-size:clamp(.72rem,1.3vw,.92rem);font-weight:600;color:#bdf6e2;letter-spacing:.01em;
+  text-shadow:0 2px 10px rgba(4,32,34,.9);min-height:1.4em}
+
+/* 글자 하나하나 등장 */
+.ch{display:inline-block;opacity:0;transform:translateY(14px) rotateX(-55deg);filter:blur(6px);
+  animation:chIn .78s cubic-bezier(.2,.8,.25,1) forwards}
+@keyframes chIn{to{opacity:1;transform:none;filter:blur(0)}}
+.st-main .ch{background:linear-gradient(180deg,#ffffff,#cdffe9);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* 조깅 장면 하단 카피 */
+.run-caption{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);width:min(94%,620px);
+  text-align:center;z-index:4;opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.25,1);pointer-events:none}
+.run-caption.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.rc-main{margin:0;font-size:clamp(1.3rem,3.1vw,2.15rem);font-weight:800;letter-spacing:-.045em;line-height:1.25;
+  background:linear-gradient(100deg,#0c3b32,#1f7a5c 45%,#2fae7e);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 2px 10px rgba(255,255,255,.95)) drop-shadow(0 0 1px rgba(255,255,255,1))}
+.rc-sub{margin:8px 0 0;font-size:clamp(.78rem,1.55vw,1rem);font-weight:700;color:#153f34;letter-spacing:.01em;
+  filter:drop-shadow(0 1px 8px rgba(255,255,255,.95))}
+.rc-sub .rc-sub-ch{display:inline-block;opacity:0;transform:translateY(8px);animation:chIn .6s ease forwards}
+.run-caption::before{content:'';position:absolute;left:50%;top:-14px;width:56px;height:3px;border-radius:3px;
+  transform:translateX(-50%);background:linear-gradient(90deg,transparent,#2fae7e,transparent)}
+
+/* ---------- 제품 카드 (2개 구성) ---------- */
+.product-img.duo{gap:0;background:linear-gradient(180deg,#f7faf6,#eef5ef);position:relative}
+.product-img.duo img{width:50%;height:88%;object-fit:contain}
+.product-card.bundle{border-color:#cbe9d5;background:linear-gradient(180deg,#fff,#f7fdf9)}
+.product-card.bundle .product-img.duo img:first-child{transform:translateX(6%) rotate(-3deg)}
+.product-card.bundle .product-img.duo img:last-child{transform:translateX(-6%) rotate(3deg)}
+.product-card.bundle:hover .product-img.duo img:first-child{transform:translateX(3%) rotate(-1.5deg) scale(1.04)}
+.product-card.bundle:hover .product-img.duo img:last-child{transform:translateX(-3%) rotate(1.5deg) scale(1.04)}
+.kind-b{color:#fff;background:var(--leaf);border-radius:6px;padding:1px 6px;font-size:.7rem;font-weight:800}
+
+/* ---------- 렌탈신청 구획 ---------- */
+.rental-block{margin-bottom:44px}
+.rb-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+.rb-head .eyebrow{margin-bottom:4px}
+.rb-head h2{font-size:clamp(1.35rem,2.6vw,1.9rem);margin:0}
+.rb-tag{background:var(--mint);color:var(--forest);border:1px solid #c9e6d5;border-radius:999px;padding:7px 15px;font-size:.8rem;font-weight:800}
+.rb-tag.alt{background:#fff3e9;color:var(--cta-d);border-color:#ffd9c2}
+.rb-desc{color:var(--muted);font-size:.92rem;margin:6px 0 18px}
+.product-grid.bundle{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+
+/* ---------- QR 보드 ---------- */
+.qr-board{background:linear-gradient(160deg,#0f4b3f,#12362e 65%,#0b2a24);border-radius:26px;padding:clamp(22px,3.5vw,38px);margin:10px 0 34px;color:#dff5ec;position:relative;overflow:hidden}
+.qr-board::after{content:'';position:absolute;right:-80px;top:-80px;width:280px;height:280px;border-radius:50%;
+  background:radial-gradient(circle,rgba(47,214,160,.28),transparent 70%)}
+.qb-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:22px;position:relative;z-index:1}
+.qb-head h2{color:#fff;font-size:clamp(1.35rem,2.8vw,2rem);margin:0 0 6px}
+.qb-head .eyebrow{color:var(--meadow)}
+.qb-head .muted{color:#a9cfc2;max-width:640px;margin:0;font-size:.9rem}
+.qb-chip{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:8px 16px;font-size:.8rem;font-weight:800;color:#fff;white-space:nowrap}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;position:relative;z-index:1}
+.qr-tile{display:flex;gap:12px;align-items:center;background:rgba(255,255,255,.97);border-radius:16px;padding:12px;box-shadow:0 14px 30px -18px rgba(0,0,0,.6)}
+.qt-qr{width:82px;flex:0 0 82px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:4px}
+.qt-qr svg{width:100%;height:auto;display:block}
+.qt-body{min-width:0}
+.qt-body h4{font-size:.95rem;margin:0 0 2px;line-height:1.25}
+.qt-body .product-code{font-size:.68rem;margin:0 0 2px;color:var(--leaf);font-weight:800}
+.qt-price{font-size:1.05rem;font-weight:800;color:var(--forest);margin:0 0 6px;letter-spacing:-.03em}
+.qt-price small{font-size:.7rem;color:var(--muted)}
+.qt-body .btn{padding:5px 10px;font-size:.74rem}
+
+/* ---------- 창업 근거 섹션 ---------- */
+.why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.why{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.why>b{position:absolute;right:14px;top:-6px;font-size:3.6rem;font-weight:800;color:#eef5ef;letter-spacing:-.05em}
+.why h3{font-size:1.1rem;margin:0 0 8px;position:relative}
+.why p{font-size:.9rem;color:var(--muted);margin:0;position:relative}
+.compare-table .hl-col{background:#f1fbf5;color:var(--forest);font-weight:700}
+.compare-table thead .hl-col{background:var(--forest);color:#fff}
+.compare-table b{color:var(--cta-d);font-size:1.05rem}
+.flow4{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0;margin:18px 0}
+.flow4 li{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center;box-shadow:var(--shadow);position:relative}
+.flow4 li b{display:block;font-size:.72rem;letter-spacing:.1em;color:var(--leaf);margin-bottom:6px}
+.flow4 li span{font-weight:800;color:var(--ink);font-size:.98rem}
+.flow4 li::after{content:'→';position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--line);font-weight:800}
+.flow4 li:last-child::after{content:''}
+.proof-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.proof{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px 14px;text-align:center;box-shadow:var(--shadow)}
+.proof b{display:block;font-size:1.5rem;color:var(--forest);letter-spacing:-.04em;line-height:1.1}
+.proof b small{font-size:.55em;margin-left:2px;color:var(--muted)}
+.proof span{font-size:.78rem;color:var(--muted);font-weight:600}
+
+/* ---------- 온라인교육 1강 플레이어 ---------- */
+.modal-box .lec-player{margin:-4px 0 0}
+.lec-top{text-align:left;margin-bottom:14px}
+.lec-part{display:inline-block;background:var(--mint);color:var(--forest);border-radius:999px;padding:4px 12px;font-size:.72rem;font-weight:800;margin-bottom:8px}
+.lec-top h3{margin:0 0 6px;font-size:1.25rem}
+.lec-sub{margin:0;color:var(--muted);font-size:.86rem}
+.lec-stage{position:relative;border-radius:16px;overflow:hidden;background:#08201c;aspect-ratio:16/9}
+.lec-stage .yt-host,.lec-stage iframe{position:absolute;inset:0;width:100%;height:100%}
+.lec-fallback{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(160deg,#0d3a33,#08201c);color:#dff5ec;text-align:center;padding:20px}
+.lf-inner p{margin:0 0 10px;font-weight:700}
+.lf-inner small{display:block;margin-top:8px;color:#9fc9bd;font-size:.74rem}
+.lf-inner .btn{margin:4px 4px}
+
+/* 시청률 게이지 */
+.watch-panel{display:flex;gap:18px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin:14px 0}
+.wp-ring{position:relative;width:88px;height:88px;flex:0 0 88px}
+.wp-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.wp-track{fill:none;stroke:#e8f0eb;stroke-width:8}
+.wp-fill{fill:none;stroke:var(--leaf);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .45s ease,stroke .3s}
+.wp-pct{position:absolute;inset:0;display:grid;place-content:center;text-align:center;line-height:1}
+.wp-pct b{font-size:1.42rem;color:var(--forest);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.wp-pct span{font-size:.68rem;color:var(--muted);font-weight:700}
+.wp-body{flex:1;min-width:0}
+.wp-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.wp-title{margin:0;font-size:.86rem;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px}
+.wp-title b{color:var(--leaf)}
+.wp-dot{width:8px;height:8px;border-radius:50%;background:var(--leaf);animation:livePulse 1.6s infinite}
+.wp-time{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums;font-weight:700}
+.wp-bar{height:10px;border-radius:999px;background:#eef4f0;overflow:hidden;margin:9px 0 7px;box-shadow:inset 0 1px 2px rgba(20,60,45,.06)}
+.wp-bar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#9be0b8,#34a96a 60%,#1f8f57);transition:width .4s ease}
+.wp-note{margin:0;font-size:.75rem;color:var(--muted)}
+
+/* 퀴즈 게이트 */
+.quiz-gate{border-radius:18px;padding:18px;margin-top:4px;border:1px solid var(--line);background:#fbfdfb}
+.quiz-gate.locked{background:#f6f8f5;border-style:dashed}
+.qg-lock{display:flex;gap:14px;align-items:flex-start}
+.qg-ic{font-size:1.5rem;line-height:1}
+.qg-lock h4{margin:0 0 4px;font-size:.96rem}
+.qg-lock p{margin:0;font-size:.84rem;color:var(--muted)}
+.quiz-gate.open{background:linear-gradient(180deg,#f2fcf6,#fff);border-color:#c9e6d5;box-shadow:0 18px 40px -26px rgba(20,90,60,.5)}
+.qg-head{text-align:left}
+.qg-badge{display:inline-block;background:#e3faee;color:#137a4d;border:1px solid #b9ebd2;border-radius:999px;padding:4px 12px;font-size:.72rem;font-weight:800;margin-bottom:8px}
+.qg-head h4{margin:0 0 6px;font-size:1.05rem}
+.qg-head p{margin:0 0 12px;font-size:.84rem;color:var(--muted)}
+.qg-steps{list-style:none;padding:0;margin:0 0 14px;display:grid;gap:7px}
+.qg-steps li{display:flex;gap:10px;align-items:flex-start;font-size:.85rem;color:var(--body)}
+.qg-steps li b{flex:0 0 20px;height:20px;border-radius:50%;background:var(--forest);color:#fff;font-size:.72rem;display:grid;place-items:center;margin-top:2px}
+.qg-btn{width:100%;justify-content:center}
+.qg-check{margin:14px 0 10px;font-size:.82rem;align-items:flex-start}
+.quiz-gate .btn-cta{width:100%;justify-content:center}
+.qg-note{font-size:.72rem;color:var(--muted);margin:10px 0 0;line-height:1.5}
+.ok-chip{display:inline-block;background:#e3faee;color:#137a4d;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:800;font-style:normal;margin-left:6px}
+.pct-chip{display:inline-block;background:#fff4e3;color:#b96a1d;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:800;font-style:normal;margin-left:6px}
+
+/* 수강 완료 화면 */
+.done-wrap{position:relative;padding:6px 0 4px;overflow:hidden}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-12px;left:calc(var(--i) * 4.5%);width:8px;height:14px;border-radius:2px;
+  background:linear-gradient(180deg,#ffd86b,#ff8a4c);opacity:0;animation:conf 2.4s ease-in forwards;animation-delay:calc(var(--i) * .06s)}
+.confetti i:nth-child(3n){background:linear-gradient(180deg,#7dffb2,#34a96a)}
+.confetti i:nth-child(4n){background:linear-gradient(180deg,#8fd8ff,#2e9be0)}
+@keyframes conf{0%{opacity:0;transform:translateY(-10px) rotate(0)}12%{opacity:1}100%{opacity:0;transform:translateY(320px) rotate(420deg)}}
+.done-card{position:relative;text-align:center;padding:8px 4px 4px}
+.done-badge{display:inline-block;background:var(--forest);color:#fff;border-radius:999px;padding:6px 16px;font-size:.76rem;font-weight:800;letter-spacing:.02em;margin-bottom:12px}
+.done-card h3{font-size:clamp(1.15rem,2.4vw,1.5rem);line-height:1.45;margin:0 0 6px}
+.done-lead{margin:0 0 16px;font-size:1.05rem;font-weight:800;color:var(--cta-d)}
+.done-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 18px}
+.done-meta span{background:#f5faf6;border:1px solid var(--line);border-radius:14px;padding:10px}
+.done-meta small{display:block;font-size:.7rem;color:var(--muted);font-weight:700;margin-bottom:2px}
+.done-meta b{font-size:1rem;color:var(--forest)}
+.done-slides{display:flex;gap:8px;justify-content:center;margin-bottom:18px}
+.done-slides img{width:31%;max-width:150px;border-radius:10px;border:1px solid var(--line);box-shadow:var(--shadow);
+  opacity:0;animation:fadeSlide .7s ease forwards;animation-delay:calc(.1s + var(--d,0s))}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.done-next{background:linear-gradient(160deg,#0f4b3f,#14362e);border-radius:18px;padding:20px;color:#dff5ec;text-align:left}
+.done-next .eyebrow{color:var(--meadow)}
+.done-next h4{color:#fff;margin:0 0 6px;font-size:1.05rem}
+.done-next p{color:#b9dbcd;font-size:.85rem;margin:0 0 12px}
+
+/* ---------- 관리자: 시청률 셀 ---------- */
+.ap-cell{display:flex;align-items:center;gap:8px;min-width:130px}
+.ap-bar{flex:1;height:8px;border-radius:999px;background:#eef4f0;overflow:hidden}
+.ap-bar i{display:block;height:100%;background:linear-gradient(90deg,#9be0b8,#34a96a);border-radius:999px}
+.ap-cell b{font-variant-numeric:tabular-nums;font-size:.85rem;min-width:38px;text-align:right}
+.prog.watch b{color:var(--leaf)}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:960px){
+  .why-grid,.proof-grid{grid-template-columns:repeat(2,1fr)}
+  .flow4{grid-template-columns:1fr 1fr}
+  .flow4 li::after{content:''}
+  .done-meta{grid-template-columns:1fr}
+}
+@media (max-width:720px){
+  .hero-type{bottom:58px}
+  .st-sub{display:none}
+  .run-caption{bottom:12px}
+  .why-grid,.proof-grid{grid-template-columns:1fr}
+  .watch-panel{flex-direction:row;gap:12px;padding:14px}
+  .wp-ring{width:70px;height:70px;flex:0 0 70px}
+  .wp-pct b{font-size:1.15rem}
+  .qr-tile{gap:10px;padding:10px}
+  .qt-qr{width:70px;flex:0 0 70px}
+  .done-slides{display:none}
+  .lec-stage{aspect-ratio:16/10}
+}

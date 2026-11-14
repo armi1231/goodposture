@@ -37,6 +37,12 @@
   const icon = (k, cls = '') => `<svg class="ico ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k] || ''}</svg>`;
   const badge = k => `<span class="grade-badge g-${k}">${gName(k)}</span>`;
 
+  /* ---------- 교육 시청률 ---------- */
+  const watchOf = (u, l) => (u && u.progress && u.progress[l.id]) || null;
+  const lecDone = (u, l) => { const w = watchOf(u, l); return !!(w && (w.done || w.quizAt)); };
+  const lecPct = (u, l) => { const w = watchOf(u, l); return w && w.pct ? Math.min(100, Math.round(w.pct)) : 0; };
+  const quizUrlOf = l => l.quizUrl || set().quizUrl || '';
+
   /* ---------- UI 유틸 ---------- */
   let toastTimer;
   function toast(msg) {
@@ -143,14 +149,17 @@
     <div class="wrap cta-guide">${guideCard('dark')}</div></section>`;
 
   const visibleProducts = () => S.data.rentalProducts.filter(p => p.visible !== false).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const singleProducts = () => visibleProducts().filter(p => p.kind !== 'bundle');
+  const bundleProducts = () => visibleProducts().filter(p => p.kind === 'bundle');
 
   function productCard(p, mode) {
     const link = p.contractUrl || set().rentalUrl;
+    const imgs = (p.kind === 'bundle' ? [p.img, p.img2] : [p.img]).filter(Boolean);
     return `
-      <article class="product-card">
-        <div class="product-img"><img src="${esc(p.img)}" alt="${esc(p.name)}" loading="lazy"></div>
+      <article class="product-card ${p.kind === 'bundle' ? 'bundle' : ''}">
+        <div class="product-img ${imgs.length > 1 ? 'duo' : ''}">${imgs.map((src, i) => `<img src="${esc(src)}" alt="${esc(p.name)}" loading="lazy"${p.kind === 'bundle' ? ` style="--i:${i}"` : ''}>`).join('')}</div>
         <div class="product-body">
-          <p class="product-code">${esc(p.code || '')} · ${esc(p.color || '')}</p>
+          <p class="product-code">${p.kind === 'bundle' ? '<b class="kind-b">2개 구성</b> ' : ''}${esc(p.code || '')}${p.color ? ' · ' + esc(p.color) : ''}</p>
           <h3>${esc(p.name)}</h3>
           <p class="product-desc">${esc(p.desc)}</p>
           <p class="product-price"><small>월</small> ${won(p.price)}</p>
@@ -162,6 +171,21 @@
             </div>` : `<a class="product-more" href="#/rental">렌탈 신청 →</a>`}
         </div>
       </article>`;
+  }
+
+  /* 바로 접속 QR 타일 (착한렌탈 접속 QR) */
+  function qrTile(p) {
+    const link = p.contractUrl || set().rentalUrl;
+    if (!link) return '';
+    return `<article class="qr-tile reveal">
+      <div class="qt-qr">${qrSvg(link, 4)}</div>
+      <div class="qt-body">
+        <p class="product-code">${p.kind === 'bundle' ? '2개 구성' : '단품'} · ${esc(p.code || '')}</p>
+        <h4>${esc(p.name)}</h4>
+        <p class="qt-price"><small>월</small> ${won(p.price)}</p>
+        <a class="btn btn-line btn-sm" href="${esc(link)}" target="_blank" rel="noopener">QR 링크 열기</a>
+      </div>
+    </article>`;
   }
 
   /* =======================================================
@@ -206,6 +230,7 @@
       <div class="sec-head reveal"><p class="eyebrow">01 제품 안내</p><h2>입는 바른자세, 5가지 렌탈 상품</h2>
       <p class="lead">대한민국 특허 상품인 입는 바른자세를 직접 체험하고 선택하도록 안내합니다.</p></div>
       <div class="product-grid">${prods.map(p => productCard(p)).join('')}</div>
+      <div class="center" style="margin:-10px 0 24px"><a class="btn btn-line" href="#/rental">2개 구성 세트 요금 보기 →</a></div>
       <div class="center">${refChip()}<br><br><a class="btn btn-primary btn-lg" href="#/rental">렌탈 신청 바로가기</a> <a class="btn btn-line btn-lg" href="#/products">제품 자료 · 영상 보기</a></div>
     </div></section>
 
@@ -364,6 +389,59 @@
       <p class="fine center">시연상품·공간비 등은 별도입니다. 매장이 없을 경우 특별상담 이후 조건 충족 시 창업 가능합니다.</p>
     </div></section>
 
+    <section class="sec"><div class="wrap">
+      <div class="sec-head reveal"><p class="eyebrow">왜 바른자세 시장인가</p><h2>주변 모두가 고객입니다</h2>
+        <p class="lead">앉아서 일하고, 오래 걷고, 다시 앉는 하루. 바른 자세는 특별한 사람의 관심사가 아니라 모든 세대의 생활 문제입니다.</p></div>
+      <div class="why-grid">
+        <div class="why reveal"><b>01</b><h3>낮은 진입장벽</h3><p>교육비 3만원. 가맹비 · 인테리어 · 임대료가 없습니다.</p></div>
+        <div class="why reveal"><b>02</b><h3>렌탈 수수료로 지속 수익</h3><p>렌탈 계약마다 수수료가 발생하고, 선납 보증금이 없습니다.</p></div>
+        <div class="why reveal"><b>03</b><h3>4회 동행 멘토링</h3><p>12시간 교육과 함께 첫 고객 상담부터 계약까지 본사가 동행합니다.</p></div>
+      </div>
+      <p class="fine">출처: 착한 렌탈 창업 본사 홈페이지(rental.slimminggo.com) 안내 내용을 참고해 정리했습니다. 세부 조건은 상담 및 계약 시 안내됩니다.</p>
+    </div></section>
+
+    <section class="sec sec-tint"><div class="wrap">
+      <div class="sec-head reveal"><p class="eyebrow">비용 비교</p><h2>언제까지 비싼 창업비에 잠 못 이루실 건가요?</h2></div>
+      <div class="table-wrap"><table class="table compare-table">
+        <thead><tr><th>항목</th><th>일반 매장형 창업</th><th class="hl-col">착한 렌탈 창업</th></tr></thead>
+        <tbody>
+          <tr><td>권리금 · 월세</td><td>필요</td><td class="hl-col">필요 없음</td></tr>
+          <tr><td>인테리어 · 장비</td><td>필요</td><td class="hl-col">필요 없음</td></tr>
+          <tr><td>인건비</td><td>직원 고용 필요</td><td class="hl-col">1인 활동</td></tr>
+          <tr><td>재고 부담</td><td>원재료 · 상품 매입</td><td class="hl-col">없음</td></tr>
+          <tr><td>영업 시간</td><td>매장 운영 시간에 묶임</td><td class="hl-col">자유 (본업 병행)</td></tr>
+          <tr><td>보증금</td><td>임대보증금 선납</td><td class="hl-col">선납 없음 · 수수료 20% 적립</td></tr>
+          <tr><td>시작 지원</td><td>오픈 교육 위주</td><td class="hl-col">12시간 교육 + 4회 동행</td></tr>
+          <tr><td>시작 비용</td><td>수천만 원 이상</td><td class="hl-col"><b>3만원</b></td></tr>
+        </tbody>
+      </table></div>
+      <p class="fine">* 일반 매장형 창업 비용은 업종 · 지역 · 규모에 따라 다릅니다. * 세부 조건은 상담 및 계약 시 안내합니다. (출처: rental.slimminggo.com)</p>
+
+      <h3 class="sub-title">매장 · 재고 · 직원 ZERO</h3>
+      <p>고정비가 없으니 리스크도 낮습니다. 계약할 때마다 쌓이는 <b>[ 수익구조 ]</b>입니다.</p>
+      <ol class="flow4">
+        <li class="reveal"><b>STEP 1</b><span>렌탈 계약</span></li>
+        <li class="reveal"><b>STEP 2</b><span>수수료 발생</span></li>
+        <li class="reveal"><b>STEP 3</b><span>20% 적립</span></li>
+        <li class="reveal"><b>STEP 4</b><span>적립분 지급</span></li>
+      </ol>
+      <p class="fine">* 수익은 개인 활동에 따라 다릅니다. 수수료 기준은 상담 시 안내합니다.</p>
+    </div></section>
+
+    <section class="sec"><div class="wrap">
+      <div class="sec-head reveal"><p class="eyebrow">검증된 기술</p><h2>고객이 찾을 수밖에 없는 바른자세 기술</h2>
+        <p class="lead">입는 바른자세는 국가대표 경기복을 만든 기술에서 출발했습니다.</p></div>
+      <div class="proof-grid">
+        <div class="proof reveal"><b>24<small>개국</small></b><span>인정받은 기술</span></div>
+        <div class="proof reveal"><b>9<small>건</small></b><span>특허 등록</span></div>
+        <div class="proof reveal"><b>Class 1</b><span>의료기기 등록</span></div>
+        <div class="proof reveal"><b>A<small>등급</small></b><span>기술 평가</span></div>
+        <div class="proof reveal"><b>혁신성장</b><span>유형 인증</span></div>
+        <div class="proof reveal"><b>봅슬레이</b><span>스켈레톤 경기복 제작</span></div>
+      </div>
+      <p class="fine">출처: 착한 렌탈 창업 본사 홈페이지(rental.slimminggo.com). 인증서 · 특허증은 본사 홈페이지에서 확인할 수 있습니다.</p>
+    </div></section>
+
     <section class="sec" id="fee"><div class="wrap">
       <div class="sec-head reveal"><p class="eyebrow">수수료 기준</p><h2>성과를 계산하는 세 가지 기준</h2><p class="lead">수수료 = 일반 고객 월 렌탈료 × 적용 배수</p></div>
       ${multiplierCards()}
@@ -480,12 +558,33 @@
      ======================================================= */
   function viewRental() {
     const s = set();
-    return `${pageHead('렌탈신청', '바른 자세를 빌려드립니다', '원하는 상품을 고르고 온라인으로 바로 렌탈 계약을 진행하세요. QR을 스마트폰으로 찍어도 됩니다.')}
+    const singles = singleProducts(), bundles = bundleProducts();
+    return `${pageHead('렌탈신청', '바른 자세를 빌려드립니다', '원하는 상품을 고르고 온라인으로 바로 렌탈 계약을 진행하세요. 각 상품의 QR을 스마트폰으로 찍으면 착한렌탈 접속 화면으로 바로 이동합니다.')}
     <section class="sec"><div class="wrap">
       ${isAdmin() ? `<div class="admin-strip">관리자: <a href="#/admin/rental">렌탈 상품 추가 · 수정 · 삭제 →</a></div>` : ''}
       ${s.rentalUrl ? `<div class="rental-hero card"><div><h3>온라인 렌탈 계약 바로가기</h3><p class="muted">상품 선택부터 전자계약까지 한 번에 진행할 수 있어요.</p>
         <a class="btn btn-primary btn-lg" href="${esc(s.rentalUrl)}" target="_blank" rel="noopener">렌탈 계약하기</a> ${refChip()}</div><div class="qr">${qrSvg(s.rentalUrl, 5)}</div></div>` : ''}
-      <div class="product-grid rental">${visibleProducts().map(p => productCard(p, 'rental')).join('')}</div>
+
+      <div class="rental-block">
+        <div class="rb-head"><div><p class="eyebrow">단품</p><h2>5가지 단품 렌탈</h2></div><span class="rb-tag">바로 접속 QR 포함</span></div>
+        <div class="product-grid rental">${singles.map(p => productCard(p, 'rental')).join('')}</div>
+      </div>
+
+      <div class="rental-block">
+        <div class="rb-head"><div><p class="eyebrow">2개 구성</p><h2>함께 쓰면 더 좋은 2개 구성 세트</h2></div><span class="rb-tag alt">월 39,800 · 57,700 · 75,600원</span></div>
+        <p class="rb-desc">상체와 중체를 한 번에 준비하는 세트입니다. QR로 착한렌탈 접속 후 그대로 신청할 수 있어요.</p>
+        <div class="product-grid rental bundle">${bundles.map(p => productCard(p, 'rental')).join('')}</div>
+      </div>
+
+      <div class="qr-board">
+        <div class="qb-head">
+          <div><p class="eyebrow">QR 바로 접속</p><h2>상품별 착한렌탈 접속 QR</h2>
+          <p class="muted">스마트폰 카메라로 QR을 찍으면 해당 상품의 렌탈 신청 화면이 바로 열립니다. PC에서는 QR 링크 열기를 눌러 주세요.</p></div>
+          <span class="qb-chip">${singles.length}개 단품 + ${bundles.length}개 세트</span>
+        </div>
+        <div class="qr-grid">${[...singles, ...bundles].map(qrTile).join('')}</div>
+      </div>
+
       ${guideCard()}
       <div class="info-row">
         <div class="card"><h4>렌탈 상담이 필요하신가요?</h4><p>상담문의 게시판에 '렌탈상담'으로 남기시거나, 착한 창업 가이드에게 바로 연락하세요.</p><a class="btn btn-line" href="#/consult/write?cat=렌탈상담">렌탈 상담 남기기</a></div>
@@ -633,8 +732,8 @@
      ======================================================= */
   function partProgress(u, part) {
     const ls = S.data.lectures.filter(l => l.part === part);
-    const done = ls.filter(l => u.progress && u.progress[l.id]).length;
-    const mins = ls.filter(l => u.progress && u.progress[l.id]).reduce((a, l) => a + (+l.minutes || 0), 0);
+    const done = ls.filter(l => lecDone(u, l)).length;
+    const mins = ls.filter(l => lecDone(u, l)).reduce((a, l) => a + (+l.minutes || 0), 0);
     return { total: ls.length, done, mins, all: ls.length > 0 && done === ls.length };
   }
   function viewMypage() {
@@ -653,6 +752,7 @@
         <div class="card">
           <h4>온라인 교육 진행</h4>
           <div class="prog"><span>1부 필수 3시간</span><b>${p1.done}/${p1.total}</b><i style="--p:${p1.total ? p1.done / p1.total * 100 : 0}%"></i></div>
+          ${(() => { const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0]; if (!l1) return ''; const pc = lecPct(u, l1); return `<div class="prog watch"><span>1강 영상 시청률</span><b>${pc}%</b><i style="--p:${pc}%"></i></div>`; })()}
           <div class="prog"><span>2부 자율 6시간</span><b>${p2.done}/${p2.total}</b><i style="--p:${p2.total ? p2.done / p2.total * 100 : 0}%"></i></div>
           <a class="btn btn-line block" href="#/edu">강의실 가기</a>
         </div>
@@ -725,11 +825,12 @@
     }
     const p1 = partProgress(u, 1);
     const lecList = part => S.data.lectures.filter(l => l.part === part).sort((a, b) => a.order - b.order).map((l, i) => {
-      const done = u.progress && u.progress[l.id];
+      const done = lecDone(u, l), pc = lecPct(u, l);
       return `<li class="lec ${done ? 'done' : ''}">
         <span class="lec-no">${done ? '✓' : i + 1}</span>
-        <div class="lec-info"><h4>${esc(l.title)}</h4><p>${esc(l.desc || '')} · ${l.minutes}분 ${l.url || l.blob ? '' : '<em class="soon">영상 준비 중</em>'}</p></div>
-        <button class="btn ${done ? 'btn-line' : 'btn-primary'} btn-sm" data-lec="${l.id}">${done ? '다시 보기' : '수강하기'}</button>
+        <div class="lec-info"><h4>${esc(l.title)} ${done ? '<em class="ok-chip">이수 완료</em>' : pc > 0 ? `<em class="pct-chip">${pc}% 시청</em>` : ''}</h4>
+          <p>${esc(l.desc || '')} · ${l.minutes}분 ${l.url || l.blob ? '' : '<em class="soon">영상 준비 중</em>'}${!done && pc > 0 && pc < 100 ? ' · 100% 시청 + 퀴즈 제출 필요' : ''}</p></div>
+        <button class="btn ${done ? 'btn-line' : 'btn-primary'} btn-sm" data-lec="${l.id}">${done ? '다시 보기' : pc > 0 ? '이어서 보기' : '수강하기'}</button>
       </li>`;
     }).join('');
     return `${head}<section class="sec"><div class="wrap">
@@ -755,32 +856,16 @@
   }
   function openLecture(id) {
     const u = me(), l = S.data.lectures.find(x => x.id === id);
-    const need = Math.round((+l.minutes || 1) * 60 * .9);
-    const isYT = !!ytId(l.url);
-    let watched = 0, tick, last = Date.now();
-    const already = u.progress && u.progress[l.id];
-    const m = modal(`<h3>${esc(l.title)}</h3>${playerHTML(l)}
-      <div class="lec-foot">
-        <div class="lec-timer"><span id="lecWatch">0분</span> / ${l.minutes}분 <small>${isYT ? '강의 창을 열어둔 시간 기준' : '재생 시간 기준'}</small><i id="lecBar"></i></div>
-        <button class="btn btn-primary" id="lecDone" ${already || u.isAdmin ? '' : 'disabled'}>${already ? '수강 완료됨' : '수강 완료'}</button>
-      </div>`, { wide: true, onClose: () => clearInterval(tick) });
-    const video = $('video', m.el);
-    const upd = () => {
-      const w = $('#lecWatch', m.el); if (!w) return;
-      w.textContent = Math.floor(watched / 60) + '분';
-      $('#lecBar', m.el).style.setProperty('--p', Math.min(100, watched / need * 100) + '%');
-      if (watched >= need) $('#lecDone', m.el).disabled = false;
-    };
-    tick = setInterval(() => {
-      const nowT = Date.now(), dt = (nowT - last) / 1000; last = nowT;
-      const active = video ? !video.paused && !video.ended : (!document.hidden && (l.url || l.blob));
-      if (active) watched += dt;
-      upd();
-    }, 1000);
-    $('#lecDone', m.el).addEventListener('click', async () => {
-      u.progress = u.progress || {};
-      u.progress[l.id] = new Date().toISOString();
-      await S.save(); clearInterval(tick); m.close(); toast('수강 완료로 기록했습니다.'); render();
+    if (!u || !l) return;
+    l.quizUrl = quizUrlOf(l);
+    const m = modal('<div id="lecHost"></div>', {
+      wide: true,
+      onClose: () => { if (window.LecturePlayer) window.LecturePlayer.stop(); }
+    });
+    if (!window.LecturePlayer) { m.close(); return toast('강의 플레이어를 불러오지 못했습니다.'); }
+    window.LecturePlayer.mount($('#lecHost', m.el), l, {
+      user: u, S,
+      onComplete: () => { render(); }
     });
   }
 
@@ -996,7 +1081,7 @@
   /* =======================================================
      관리자
      ======================================================= */
-  const ADMIN_TABS = { members: '회원·등급', applies: '창업접수', rental: '렌탈상품', materials: '제품자료·영상', lectures: '온라인강의', stores: '매장', settings: '사이트 설정', backup: '백업' };
+  const ADMIN_TABS = { members: '회원·등급', applies: '창업접수', eduProg: '교육 시청현황', rental: '렌탈상품', materials: '제품자료·영상', lectures: '온라인강의', stores: '매장', settings: '사이트 설정', backup: '백업' };
   function viewAdmin(tab) {
     if (!isAdmin()) return needLogin('관리자');
     tab = ADMIN_TABS[tab] ? tab : 'members';
@@ -1062,6 +1147,33 @@
           <div class="al-info"><b>${esc(s.name)}</b><p>${esc(s.address || '주소 미입력')} ${s.phone ? '· ' + esc(s.phone) : ''}</p></div>
           <div class="al-act"><button class="btn btn-line btn-sm" data-edit-store="${s.id}">수정</button><button class="btn btn-danger btn-sm" data-del-store="${s.id}">삭제</button></div></div>`).join('')}</div>`;
     },
+    eduProg() {
+      const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0];
+      if (!l1) return '<p class="muted">1부 강의가 없습니다. 온라인강의 탭에서 먼저 등록해 주세요.</p>';
+      const users = S.data.users.filter(u => !u.isAdmin);
+      const rows = users.map(u => {
+        const w = watchOf(u, l1) || {};
+        const pc = Math.round(w.pct || 0), done = lecDone(u, l1);
+        const watchedMin = Math.round((w.watched || 0) / 60);
+        return `<tr>
+          <td><b>${esc(u.name)}</b><br><small class="muted">${esc(u.loginId)}</small></td>
+          <td>${esc(u.phone || '-')}</td>
+          <td><div class="ap-cell"><div class="ap-bar"><i style="width:${pc}%"></i></div><b>${pc}%</b></div></td>
+          <td>${watchedMin}분${w.duration ? ` / ${Math.round(w.duration / 60)}분` : ''}</td>
+          <td>${done ? '<b class="ok">✓ 이수 완료</b>' : pc > 0 ? '<span class="warn">진행 중</span>' : '<span class="muted">미시작</span>'}</td>
+          <td>${w.quizAt ? fmtDate(w.quizAt, true) : '-'}</td>
+          <td>${w.updatedAt ? fmtDate(w.updatedAt, true) : '-'}</td></tr>`;
+      }).join('') || '<tr><td colspan="7" class="center muted">아직 회원이 없습니다.</td></tr>';
+      const doneN = users.filter(u => lecDone(u, l1)).length;
+      const avg = users.length ? Math.round(users.reduce((a, u) => a + lecPct(u, l1), 0) / users.length) : 0;
+      return `<div class="admin-head"><h3>1강 시청 현황</h3>
+          <div class="badges"><span class="grade-badge g-ieum">평균 ${avg}%</span><span class="grade-badge g-pium">이수 ${doneN}/${users.length}명</span></div></div>
+        <p class="muted">회원이 실제로 재생한 구간을 초 단위로 집계합니다(구간 이동은 제외). 100% 시청 + 퀴즈 제출 확인에 체크하면 '이수 완료'로 바뀝니다.</p>
+        <div class="card" style="margin-bottom:16px"><h4>${esc(l1.title)}</h4><p class="muted">${esc(l1.url || '영상 링크 없음')} · ${l1.minutes}분</p></div>
+        <div class="table-wrap"><table class="table admin-table">
+          <thead><tr><th>회원</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>이수</th><th>퀴즈 제출</th><th>최근 활동</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>`;
+    },
     settings() {
       const s = set();
       const f = (k, label, ph = '', type = 'text') => `<label>${label}<input name="${k}" type="${type}" value="${esc(s[k])}" placeholder="${esc(ph)}"></label>`;
@@ -1070,6 +1182,8 @@
         ${f('formUrl', '창업 신청 구글폼 링크', 'https://forms.gle/...')}
         <div class="grid2">${f('eduFee', '온라인 교육비(원)', '30000', 'number')}${f('bankInfo', '교육비 입금 계좌 안내', '예) ○○은행 000-000000 (주)슬리밍고그룹')}</div>
         ${f('rentalUrl', '공통 온라인 렌탈계약 링크 (선택)', '상품별 링크가 없을 때 사용')}
+        ${f('quizUrl', '온라인교육 퀴즈(구글폼) 링크', 'https://docs.google.com/forms/d/e/.../viewform')}
+        ${f('lecture1Url', '1강 유튜브 링크', 'https://youtu.be/...')}
         <div class="grid2">${f('appIos', '플레이 슬리밍고 App Store 링크')}${f('appAndroid', '플레이 슬리밍고 Google Play 링크')}</div>
         <div class="grid2">${f('recommenderName', '기본 추천인 이름')}${f('recommenderNo', '기본 추천인 번호')}</div>
         <div class="grid3">${f('guideTitle', '운영자 호칭', '착한 창업 가이드')}${f('guideName', '운영자 이름')}${f('kakaoId', '카카오톡 ID')}</div>
@@ -1102,7 +1216,8 @@
       const m = modal(`<h3>${esc(u.name)} ${badge(u.grade)}</h3>
         <dl class="kv"><dt>아이디</dt><dd>${esc(u.loginId)}</dd><dt>생년월일</dt><dd>${esc(u.birth)}</dd><dt>성별</dt><dd>${esc(u.gender)}</dd>
         <dt>연락처</dt><dd>${esc(u.phone)}</dd><dt>주소</dt><dd>${esc([u.zip, u.address, u.address2].filter(Boolean).join(' '))}</dd>
-        <dt>가입일</dt><dd>${fmtDate(u.joinedAt, true)}</dd><dt>교육</dt><dd>1부 ${p1.done}/${p1.total} · 2부 ${p2.done}/${p2.total}</dd></dl>
+        <dt>가입일</dt><dd>${fmtDate(u.joinedAt, true)}</dd><dt>교육</dt><dd>1부 ${p1.done}/${p1.total} · 2부 ${p2.done}/${p2.total}</dd>
+        <dt>1강 시청률</dt><dd>${(() => { const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0]; if (!l1) return '-'; const w = watchOf(u, l1); return `${lecPct(u, l1)}% ${lecDone(u, l1) ? '· 퀴즈 제출 완료 ' + fmtDate(w.quizAt, true) : '· 미완료'}`; })()}</dd></dl>
         <form class="form" id="refForm"><div class="grid2"><label>추천인 이름<input name="refName" value="${esc(u.refName)}"></label><label>추천인 번호<input name="refNo" value="${esc(u.refNo)}"></label></div>
         <div class="btn-row"><button class="btn btn-primary">추천인 저장</button><button type="button" class="btn btn-danger" id="delMember">회원 삭제</button></div></form>`);
       $('#refForm', m.el).addEventListener('submit', async e => { e.preventDefault(); Object.assign(u, formData(e.target)); m.close(); await save('저장했습니다.'); });
@@ -1126,15 +1241,20 @@
         <label>색상<input name="color" value="${esc(p.color)}"></label><label>월 렌탈료(원)<input name="price" type="number" required value="${esc(p.price)}"></label></div>
         <label>설명<textarea name="desc" rows="2">${esc(p.desc)}</textarea></label>
         <label>온라인 렌탈계약 링크 <small>(전자계약 페이지 주소 — QR 자동 생성)</small><input name="contractUrl" value="${esc(p.contractUrl)}" placeholder="https://"></label>
-        <label>상품 이미지<input type="file" accept="image/*" id="pImg"></label>
+        <div class="grid2"><label>구성<select name="kind"><option value="single" ${p.kind !== 'bundle' ? 'selected' : ''}>단품</option><option value="bundle" ${p.kind === 'bundle' ? 'selected' : ''}>2개 구성(세트)</option></select></label>
+        <label>월 렌탈료 표시 확인<input value="${p.price ? won(p.price) : ''}" readonly></label></div>
+        <label>상품 이미지 1<input type="file" accept="image/*" id="pImg"></label>
         <div class="thumbs" id="pThumb">${p.img ? `<img src="${esc(p.img)}" alt="">` : ''}</div>
+        <label>상품 이미지 2 <small>(2개 구성일 때 오른쪽 제품)</small><input type="file" accept="image/*" id="pImg2"></label>
+        <div class="thumbs" id="pThumb2">${p.img2 ? `<img src="${esc(p.img2)}" alt="">` : ''}</div>
         <label class="agree"><input type="checkbox" name="visible" ${p.visible !== false ? 'checked' : ''}> 렌탈신청 화면에 노출</label>
         <button class="btn btn-primary">저장</button></form>`);
-      let img = p.img;
+      let img = p.img, img2 = p.img2 || '';
       $('#pImg', m.el).addEventListener('change', async e => { img = (await readImages(e.target, 1))[0] || img; $('#pThumb', m.el).innerHTML = `<img src="${img}" alt="">`; });
+      $('#pImg2', m.el).addEventListener('change', async e => { img2 = (await readImages(e.target, 1))[0] || img2; $('#pThumb2', m.el).innerHTML = `<img src="${img2}" alt="">`; });
       $('#pf', m.el).addEventListener('submit', async e => {
         e.preventDefault(); const f = formData(e.target);
-        const data = { name: f.name, code: f.code, color: f.color, price: +f.price, desc: f.desc, contractUrl: f.contractUrl, visible: f.visible, img };
+        const data = { name: f.name, code: f.code, color: f.color, price: +f.price, desc: f.desc, contractUrl: f.contractUrl, visible: f.visible, img, img2, kind: f.kind === 'bundle' ? 'bundle' : 'single' };
         if (p.id) Object.assign(p, data); else S.data.rentalProducts.push(Object.assign({ id: S.uid(), order: S.data.rentalProducts.length + 1 }, data));
         m.close(); await save('저장했습니다.');
       });
@@ -1182,13 +1302,14 @@
         <label>강의 제목<input name="title" required value="${esc(l.title)}"></label>
         <label>설명<input name="desc" value="${esc(l.desc)}"></label>
         <label>유튜브 링크 또는 영상 주소<input name="url" value="${esc(l.url)}" placeholder="https://youtu.be/... (일부 공개 추천)"></label>
+        <label>퀴즈(구글폼) 링크 <small>비워두면 사이트 설정의 기본 퀴즈 링크를 사용합니다</small><input name="quizUrl" value="${esc(l.quizUrl || '')}" placeholder="https://docs.google.com/forms/..."></label>
         <label>또는 영상 파일 업로드 <small>(이 브라우저에만 저장됨)</small><input type="file" accept="video/*" id="lVid"></label>
         <button class="btn btn-primary">저장</button></form>`);
       let blob = l.blob || null;
       $('#lVid', m.el).addEventListener('change', e => { blob = e.target.files[0] || blob; });
       $('#lf', m.el).addEventListener('submit', async e => {
         e.preventDefault(); const f = formData(e.target);
-        const data = { part: +f.part, order: +f.order, minutes: +f.minutes, title: f.title, desc: f.desc, url: f.url, blob };
+        const data = { part: +f.part, order: +f.order, minutes: +f.minutes, title: f.title, desc: f.desc, url: f.url, quizUrl: f.quizUrl || '', blob };
         if (l.id) { Object.assign(l, data); blobURLs.delete(l.id); } else S.data.lectures.push(Object.assign({ id: S.uid() }, data));
         m.close(); await save('저장했습니다.');
       });
@@ -1287,7 +1408,8 @@
         if (set().heroJoggerVideo) vid.setAttribute('src', set().heroJoggerVideo);
         hero = window.initHero({
           stage: $('#heroStage'), canvasWrap: $('#heroCanvas'), videoEl: vid,
-          hud: { score: $('#hudScore'), bar: $('#hudBar'), neck: $('#hudNeck'), shoulder: $('#hudShoulder'), pelvis: $('#hudPelvis'), knee: $('#hudKnee'), caption: $('#hudCaption') }
+          typeEl: $('#heroTyping'), runCaption: $('#runCaption'),
+          hud: { score: $('#hudScore'), bar: $('#hudBar'), neck: $('#hudNeck'), shoulder: $('#hudShoulder'), pelvis: $('#hudPelvis'), knee: $('#hudKnee'), caption: null }
         });
       } else if (hero) hero.resume();
     } else if (hero) hero.pause();

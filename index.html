@@ -12,6 +12,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style-v2.css">
 </head>
 <body>
 
@@ -69,6 +70,7 @@
   <div class="wrap hero-inner">
     <div class="hero-copy">
       <p class="hero-kicker"><span class="dot"></span>전국민 바른자세 만들기 문화캠페인</p>
+      <p class="hero-live"><span class="live-dot"></span>AI 골격 스캔 · 척추 24 · 갈비뼈 12쌍 실시간 회전</p>
       <h1 class="hero-title">바른자세가<br><em>건강재테크의</em><br><strong>0순위</strong></h1>
       <p class="hero-sub">치킨 한 마리 값, <b>3만원</b>으로<br>나는 재테크를 시작한다.</p>
       <div class="hero-chips">
@@ -91,7 +93,15 @@
         <div class="grid-bg"></div>
       </div>
       <div class="hero-canvas" id="heroCanvas"></div>
-      <video id="heroVideo" class="hero-video" muted playsinline loop preload="auto" aria-label="공원에서 함께 조깅하는 건강한 남녀"></video>
+      <video id="heroVideo" class="hero-video" muted playsinline loop preload="none" hidden aria-label="함께 조깅하는 건강한 40대 남녀"></video>
+      <div class="hero-type" id="heroTyping" aria-hidden="true">
+        <p class="st-main"></p>
+        <p class="st-sub"></p>
+      </div>
+      <div class="run-caption" id="runCaption" aria-hidden="true">
+        <p class="rc-main"></p>
+        <p class="rc-sub"></p>
+      </div>
       <div class="hud" aria-hidden="true">
         <div class="hud-top">
           <span class="hud-tag">AI POSTURE SCAN</span>
@@ -157,6 +167,7 @@
 <script src="js/config.js"></script>
 <script src="js/store.js"></script>
 <script src="js/hero3d.js"></script>
+<script src="js/lecture.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

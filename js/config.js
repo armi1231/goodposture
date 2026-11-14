@@ -28,8 +28,25 @@ window.SITE_CONFIG = {
   // 공통 렌탈 신청(전자계약) 링크 — 상품별 링크가 없을 때 사용
   rentalUrl: '',
 
+  // 착한렌탈 상품별 접속 QR 링크 (첨부 PDF의 QR을 그대로 디코딩한 주소)
+  //  → 네이버 QR 단축주소(https://m.site.naver.com/xxxx) 가 착한렌탈(bs-on) 상품 상세로 연결됩니다.
+  qr: {
+    BB484: 'https://m.site.naver.com/2kSFq',
+    R1090: 'https://m.site.naver.com/2kSEX',
+    SM880: 'https://m.site.naver.com/2kSFK',
+    BB484x2: 'https://m.site.naver.com/2kSGh',
+    R1090_SM880: 'https://m.site.naver.com/2kSLx',
+    BB484_R1090: 'https://m.site.naver.com/2kSMB',
+    BB484_SM880: 'https://m.site.naver.com/2kSN4'
+  },
+
+  // 온라인교육 1강
+  lecture1Url: 'https://youtu.be/4S4BHab9BXA',
+  quizUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSfipUAMTvmf-6oCSzDkCocRULzjJznfi1ZkH-j_ONtOFJiNjQ/viewform',
+
   // 메인 3D 연출 마지막 장면을 실제 영상으로 바꾸고 싶다면 mp4 경로 입력 (예: assets/hero/joggers.mp4)
-  heroJoggerVideo: 'https://assets.mixkit.co/videos/40754/40754-720.mp4',
+  //  비워두면(권장) 3D로 만든 정면 조깅 남녀 장면이 재생됩니다.
+  heroJoggerVideo: '',
 
   contactPhone: '010-9283-1231',
   kakaoId: 'armi1231',
