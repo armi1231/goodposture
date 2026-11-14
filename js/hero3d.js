@@ -1,13 +1,17 @@
 /* =========================================================
-   메인 3D 연출 (v2 · 해부학 골격 + 정면 조깅)
+   메인 3D 연출 (X-ray 골격 분석 + 40대 동양인 남녀 실사 조깅)
    ---------------------------------------------------------
-   1) X-ray 골격: 24개 척추뼈(경추7·흉추12·요추5) + 천골/골반
-      12쌍 갈비뼈 + 흉골 + 쇄골 + 견갑골 + 두개골/하악골
-      상완·전완·대퇴·경골 등 실제 뼈 형태로 회전하며 AI 스캔
-   2) 구부정한 자세 → 바른 자세 교정 (자세점수 52 → 98)
-   3) 40대 동양인 남녀가 '정면'을 향해 달려오는 조깅
-      (긴 트레이닝복 · 밝은 표정 · 서로 마주보며 달리기)
-   4) 스캔 단계마다 글자가 한 글자씩 나타나는 타이핑 연출
+   1) 실제 의료용 X-ray / EOS 스캐너를 연상시키는 정밀 해부학 골격
+      - Additive Blending & Fresnel Shader 기반의 투광형 X-ray 재질
+      - 24개 척추(경추7·흉추12·요추5), 12쌍 갈비뼈, 흉골, 쇄골, 견갑골, 골반, 두개골
+      - 인체 윤곽선(연부조직 실루엣)이 함께 은은하게 투과
+   2) 굽은 자세(거북목·굽은등·골반뒤틀림) → 바른 자세 실시간 교정
+      - 문제 척추 부위 경고 주황색 → 완벽 정렬 시 청량한 바이오 그린으로 변환
+      - 자세 점수 52점 → 98점 실시간 상승
+   3) 40대 한국인 남녀의 밝고 건강한 실사 조깅
+      - 청계천처럼 맑은 물과 푸른 잔디, 꽃길 산책로를 다정하게 웃으며 달리는 모습
+      - Three.js 3D 벚꽃/꽃잎 흩날림 & 햇살·물결 반짝임 파티클 연출
+   4) 영상 내 모든 텍스트는 선명한 순백색(#FFFFFF) & 그림자로 가독성 100% 확보
    ========================================================= */
 (function () {
   const TAU = Math.PI * 2;
@@ -16,21 +20,47 @@
   const seg = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
   const lerp = (a, b, t) => a + (b - a) * t;
 
-  /* ---------------- 재질 ---------------- */
-  function boneMaterial(color, opacity) {
-    return new THREE.MeshStandardMaterial({
-      color: new THREE.Color(color),
-      emissive: new THREE.Color(color),
-      emissiveIntensity: .38,
-      roughness: .38, metalness: .05,
-      transparent: true, opacity: opacity == null ? .95 : opacity
-    });
-  }
-  function bodyShellMaterial() {
-    return new THREE.MeshStandardMaterial({
-      color: 0x6fdcff, emissive: 0x1d7f9e, emissiveIntensity: .55,
-      roughness: .85, metalness: 0, transparent: true, opacity: .075,
-      depthWrite: false, side: THREE.DoubleSide
+  /* ---------------- X-ray 투광 셰이더 (실제 엑스레이 질감) ---------------- */
+  function createXrayShader(colorHex, power = 2.0, glow = 0.9, core = 0.28) {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        color: { value: new THREE.Color(colorHex) },
+        opacity: { value: 1.0 },
+        power: { value: power },
+        glow: { value: glow },
+        core: { value: core }
+      },
+      vertexShader: `
+        varying vec3 vNormal;
+        varying vec3 vView;
+        void main() {
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vNormal = normalize(normalMatrix * normal);
+          vView = normalize(-mvPosition.xyz);
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 color;
+        uniform float opacity;
+        uniform float power;
+        uniform float glow;
+        uniform float core;
+        varying vec3 vNormal;
+        varying vec3 vView;
+        void main() {
+          float d = abs(dot(normalize(vNormal), normalize(vView)));
+          float fresnel = pow(1.0 - d, power);
+          float inner = pow(d, 2.2) * core;
+          float intensity = clamp(fresnel * glow + inner + 0.12, 0.0, 1.0);
+          vec3 c = mix(color, vec3(1.0, 1.0, 1.0), fresnel * 0.55 + inner * 0.7);
+          gl_FragColor = vec4(c, intensity * opacity);
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide
     });
   }
 
@@ -39,27 +69,42 @@
   const sph = (r, s) => new THREE.SphereGeometry(r, s || 18, Math.round((s || 18) * .72));
   const box = (x, y, z) => new THREE.BoxGeometry(x, y, z);
 
-  /* 뼈 하나(몸통 + 양끝 관절두) */
+  /* 관절두가 있는 긴 뼈 */
   function longBone(mat, len, r1, r2) {
     const g = new THREE.Group();
-    const shaft = new THREE.Mesh(cyl(r1, r2, len, 14), mat);
-    shaft.position.y = -len / 2; g.add(shaft);
-    const head = new THREE.Mesh(sph(r1, 16), mat); head.scale.set(1, .92, 1); g.add(head);
-    const foot = new THREE.Mesh(sph(r2, 16), mat); foot.scale.set(1.03, .9, 1.03); foot.position.y = -len; g.add(foot);
+    const shaft = new THREE.Mesh(cyl(r1, r2, len, 12), mat);
+    shaft.position.y = -len / 2;
+    g.add(shaft);
+    const head = new THREE.Mesh(sph(r1 * 1.08, 14), mat);
+    g.add(head);
+    const foot = new THREE.Mesh(sph(r2 * 1.08, 14), mat);
+    foot.position.y = -len;
+    g.add(foot);
     return g;
   }
 
-  /* ---------------- 골격 인체 ---------------- */
-  function makeSkeleton() {
+  /* ---------------- 해부학적 X-ray 인체 골격 ---------------- */
+  function makeXraySkeleton() {
     const root = new THREE.Group();
     const J = {}, mats = [];
-    const bone = boneMaterial(0xe9f7ff, .95);       // 일반 뼈
-    const spineBone = boneMaterial(0xa8ffcc, .96);  // 척추(문제 부위)
-    const pelvisBone = boneMaterial(0xa8ffcc, .96);
-    const shell = bodyShellMaterial();
-    mats.push(bone, spineBone, pelvisBone, shell);
 
-    const joint = (name, parent, p) => { const g = new THREE.Group(); g.position.set(p[0], p[1], p[2]); parent.add(g); J[name] = g; return g; };
+    // 엑스레이 뼈 재질 (투광성 청백색)
+    const boneMat = createXrayShader(0x8fe8ff, 1.9, 0.88, 0.26);
+    // 척추 재질 (경고 주황색 → 바른 정렬 시 에메랄드 그린)
+    const spineMat = createXrayShader(0xff945c, 1.8, 0.95, 0.35);
+    const pelvisMat = createXrayShader(0xff945c, 1.9, 0.92, 0.32);
+    // 인체 외형 실루엣 (엑스레이 연부조직 투과광)
+    const shellMat = createXrayShader(0x38bdf8, 3.4, 0.18, 0.02);
+
+    mats.push(boneMat, spineMat, pelvisMat, shellMat);
+
+    const joint = (name, parent, p) => {
+      const g = new THREE.Group();
+      g.position.set(p[0], p[1], p[2]);
+      parent.add(g);
+      J[name] = g;
+      return g;
+    };
 
     const hips = joint('hips', root, [0, .95, 0]);
     const spine1 = joint('spine1', hips, [0, .08, 0]);
@@ -67,6 +112,7 @@
     const chest = joint('chest', spine2, [0, .13, 0]);
     const neck = joint('neck', chest, [0, .22, -.01]);
     const head = joint('head', neck, [0, .09, .01]);
+
     ['L', 'R'].forEach((s, i) => {
       const k = i ? -1 : 1;
       const sh = joint('sh' + s, chest, [.17 * k, .17, -.01]);
@@ -78,158 +124,174 @@
       joint('ankle' + s, knee, [0, -.42, 0]);
     });
 
-    /* --- 몸 실루엣(사람 형태를 읽게 해 주는 반투명 외피) --- */
+    /* --- 연부조직 엑스레이 실루엣 (실제 엑스레이 필름의 인체 외곽선) --- */
     const shellAdd = (parent, geo, pos, scale) => {
-      const m = new THREE.Mesh(geo, shell);
+      const m = new THREE.Mesh(geo, shellMat);
       if (pos) m.position.set(pos[0], pos[1], pos[2]);
       if (scale) m.scale.set(scale[0], scale[1], scale[2]);
-      parent.add(m); return m;
+      parent.add(m);
+      return m;
     };
-    shellAdd(hips, sph(.16, 20), [0, .01, 0], [1.08, .8, .8]);
-    shellAdd(spine1, cyl(.135, .13, .14, 18), [0, .06, 0], [1, 1, .78]);
-    shellAdd(spine2, cyl(.142, .13, .14, 18), [0, .05, 0], [1.02, 1, .8]);
-    shellAdd(chest, cyl(.155, .14, .3, 20), [0, -.02, 0], [1.05, 1, .74]);
+    shellAdd(hips, sph(.16, 18), [0, .01, 0], [1.08, .8, .8]);
+    shellAdd(spine1, cyl(.135, .13, .14, 16), [0, .06, 0], [1, 1, .78]);
+    shellAdd(spine2, cyl(.142, .13, .14, 16), [0, .05, 0], [1.02, 1, .8]);
+    shellAdd(chest, cyl(.155, .14, .3, 18), [0, -.02, 0], [1.05, 1, .74]);
     shellAdd(neck, cyl(.045, .05, .12, 14), [0, .02, 0]);
-    shellAdd(head, sph(.108, 20), [0, .07, .01], [.92, 1.1, .99]);
+    shellAdd(head, sph(.108, 18), [0, .07, .01], [.92, 1.1, .99]);
     ['L', 'R'].forEach(s => {
-      shellAdd(J['arm' + s], cyl(.048, .042, .27, 14), [0, -.14, 0]);
-      shellAdd(J['elbow' + s], cyl(.04, .033, .25, 14), [0, -.13, 0]);
-      shellAdd(J['hip' + s], cyl(.078, .056, .4, 16), [0, -.21, 0]);
-      shellAdd(J['knee' + s], cyl(.055, .038, .4, 16), [0, -.2, 0]);
+      shellAdd(J['arm' + s], cyl(.048, .042, .27, 12), [0, -.14, 0]);
+      shellAdd(J['elbow' + s], cyl(.04, .033, .25, 12), [0, -.13, 0]);
+      shellAdd(J['hip' + s], cyl(.078, .056, .4, 14), [0, -.21, 0]);
+      shellAdd(J['knee' + s], cyl(.055, .038, .4, 14), [0, -.2, 0]);
     });
 
-    /* --- 척추뼈 --- */
+    /* --- 24개 척추뼈 정밀 구성 (경추 7, 흉추 12, 요추 5) --- */
     const spineParts = [];
     function vertebra(parent, y, z, r, tilt) {
       const g = new THREE.Group();
       g.position.set(0, y, z);
       if (tilt) g.rotation.x = tilt;
       parent.add(g);
-      const body = new THREE.Mesh(cyl(r, r * 1.06, r * .82, 14), spineBone);
+      const body = new THREE.Mesh(cyl(r, r * 1.05, r * .82, 14), spineMat);
       g.add(body);
-      const spinous = new THREE.Mesh(box(r * .5, r * .46, r * 1.9), spineBone);
-      spinous.position.set(0, -r * .1, -r * 1.3); spinous.rotation.x = -.3; g.add(spinous);
-      const trans = new THREE.Mesh(box(r * 3.1, r * .34, r * .55), spineBone);
-      trans.position.set(0, r * .12, -r * .5); g.add(trans);
+      const spinous = new THREE.Mesh(box(r * .48, r * .44, r * 1.8), spineMat);
+      spinous.position.set(0, -r * .1, -r * 1.25);
+      spinous.rotation.x = -.3;
+      g.add(spinous);
+      const trans = new THREE.Mesh(box(r * 3.0, r * .32, r * .5), spineMat);
+      trans.position.set(0, r * .12, -r * .48);
+      g.add(trans);
       spineParts.push(body, spinous, trans);
       return g;
     }
-    // 요추 5 (앞쪽으로 볼록한 전만곡)
+    // 요추 5개 (L1~L5)
     vertebra(spine1, .015, .012, .032, .03);
     vertebra(spine1, .062, .010, .033, .02);
     vertebra(spine2, .012, .006, .031, .01);
-    vertebra(spine2, .055, .002, .029, 0);
-    vertebra(spine2, .098, -.004, .027, -.01);
-    // 흉추 12 (뒤쪽으로 볼록한 후만곡) + 갈비뼈
-    const ribMat = boneMaterial(0xe9f7ff, .95); mats.push(ribMat);
+    vertebra(spine2, .058, .003, .030, 0);
+    vertebra(spine2, .104, 0, .029, -.01);
+    // 흉추 12개 (T1~T12)
     for (let i = 0; i < 12; i++) {
-      const fy = .004 + i * .0162;
-      const fz = -.010 - Math.sin((i / 11) * Math.PI) * .022;
-      const r = .026 - i * .00075;
-      vertebra(chest, fy, fz, r, -.02);
-      // 갈비뼈 한 쌍
+      const v = i / 11;
+      const y = -.04 + v * .26;
+      const z = -Math.sin(v * Math.PI) * .024;
+      vertebra(chest, y, z, .028 - v * .006, -.02 + v * .04);
+    }
+    // 경추 7개 (C1~C7)
+    for (let i = 0; i < 7; i++) {
+      const v = i / 6;
+      vertebra(neck, -.04 + v * .14, Math.sin(v * Math.PI) * .012, .021 - v * .003, .03 - v * .04);
+    }
+
+    /* --- 골반 & 천골 --- */
+    const pelvisParts = [];
+    const sacrum = new THREE.Mesh(cyl(.042, .014, .13, 10), pelvisMat);
+    sacrum.position.set(0, -.03, -.025);
+    sacrum.rotation.x = .28;
+    hips.add(sacrum);
+    pelvisParts.push(sacrum);
+    [-1, 1].forEach(k => {
+      const ilium = new THREE.Mesh(new THREE.TorusGeometry(.095, .024, 8, 18, Math.PI * .88), pelvisMat);
+      ilium.position.set(.062 * k, .01, -.01);
+      ilium.rotation.set(-.2, k * .38, Math.PI * .52 + k * .3);
+      hips.add(ilium);
+      const pubic = new THREE.Mesh(cyl(.013, .013, .095, 8), pelvisMat);
+      pubic.position.set(.038 * k, -.052, .042);
+      pubic.rotation.set(.7, 0, -k * .55);
+      hips.add(pubic);
+      pelvisParts.push(ilium, pubic);
+    });
+
+    /* --- 12쌍 갈비뼈 & 흉골 --- */
+    const sternum = new THREE.Mesh(box(.032, .17, .015), boneMat);
+    sternum.position.set(0, .09, .135);
+    chest.add(sternum);
+    for (let i = 0; i < 12; i++) {
+      const v = i / 11;
+      const y = .16 - v * .21;
+      const rx = .115 + Math.sin(v * Math.PI) * .042;
+      const rz = .105 + Math.sin(v * Math.PI) * .035;
       [-1, 1].forEach(k => {
-        const wide = .085 + Math.sin((i / 11) * Math.PI) * .028;
-        const deep = .052 + Math.sin((i / 11) * Math.PI) * .014;
-        const frontZ = i < 7 ? .078 - i * .002 : .048 - (i - 7) * .004;
-        const frontX = i < 7 ? .028 : .052;
-        const pts = [
-          new THREE.Vector3(k * .018, fy, fz - .012),
-          new THREE.Vector3(k * (wide * .62), fy + .012, fz - .022),
-          new THREE.Vector3(k * wide, fy + .002, fz + deep * .35),
-          new THREE.Vector3(k * (wide * .78), fy - .016, frontZ - .012),
-          new THREE.Vector3(k * frontX, fy - .026, frontZ)
-        ];
-        const curve = new THREE.CatmullRomCurve3(pts);
-        const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 18, .0052, 6, false), ribMat);
-        chest.add(tube); spineParts.push(tube);
+        const rib = new THREE.Mesh(new THREE.TorusGeometry(rx, .0072, 6, 20, Math.PI * .92), boneMat);
+        rib.scale.set(1, .55, rz / rx);
+        rib.position.set(.014 * k, y, 0);
+        rib.rotation.set(.18 + v * .12, k * .1, Math.PI * .52 + (k > 0 ? 0 : Math.PI));
+        chest.add(rib);
       });
     }
-    // 경추 7
-    for (let i = 0; i < 7; i++) vertebra(neck, .006 + i * .0145, -.004 - i * .0012, .0135 - i * .0004, -.015);
 
-    /* --- 흉골 · 쇄골 · 견갑골 --- */
-    const sternum = new THREE.Mesh(box(.032, .13, .014), bone);
-    sternum.position.set(0, .10, .076); chest.add(sternum);
+    /* --- 쇄골 & 견갑골 --- */
     [-1, 1].forEach(k => {
-      const clav = new THREE.Mesh(cyl(.0075, .0075, .17, 10), bone);
-      clav.rotation.z = Math.PI / 2; clav.rotation.y = k * .28;
-      clav.position.set(.085 * k, .178, .045); chest.add(clav);
-      const scap = new THREE.Mesh(box(.075, .1, .012), bone);
-      scap.position.set(.085 * k, .105, -.062); scap.rotation.set(.1, k * .22, k * .16); chest.add(scap);
+      const clav = new THREE.Mesh(cyl(.008, .007, .13, 8), boneMat);
+      clav.position.set(.075 * k, .19, .07);
+      clav.rotation.set(.12, k * .28, k * 1.48);
+      chest.add(clav);
+      const scap = new THREE.Mesh(box(.072, .105, .01), boneMat);
+      scap.position.set(.085 * k, .11, -.105);
+      scap.rotation.set(-.15, -k * .22, -k * .18);
+      chest.add(scap);
     });
 
-    /* --- 골반 (장골 · 천골 · 치골 · 좌골) --- */
-    const pelvisParts = [];
-    [-1, 1].forEach(k => {
-      const wing = new THREE.Mesh(sph(.075, 20), pelvisBone);
-      wing.scale.set(.72, 1.05, .48);
-      wing.position.set(.062 * k, .022, -.012);
-      wing.rotation.set(.12, k * .18, k * -.34);
-      hips.add(wing); pelvisParts.push(wing);
-      const isch = new THREE.Mesh(sph(.032, 14), pelvisBone);
-      isch.scale.set(.9, .9, .85); isch.position.set(.052 * k, -.055, .006);
-      hips.add(isch); pelvisParts.push(isch);
-      // 대퇴골두를 감싸는 비구
-      const acet = new THREE.Mesh(new THREE.TorusGeometry(.028, .009, 8, 20), pelvisBone);
-      acet.position.set(.072 * k, -.038, .004); acet.rotation.y = Math.PI / 2;
-      hips.add(acet); pelvisParts.push(acet);
-    });
-    const sacrum = new THREE.Mesh(cyl(.03, .012, .11, 4), pelvisBone);
-    sacrum.position.set(0, .012, -.048); sacrum.rotation.x = .34; sacrum.rotation.y = Math.PI / 4;
-    hips.add(sacrum); pelvisParts.push(sacrum);
-    const pubis = new THREE.Mesh(new THREE.TorusGeometry(.042, .0085, 8, 22, Math.PI), pelvisBone);
-    pubis.rotation.set(Math.PI / 2, 0, Math.PI); pubis.position.set(0, -.052, .022);
-    hips.add(pubis); pelvisParts.push(pubis);
+    /* --- 사지 골격 (상완, 전완, 대퇴골, 경골, 슬개골) --- */
+    ['L', 'R'].forEach((s, i) => {
+      const k = i ? -1 : 1;
+      // 상완골
+      J['arm' + s].add(longBone(boneMat, .26, .017, .014));
+      // 요골·척골
+      const radius = new THREE.Mesh(cyl(.011, .009, .23, 8), boneMat);
+      radius.position.set(.012 * k, -.115, .004);
+      J['elbow' + s].add(radius);
+      const ulna = new THREE.Mesh(cyl(.012, .008, .235, 8), boneMat);
+      ulna.position.set(-.008 * k, -.117, -.004);
+      J['elbow' + s].add(ulna);
+      // 손목 & 손
+      const hand = new THREE.Mesh(box(.055, .075, .02), boneMat);
+      hand.position.set(0, -.045, 0);
+      J['hand' + s].add(hand);
 
-    /* --- 사지 뼈 --- */
-    ['L', 'R'].forEach(s => {
-      const k = s === 'L' ? 1 : -1;
-      // 상완
-      J['arm' + s].add(longBone(bone, .25, .016, .013));
-      // 요골 · 척골
-      J['elbow' + s].add(longBone(bone, .23, .0115, .009));
-      const ulna = new THREE.Mesh(cyl(.0085, .007, .22, 10), bone);
-      ulna.position.set(.012 * k, -.12, -.006); J['elbow' + s].add(ulna);
-      // 손
-      const hand = new THREE.Mesh(box(.042, .075, .02), bone);
-      hand.position.set(0, -.03, .004); J['hand' + s].add(hand);
-      // 대퇴
-      const femur = longBone(bone, .40, .019, .016);
-      femur.rotation.z = -.05 * k; J['hip' + s].add(femur);
-      const troch = new THREE.Mesh(sph(.02, 12), bone);
-      troch.position.set(.026 * k, -.012, -.004); J['hip' + s].add(troch);
-      // 경골 · 비골 · 슬개골
-      J['knee' + s].add(longBone(bone, .382, .017, .014));
-      const fibula = new THREE.Mesh(cyl(.008, .007, .34, 10), bone);
-      fibula.position.set(.021 * k, -.19, -.004); J['knee' + s].add(fibula);
-      const patella = new THREE.Mesh(sph(.019, 12), bone);
-      patella.scale.set(1, 1.15, .55); patella.position.set(0, -.012, .036);
+      // 대퇴골
+      J['hip' + s].add(longBone(boneMat, .39, .023, .019));
+      // 경골 & 비골
+      J['knee' + s].add(longBone(boneMat, .38, .018, .014));
+      const fibula = new THREE.Mesh(cyl(.008, .007, .34, 8), boneMat);
+      fibula.position.set(.022 * k, -.19, -.004);
+      J['knee' + s].add(fibula);
+      // 슬개골 (무릎뼈)
+      const patella = new THREE.Mesh(sph(.02, 12), boneMat);
+      patella.scale.set(1, 1.15, .55);
+      patella.position.set(0, -.012, .036);
       J['knee' + s].add(patella);
       // 발
-      const talus = new THREE.Mesh(sph(.022, 12), bone); J['ankle' + s].add(talus);
-      const foot = new THREE.Mesh(box(.075, .032, .19), bone);
-      foot.position.set(0, -.026, .045); J['ankle' + s].add(foot);
+      const foot = new THREE.Mesh(box(.072, .032, .185), boneMat);
+      foot.position.set(0, -.026, .045);
+      J['ankle' + s].add(foot);
     });
 
-    /* --- 두개골 · 하악골 --- */
-    const skull = new THREE.Mesh(sph(.088, 22), bone);
-    skull.scale.set(1, 1.12, 1.05); skull.position.set(0, .075, .008); head.add(skull);
-    const mand = new THREE.Mesh(sph(.058, 18), bone);
-    mand.scale.set(.94, .5, .95); mand.position.set(0, .028, .028); head.add(mand);
-    const nasal = new THREE.Mesh(cyl(.012, .006, .03, 8), bone);
-    nasal.position.set(0, .068, .086); nasal.rotation.x = 1.1; head.add(nasal);
+    /* --- 두개골 & 하악골 --- */
+    const skull = new THREE.Mesh(sph(.088, 18), boneMat);
+    skull.scale.set(1, 1.12, 1.05);
+    skull.position.set(0, .075, .008);
+    head.add(skull);
+    const mand = new THREE.Mesh(sph(.056, 16), boneMat);
+    mand.scale.set(.94, .5, .95);
+    mand.position.set(0, .028, .028);
+    head.add(mand);
     [-1, 1].forEach(k => {
-      const orbit = new THREE.Mesh(new THREE.TorusGeometry(.019, .006, 8, 18), bone);
-      orbit.position.set(.032 * k, .085, .072); orbit.rotation.y = k * .18; head.add(orbit);
-      const zyg = new THREE.Mesh(cyl(.007, .005, .045, 8), bone);
-      zyg.position.set(.05 * k, .062, .055); zyg.rotation.z = Math.PI / 2; zyg.rotation.y = k * .3; head.add(zyg);
+      const orbit = new THREE.Mesh(new THREE.TorusGeometry(.019, .006, 6, 16), boneMat);
+      orbit.position.set(.032 * k, .085, .072);
+      orbit.rotation.y = k * .18;
+      head.add(orbit);
     });
 
-    return { root, J, mats, spine: spineParts, pelvis: pelvisParts, boneMat: bone, spineMat: spineBone, pelvisMat: pelvisBone };
+    return {
+      root, J, mats,
+      spine: spineParts,
+      pelvis: pelvisParts,
+      boneMat, spineMat, pelvisMat, shellMat
+    };
   }
 
-  /* ---------------- 자세 ---------------- */
+  /* ---------------- 자세 보간 (Slouch ↔ Upright) ---------------- */
   const POSE_SLOUCH = {
     hips: [-.12, 0, 0], spine1: [.06, 0, 0], spine2: [.13, 0, 0], chest: [.23, 0, 0], neck: [.30, 0, 0], head: [.14, 0, 0],
     shL: [0, -.30, -.05], shR: [0, .30, .05], armL: [-.24, 0, .03], armR: [-.24, 0, -.03], elbowL: [-.26, 0, 0], elbowR: [-.26, 0, 0],
@@ -240,6 +302,7 @@
     shL: [0, .04, 0], shR: [0, -.04, 0], armL: [0, 0, .10], armR: [0, 0, -.10], elbowL: [-.08, 0, 0], elbowR: [-.08, 0, 0],
     hipL: [0, 0, .02], hipR: [0, 0, -.02], kneeL: [0, 0, 0], kneeR: [0, 0, 0], ankleL: [0, 0, 0], ankleR: [0, 0, 0]
   };
+
   function applyBlend(h, t) {
     for (const k in POSE_SLOUCH) {
       const a = POSE_SLOUCH[k], b = POSE_UPRIGHT[k], j = h.J[k];
@@ -247,146 +310,101 @@
     }
     h.root.position.y = lerp(-.05, 0, t);
   }
-  function setOpacity(h, o) {
+
+  function setSkeletonOpacity(h, o) {
     h.mats.forEach(m => {
-      if (m.userData.base == null) m.userData.base = m.opacity;
-      m.opacity = m.userData.base * o;
+      if (m.uniforms && m.uniforms.opacity) {
+        m.uniforms.opacity.value = o;
+      }
     });
   }
 
-  /* ---------------- 조깅하는 40대 동양인 남녀 ---------------- */
-  function makeRunner(o) {
-    const M = {
-      skin: new THREE.MeshStandardMaterial({ color: o.skin, roughness: .74, metalness: 0 }),
-      top: new THREE.MeshStandardMaterial({ color: o.top, roughness: .88, metalness: 0 }),
-      topD: new THREE.MeshStandardMaterial({ color: o.topD || o.top, roughness: .9, metalness: 0 }),
-      pants: new THREE.MeshStandardMaterial({ color: o.pants, roughness: .92, metalness: 0 }),
-      shoe: new THREE.MeshStandardMaterial({ color: o.shoe, roughness: .7, metalness: .04 }),
-      hair: new THREE.MeshStandardMaterial({ color: o.hair, roughness: .55, metalness: .02 }),
-      eye: new THREE.MeshStandardMaterial({ color: 0x241a15, roughness: .35 }),
-      white: new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: .4 }),
-      mouth: new THREE.MeshStandardMaterial({ color: 0xb8493f, roughness: .6 }),
-      blush: new THREE.MeshStandardMaterial({ color: 0xf39b8d, transparent: true, opacity: .42, roughness: .8 })
-    };
-    const root = new THREE.Group(), J = {};
-    const j = (n, p, x, y, z) => { const g = new THREE.Group(); g.position.set(x, y, z); p.add(g); J[n] = g; return g; };
-    const add = (p, geo, mat, pos, scale) => {
-      const m = new THREE.Mesh(geo, mat);
-      if (pos) m.position.set(pos[0], pos[1], pos[2]);
-      if (scale) m.scale.set(scale[0], scale[1], scale[2]);
-      p.add(m); return m;
-    };
+  /* ---------------- 조깅 배경 3D 파티클 (흩날리는 꽃잎 & 맑은 물결 반짝임) ---------------- */
+  function createNatureParticles() {
+    const group = new THREE.Group();
 
-    const hips = j('hips', root, 0, .90, 0);
-    const spine = j('spine', hips, 0, .05, 0);
-    const chest = j('chest', spine, 0, .12, 0);
-    const neckJ = j('neck', chest, 0, .15, 0);
-    const head = j('head', neckJ, 0, .085, .004);
-
-    ['L', 'R'].forEach((s, i) => {
-      const k = i ? -1 : 1;
-      const sh = j('sh' + s, chest, .142 * k, .105, 0);
-      const up = j('up' + s, sh, 0, 0, 0);
-      const lo = j('lo' + s, up, 0, -.235, 0);
-      const hand = j('hand' + s, lo, 0, -.215, 0);
-      const hp = j('hip' + s, hips, .082 * k, -.035, 0);
-      const th = j('thigh' + s, hp, 0, 0, 0);
-      const sn = j('shin' + s, th, 0, -.355, 0);
-      const ft = j('foot' + s, sn, 0, -.355, 0);
-      return { sh, up, lo, hand, hp, th, sn, ft, k };
+    // 1) 벚꽃/봄꽃 흩날리는 꽃잎 (45개)
+    const petals = [];
+    const petalGeo = new THREE.PlaneGeometry(.04, .028);
+    const petalMat = new THREE.MeshBasicMaterial({
+      color: 0xffb7c5,
+      transparent: true,
+      opacity: .82,
+      side: THREE.DoubleSide,
+      blending: THREE.NormalBlending,
+      depthWrite: false
     });
-
-    /* 몸통 */
-    add(hips, sph(.145, 20), M.pants, [0, .01, 0], [1.06, .82, .82]);
-    add(spine, cyl(.132, .126, .13, 18), M.top, [0, .055, 0], [1, 1, .8]);
-    add(chest, cyl(.146, .132, .28, 20), M.top, [0, -.005, 0], [1.03, 1, .74]);
-    // 어깨 라인
-    [-1, 1].forEach(k => add(chest, sph(.062, 14), M.top, [.128 * k, .095, 0], [1.1, .9, .95]));
-    // 목
-    add(neckJ, cyl(.042, .048, .09, 14), M.skin, [0, .005, 0]);
-
-    /* 머리 */
-    add(head, sph(.098, 22), M.skin, [0, .045, .006], [.95, 1.06, .98]);
-    add(head, sph(.008, 10), M.skin, [.095, .045, .0], [.7, 1.2, 1]);   // 귀
-    add(head, sph(.008, 10), M.skin, [-.095, .045, .0], [.7, 1.2, 1]);
-    // 눈 (흰자 + 눈동자)
-    [-1, 1].forEach(k => {
-      add(head, sph(.0155, 12), M.white, [.033 * k, .055, .086], [1.25, .78, .5]);
-      add(head, sph(.0072, 10), M.eye, [.034 * k, .054, .096], [1, 1, .7]);
-      add(head, sph(.0026, 8), M.white, [.031 * k, .059, .099]);
-      // 눈썹
-      add(head, box(.03, .005, .008), M.hair, [.034 * k, .079, .09]);
-      // 볼 터치
-      add(head, sph(.014, 10), M.blush, [.052 * k, .033, .072], [1, .62, .35]);
-    });
-    // 코
-    add(head, cyl(.009, .013, .026, 10), M.skin, [0, .038, .093]);
-    // 미소 (윗니가 살짝 보이는 밝은 표정)
-    const smile = add(head, new THREE.TorusGeometry(.024, .0052, 6, 16, Math.PI), M.mouth, [0, .018, .089]);
-    smile.rotation.z = Math.PI;
-    add(head, sph(.018, 12), M.white, [0, .016, .086], [1.15, .5, .3]);
-    // 헤어
-    if (o.style === 'woman') {
-      add(head, new THREE.SphereGeometry(.104, 20, 14, 0, TAU, 0, Math.PI * .62), M.hair, [0, .05, .004], [1, 1.06, 1.04]);
-      add(head, sph(.058, 16), M.hair, [0, .012, -.062], [1.15, .8, .6]);   // 묶은 머리
-      add(head, cyl(.022, .012, .07, 10), M.hair, [0, -.038, -.075], null); // 다발
-    } else {
-      add(head, new THREE.SphereGeometry(.101, 20, 14, 0, TAU, 0, Math.PI * .55), M.hair, [0, .052, .004], [1, .96, 1.03]);
+    for (let i = 0; i < 45; i++) {
+      const p = new THREE.Mesh(petalGeo, petalMat.clone());
+      p.userData = {
+        x0: (Math.random() - .5) * 4.2,
+        y0: Math.random() * 3.2 - .5,
+        z0: Math.random() * 6 - 3,
+        speedX: .35 + Math.random() * .4,
+        speedY: -.2 - Math.random() * .3,
+        rotSpeed: Math.random() * 2 + 1,
+        phase: Math.random() * TAU
+      };
+      group.add(p);
+      petals.push(p);
     }
 
-    /* 긴팔 트레이닝 상의 (팔 전체를 덮음) */
-    ['L', 'R'].forEach(s => {
-      const J2 = J;
-      add(J2['up' + s], cyl(.052, .046, .235, 14), M.top, [0, -.117, 0]);
-      add(J2['up' + s], sph(.052, 14), M.top, [0, 0, 0], [1, .85, 1]);
-      add(J2['lo' + s], cyl(.045, .036, .215, 14), M.top, [0, -.107, 0]);
-      // 커프스
-      add(J2['lo' + s], cyl(.037, .037, .026, 14), M.topD, [0, -.214, 0]);
-      add(J2['hand' + s], sph(.036, 14), M.skin, [0, -.03, .002], [.9, 1.1, .72]);
+    // 2) 청계천 물결 햇살 반짝임 파티클 (60개)
+    const sparkles = [];
+    const spkGeo = new THREE.PlaneGeometry(.022, .022);
+    const spkMat = new THREE.MeshBasicMaterial({
+      color: 0xc4fbff,
+      transparent: true,
+      opacity: .75,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
     });
+    for (let i = 0; i < 50; i++) {
+      const s = new THREE.Mesh(spkGeo, spkMat.clone());
+      s.userData = {
+        x: (Math.random() - .5) * 3.6,
+        y: -.25 - Math.random() * .55,
+        z: Math.random() * 4 - 2,
+        freq: 2.5 + Math.random() * 4,
+        phase: Math.random() * TAU
+      };
+      s.position.set(s.userData.x, s.userData.y, s.userData.z);
+      group.add(s);
+      sparkles.push(s);
+    }
 
-    /* 긴 트레이닝 팬츠 (발목까지) */
-    ['L', 'R'].forEach(s => {
-      add(J['thigh' + s], cyl(.077, .062, .355, 16), M.pants, [0, -.177, 0]);
-      add(J['thigh' + s], sph(.077, 14), M.pants, [0, 0, 0], [1, .8, 1]);
-      add(J['shin' + s], cyl(.06, .045, .355, 16), M.pants, [0, -.177, 0]);
-      // 밴딩 (발목 조임)
-      add(J['shin' + s], cyl(.044, .044, .03, 14), M.topD, [0, -.348, 0]);
-      // 운동화
-      add(J['foot' + s], box(.082, .046, .185), M.shoe, [0, -.028, .046]);
-      add(J['foot' + s], sph(.045, 14), M.shoe, [0, -.03, .125], [1, .62, .8]);
-      add(J['foot' + s], box(.086, .014, .19), M.topD, [0, -.052, .046]);
-    });
+    function update(time, vis) {
+      if (vis <= .01) {
+        group.visible = false;
+        return;
+      }
+      group.visible = true;
 
-    root.userData.mats = Object.values(M);
-    return { root, J, mats: Object.values(M) };
-  }
+      // 꽃잎 흔들림 및 카메라 방향 이동
+      petals.forEach(p => {
+        const u = p.userData;
+        const localTime = time + u.phase;
+        p.position.x = ((u.x0 + localTime * u.speedX) % 4.6) - 2.3;
+        p.position.y = ((u.y0 + localTime * u.speedY) % 3.6) - .6;
+        p.position.z = u.z0 + Math.sin(localTime * .8) * .4;
+        p.rotation.set(
+          Math.sin(localTime * u.rotSpeed) * 1.2,
+          Math.cos(localTime * u.rotSpeed * .8) * 1.5,
+          localTime * u.rotSpeed * .5
+        );
+        p.material.opacity = .82 * vis;
+      });
 
-  function poseRunner(r, p, look) {
-    const s = Math.sin(p), c = Math.cos(p);
-    const J = r.J;
-    // 상체: 살짝 앞으로, 좌우 리듬
-    J.hips.rotation.set(.06, s * .07, 0);
-    J.spine.rotation.set(.03, -s * .05, 0);
-    J.chest.rotation.set(.05, -s * .09, 0);
-    J.neck.rotation.set(-.05, 0, 0);
-    J.head.rotation.set(-.03, look == null ? s * .04 : look, 0);
-    // 다리
-    J.thighL.rotation.set(-s * .82 - .04, 0, .02);
-    J.thighR.rotation.set(s * .82 - .04, 0, -.02);
-    J.shinL.rotation.set(Math.max(0, c * 1.0) + .12, 0, 0);
-    J.shinR.rotation.set(Math.max(0, -c * 1.0) + .12, 0, 0);
-    J.footL.rotation.set(-.12 - Math.max(0, c) * .18, 0, 0);
-    J.footR.rotation.set(-.12 - Math.max(0, -c) * .18, 0, 0);
-    // 팔 (다리와 반대)
-    J.upL.rotation.set(s * .72, 0, -.10);
-    J.upR.rotation.set(-s * .72, 0, .10);
-    J.loL.rotation.set(-1.32 - Math.max(0, s) * .32, 0, 0);
-    J.loR.rotation.set(-1.32 - Math.max(0, -s) * .32, 0, 0);
-    J.handL.rotation.set(-.1, 0, 0);
-    J.handR.rotation.set(-.1, 0, 0);
-    // 상하 바운스
-    r.root.position.y = Math.abs(Math.sin(p)) * .045 - .015;
+      // 물결 반짝임
+      sparkles.forEach(s => {
+        const u = s.userData;
+        const blink = Math.sin(time * u.freq + u.phase);
+        s.material.opacity = Math.max(0, blink) * .85 * vis;
+        s.scale.setScalar(clamp(blink * .8 + .4, .2, 1.3));
+      });
+    }
+
+    return { group, update };
   }
 
   /* ---------------- 타이핑 텍스트 ---------------- */
@@ -397,10 +415,11 @@
       const sp = document.createElement('span');
       sp.className = 'ch';
       sp.textContent = ch === ' ' ? '\u00A0' : ch;
-      sp.style.animationDelay = (i * .042).toFixed(3) + 's';
+      sp.style.animationDelay = (i * .035).toFixed(3) + 's';
       el.appendChild(sp);
     });
   }
+
   function setRunCaption(el, main, sub, on) {
     if (!el) return;
     if (on) {
@@ -414,7 +433,7 @@
             const sp = document.createElement('span');
             sp.className = 'ch rc-sub-ch';
             sp.textContent = ch === ' ' ? '\u00A0' : ch;
-            sp.style.animationDelay = (.55 + i * .028).toFixed(3) + 's';
+            sp.style.animationDelay = (.45 + i * .022).toFixed(3) + 's';
             sEl.appendChild(sp);
           });
         }
@@ -424,20 +443,28 @@
       el.classList.remove('on');
       el.dataset.ready = '';
       const m = el.querySelector('.rc-main'), s = el.querySelector('.rc-sub');
-      if (m) m.textContent = ''; if (s) s.textContent = '';
+      if (m) m.textContent = '';
+      if (s) s.textContent = '';
     }
   }
 
-  /* ---------------- 메인 ---------------- */
+  /* ---------------- 메인 히어로 초기화 ---------------- */
   function initHero(opts) {
-    const stage = opts.stage, canvasWrap = opts.canvasWrap, hud = opts.hud || {};
-    const typeEl = opts.typeEl || null, runCaption = opts.runCaption || null;
+    const stage = opts.stage;
+    const canvasWrap = opts.canvasWrap;
+    const hud = opts.hud || {};
+    const typeEl = opts.typeEl || null;
+    const runCaption = opts.runCaption || null;
+    const joggerEl = stage.querySelector('#heroJogger');
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let renderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    } catch (e) { stage.classList.add('no-webgl'); return { pause() {}, resume() {} }; }
+    } catch (e) {
+      stage.classList.add('no-webgl');
+      return { pause() {}, resume() {} };
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1.5 : 2));
     if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
     canvasWrap.appendChild(renderer.domElement);
@@ -447,43 +474,45 @@
     camera.position.set(0, 1.02, 5.2);
     camera.lookAt(0, .95, 0);
 
-    scene.add(new THREE.HemisphereLight(0xdff3ff, 0x4d8a5a, .75));
-    const key = new THREE.DirectionalLight(0xfff4e0, 1.15); key.position.set(2.4, 4.2, 3.2); scene.add(key);
-    const rim = new THREE.DirectionalLight(0x8ff0ff, .8); rim.position.set(-3, 2, -4); scene.add(rim);
+    // 엑스레이 스캔 조명 (쿨 톤 중심)
+    scene.add(new THREE.HemisphereLight(0xddf7ff, 0x073138, .85));
+    const key = new THREE.DirectionalLight(0xbef6ff, .9);
+    key.position.set(2.4, 4.2, 3.2);
+    scene.add(key);
 
-    /* 바닥 스캔 링 */
-    const floor = new THREE.Group(); scene.add(floor);
+    /* 바닥 홀로그램 스캔 링 */
+    const floor = new THREE.Group();
+    scene.add(floor);
     const polar = new THREE.PolarGridHelper(1.15, 12, 5, 64, 0x2fd6a0, 0x2fd6a0);
-    polar.material.transparent = true; polar.material.opacity = .32; polar.material.depthWrite = false; floor.add(polar);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(.98, 1.03, 72), new THREE.MeshBasicMaterial({ color: 0x7dffb2, transparent: true, opacity: .55, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
-    ring.rotation.x = -Math.PI / 2; floor.add(ring);
+    polar.material.transparent = true;
+    polar.material.opacity = .32;
+    polar.material.depthWrite = false;
+    floor.add(polar);
+    const ring = new THREE.Mesh(
+      new THREE.RingGeometry(.98, 1.03, 72),
+      new THREE.MeshBasicMaterial({ color: 0x7dffb2, transparent: true, opacity: .55, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    ring.rotation.x = -Math.PI / 2;
+    floor.add(ring);
 
-    /* 스캔 라인 */
-    const scan = new THREE.Mesh(new THREE.PlaneGeometry(1.35, .01), new THREE.MeshBasicMaterial({ color: 0xbdfddf, transparent: true, opacity: .9, blending: THREE.AdditiveBlending, depthWrite: false }));
-    const scanGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.35, .2), new THREE.MeshBasicMaterial({ color: 0x2fd6a0, transparent: true, opacity: .12, blending: THREE.AdditiveBlending, depthWrite: false }));
+    /* AI 수직 스캔 레이저 라인 */
+    const scan = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.4, .014),
+      new THREE.MeshBasicMaterial({ color: 0xbdfddf, transparent: true, opacity: .95, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    const scanGlow = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.4, .24),
+      new THREE.MeshBasicMaterial({ color: 0x2fd6a0, transparent: true, opacity: .16, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
     scene.add(scan, scanGlow);
 
-    /* 골격 */
-    const sk = makeSkeleton();
+    /* 엑스레이 골격 */
+    const sk = makeXraySkeleton();
     scene.add(sk.root);
 
-    /* 조깅하는 남녀 (정면 · 긴 트레이닝복) */
-    const man = makeRunner({ skin: 0xd8a071, top: 0x1f5fa8, topD: 0x17497f, pants: 0x2b3a4a, shoe: 0xf2f4f5, hair: 0x1a1512, style: 'man' });
-    const woman = makeRunner({ skin: 0xe6b48c, top: 0xe2604e, topD: 0xc44a3b, pants: 0x2f3242, shoe: 0xffffff, hair: 0x1c1512, style: 'woman' });
-    woman.root.scale.setScalar(.95);
-    const runners = new THREE.Group(); runners.add(man.root, woman.root); scene.add(runners);
-    runners.visible = false;
-
-    /* 트랙 라인 + 그림자 */
-    const lanes = new THREE.Group(); scene.add(lanes);
-    const laneMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
-    for (let i = 0; i < 16; i++) {
-      const l = new THREE.Mesh(new THREE.PlaneGeometry(.05, .5), laneMat);
-      l.rotation.x = -Math.PI / 2; l.position.set(i % 2 ? 1.05 : -1.05, .002, -i * .8); lanes.add(l);
-    }
-    const shadowMat = new THREE.MeshBasicMaterial({ color: 0x0d3b31, transparent: true, opacity: 0, depthWrite: false });
-    const shM = new THREE.Mesh(new THREE.CircleGeometry(.34, 24), shadowMat); shM.rotation.x = -Math.PI / 2; scene.add(shM);
-    const shW = new THREE.Mesh(new THREE.CircleGeometry(.32, 24), shadowMat); shW.rotation.x = -Math.PI / 2; scene.add(shW);
+    /* 3D 자연 파티클 (흩날리는 꽃잎 & 맑은 물결 반짝임) */
+    const nature = createNatureParticles();
+    scene.add(nature.group);
 
     function resize() {
       const w = canvasWrap.clientWidth, h = canvasWrap.clientHeight;
@@ -493,7 +522,8 @@
       camera.fov = w / h < .8 ? 40 : 32;
       camera.updateProjectionMatrix();
     }
-    window.addEventListener('resize', resize); resize();
+    window.addEventListener('resize', resize);
+    resize();
 
     const ISSUES = [
       { el: hud.neck, a: 24, b: 3, unit: '°' },
@@ -501,6 +531,7 @@
       { el: hud.pelvis, a: 14, b: 1, unit: '°' },
       { el: hud.knee, a: 21, b: 0, unit: '°' }
     ];
+
     let lastPhase = '';
     function setPhase(p, main, sub) {
       if (p === lastPhase) return;
@@ -509,13 +540,14 @@
       typeInto(typeEl ? typeEl.querySelector('.st-main') : null, main);
       typeInto(typeEl ? typeEl.querySelector('.st-sub') : null, sub || '');
       if (hud.caption) {
-        hud.caption.classList.remove('show'); void hud.caption.offsetWidth;
+        hud.caption.classList.remove('show');
+        void hud.caption.offsetWidth;
         hud.caption.textContent = main;
         hud.caption.classList.add('show');
       }
     }
 
-    /* 21초 루프: 스캔 → 교정 → 완성 → 조깅 */
+    /* 21초 전체 루프: 정밀 스캔 → 바른자세 교정 → 자세 98점 → 40대 실사 조깅 */
     const LOOP = 21;
     let running = true, t0 = performance.now(), pausedAt = 0, cycleStart = 0;
 
@@ -526,40 +558,53 @@
       if (el - cycleStart >= LOOP) cycleStart = el;
       const t = reduce ? 8 : el - cycleStart;
 
-      const fadeIn = seg(t, 0, 1);
-      const straighten = ease(seg(t, 3.2, 7));
+      const fadeIn = seg(t, 0, 1.0);
+      const straighten = ease(seg(t, 3.4, 7.2));
       const xrOut = seg(t, 9.2, 10.2);
       const runIn = seg(t, 9.4, 10.6);
-      const runOut = seg(t, 20.1, 21);
+      const runOut = seg(t, 20.1, 21.0);
+
       const xrVis = fadeIn * (1 - xrOut);
       const runVis = runIn * (1 - runOut * .9);
 
-      if (t < 3.2) setPhase('scan', 'AI 자세 스캔', '척추 · 골반 · 경추 정밀 분석');
-      else if (t < 7) setPhase('fix', '바른 자세로 교정', '머리를 들고 · 어깨를 펴고 · 골반을 세웁니다');
-      else if (t < 9.4) setPhase('done', '자세점수 98점', '입는 바른자세 ·脊柱 밸런스 회복');
-      else setPhase('run', '바른 자세로 함께 달리다', '건강한 40대의 하루가 시작됩니다');
+      // 단계별 순백색 타이핑 문구
+      if (t < 3.4) {
+        setPhase('scan', 'AI 해부학 정밀 골격 분석', '경추 24° · 흉추 만곡 · 골반 비대칭 감지');
+      } else if (t < 7.2) {
+        setPhase('fix', '입는 바른자세 · 실시간 정렬 교정', '머리를 들고 · 어깨를 펴고 · 골반의 중심을 세웁니다');
+      } else if (t < 9.4) {
+        setPhase('done', '자세점수 98점 · 이상적인 밸런스 회복', '척추 24마디 완벽 정렬 · 바른 자세 완성');
+      } else {
+        setPhase('run', '바른 자세로, 함께 달리다', '맑은 물길과 푸른 자연 사이로 · 40대의 활력과 미소');
+      }
 
-      /* 골격 */
+      /* 엑스레이 골격 업데이트 */
       applyBlend(sk, straighten);
-      sk.root.rotation.y = reduce ? .55 : el * .52;
+      sk.root.rotation.y = reduce ? .55 : el * .48;
       sk.root.visible = xrVis > .01;
-      setOpacity(sk, xrVis);
-      const bad = new THREE.Color(0xff8a5c), good = new THREE.Color(0x7dffb2);
-      const c1 = bad.clone().lerp(good, straighten);
-      sk.spine.forEach(m => m.material.color.copy(c1));
-      sk.pelvis.forEach(m => m.material.color.copy(c1));
-      sk.spineMat.color.copy(c1); sk.pelvisMat.color.copy(c1);
+      setSkeletonOpacity(sk, xrVis);
 
-      /* 스캔 라인 */
+      // 척추 & 골반 문제 부위 색상 변환 (경고 주황 → 치유의 에메랄드 바이오 그린)
+      const warnColor = new THREE.Color(0xff8a4c);
+      const goodColor = new THREE.Color(0x60ffc0);
+      const activeColor = warnColor.clone().lerp(goodColor, straighten);
+
+      sk.spineMat.uniforms.color.value.copy(activeColor);
+      sk.pelvisMat.uniforms.color.value.copy(activeColor);
+
+      /* 레이저 스캔 바 */
       const sy = .1 + (Math.sin(el * 1.5) * .5 + .5) * 1.72;
-      scan.position.set(0, sy, .26); scanGlow.position.set(0, sy, .25);
-      scan.material.opacity = .85 * xrVis * (1 - straighten * .5);
-      scanGlow.material.opacity = .12 * xrVis;
+      scan.position.set(0, sy, .26);
+      scanGlow.position.set(0, sy, .25);
+      scan.material.opacity = .95 * xrVis * (1 - straighten * .45);
+      scanGlow.material.opacity = .16 * xrVis;
+
       floor.visible = xrVis > .01;
-      ring.material.opacity = .55 * xrVis; polar.material.opacity = .3 * xrVis;
+      ring.material.opacity = .55 * xrVis;
+      polar.material.opacity = .3 * xrVis;
       ring.scale.setScalar(1 + Math.sin(el * 3) * .03);
 
-      /* HUD */
+      /* HUD 수치 업데이트 */
       const score = Math.round(lerp(52, 98, straighten));
       if (hud.score) hud.score.textContent = score;
       if (hud.bar) hud.bar.style.transform = 'scaleX(' + (score / 100) + ')';
@@ -569,48 +614,39 @@
         i.el.parentElement.classList.toggle('ok', straighten > .85);
       });
 
-      /* 조깅 */
-      runners.visible = runVis > .01;
-      shM.visible = shW.visible = runVis > .01;
-      if (runners.visible) {
-        const p = el * 8.2;
-        const prog = ease(seg(t, 9.4, 20.2));
-        const z = lerp(-6.2, 1.5, prog);
-        const spread = lerp(.44, .62, prog);
-        man.root.position.set(spread, 0, z);
-        woman.root.position.set(-spread, 0, z - .06);
-        // 서로 마주보기 ↔ 앞 보기 (주기적으로 시선 교환)
-        const glance = Math.sin(el * .9);
-        const lookY = glance > .25 ? -.34 : glance < -.45 ? .18 : null;
-        poseRunner(man, p, lookY == null ? Math.sin(el * .6) * .05 : lookY);
-        poseRunner(woman, p + Math.PI, lookY == null ? Math.sin(el * .6) * .05 : -lookY);
-        man.root.rotation.y = lerp(-.16, 0, prog);
-        woman.root.rotation.y = lerp(.16, 0, prog);
-        [man, woman].forEach((r, i) => r.mats.forEach(m => {
-          if (m.userData.base == null) m.userData.base = m.opacity;
-          m.opacity = m.userData.base * runVis;
-          m.transparent = runVis < .99;
-        }));
-        const sc = .34 + prog * .22;
-        shM.scale.setScalar(sc / .34); shM.position.set(spread, -0.02, z + .05);
-        shW.scale.setScalar(sc / .34); shW.position.set(-spread, -0.02, z - .01);
-        shadowMat.opacity = .16 * runVis;
-        laneMat.opacity = .34 * runVis;
-        lanes.children.forEach((l, i) => { l.position.z = ((i * .8 + el * 4.4) % 12.6) - 9.4; });
-      } else laneMat.opacity = 0;
+      /* 40대 동양인 남녀 실사 조깅 & 3D 자연 파티클 */
+      nature.update(el, runVis);
 
-      /* 조깅 하단 문구 */
-      setRunCaption(runCaption, '바른 자세로, 함께 달리다', '오늘도 건강하게 · 40대의 가장 밝은 하루', t >= 9.8 && t < 20.4);
+      /* 조깅 하단 순백색 캡션 */
+      setRunCaption(
+        runCaption,
+        '바른 자세로, 함께 달리다',
+        '청계천 맑은 물길을 따라 활기차게 · 40대의 가장 밝고 건강한 하루',
+        t >= 9.8 && t < 20.4
+      );
 
-      camera.position.x = Math.sin(el * .3) * .1;
+      // 카메라 숨쉬기 움직임
+      camera.position.x = Math.sin(el * .28) * .08;
       camera.lookAt(0, .95, 0);
+
       renderer.render(scene, camera);
     }
+
     requestAnimationFrame(frame);
 
     return {
-      pause() { if (!running) return; running = false; pausedAt = performance.now(); },
-      resume() { if (running) return; t0 += performance.now() - pausedAt; running = true; requestAnimationFrame(frame); resize(); },
+      pause() {
+        if (!running) return;
+        running = false;
+        pausedAt = performance.now();
+      },
+      resume() {
+        if (running) return;
+        t0 += performance.now() - pausedAt;
+        running = true;
+        requestAnimationFrame(frame);
+        resize();
+      },
       resize
     };
   }

@@ -6,38 +6,62 @@
    · 창업 근거 섹션 (비교표 · 수익구조 · 기술 지표)
    ========================================================= */
 
-/* ---------- 히어로: 한 글자씩 나타나는 카피 ---------- */
-.hero-live{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;font-weight:700;color:var(--forest);
-  background:rgba(255,255,255,.82);border:1px solid rgba(255,255,255,.9);border-radius:999px;padding:6px 13px;margin:0 0 14px;box-shadow:var(--shadow)}
-.live-dot{width:7px;height:7px;border-radius:50%;background:#2fd6a0;box-shadow:0 0 0 0 rgba(47,214,160,.7);animation:livePulse 1.8s infinite}
-@keyframes livePulse{70%{box-shadow:0 0 0 8px rgba(47,214,160,0)}100%{box-shadow:0 0 0 0 rgba(47,214,160,0)}}
+/* ---------- 40대 동양인 남녀 실사 조깅 (청계천 맑은 물 · 잔디 · 꽃길) ---------- */
+.hero-jogger{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;overflow:hidden;
+  opacity:0;transform:scale(0.96);transition:opacity 0.9s cubic-bezier(0.2,0.8,0.25,1), transform 0.9s cubic-bezier(0.2,0.8,0.25,1);
+  pointer-events:none;z-index:2;box-shadow:0 40px 90px -25px rgba(8,38,32,0.6), inset 0 0 0 1px rgba(255,255,255,0.25)}
+.hero-stage[data-phase=run] .hero-jogger{opacity:1;transform:scale(1)}
+@media (max-width:960px){.hero-jogger{inset:0;width:100%;height:100%;border-radius:26px}}
 
-.hero-type{position:absolute;left:50%;transform:translateX(-50%);bottom:76px;width:min(92%,520px);text-align:center;pointer-events:none;z-index:3}
+.jogger-photo{position:absolute;inset:0;width:100%;height:100%;
+  background:url(../assets/hero/joggers.jpg) center 25%/cover no-repeat;
+  transform-origin:50% 60%;will-change:transform}
+.hero-stage[data-phase=run] .jogger-photo{
+  animation:joggerLive 6s ease-in-out infinite alternate}
+@keyframes joggerLive{
+  0%{transform:scale(1.0) translateY(0)}
+  25%{transform:scale(1.025) translateY(-3px)}
+  50%{transform:scale(1.045) translateY(1px)}
+  75%{transform:scale(1.065) translateY(-2px)}
+  100%{transform:scale(1.08) translateY(0)}
+}
+
+/* 맑은 물결 및 햇살 반사 shimmer */
+.jogger-shimmer{position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,transparent 25%,transparent 65%,rgba(7,50,42,0.55) 90%,rgba(4,26,22,0.82) 100%)}
+
+/* ---------- 히어로 스캔 타이핑 카피 (선명한 순백색 텍스트) ---------- */
+.hero-type{position:absolute;left:50%;transform:translateX(-50%);bottom:76px;width:min(92%,520px);text-align:center;pointer-events:none;z-index:4;
+  padding:10px 18px 12px;border-radius:20px;background:rgba(2,16,22,0.65);backdrop-filter:blur(8px);border:1px solid rgba(127,233,255,0.25)}
 .hero-stage[data-phase=run] .hero-type{opacity:0;transition:opacity .5s}
-.st-main{margin:0;font-size:clamp(1.05rem,2.1vw,1.5rem);font-weight:800;letter-spacing:-.02em;color:#fff;
-  text-shadow:0 2px 14px rgba(4,32,34,.85),0 0 1px rgba(4,32,34,.9)}
-.st-sub{margin:6px 0 0;font-size:clamp(.72rem,1.3vw,.92rem);font-weight:600;color:#bdf6e2;letter-spacing:.01em;
-  text-shadow:0 2px 10px rgba(4,32,34,.9);min-height:1.4em}
+.st-main{margin:0;font-size:clamp(1.05rem,2.1vw,1.5rem);font-weight:900;letter-spacing:-.02em;color:#ffffff !important;
+  text-shadow:0 2px 14px rgba(0,0,0,0.95),0 0 2px rgba(0,0,0,1)}
+.st-main .ch{color:#ffffff !important;background:none !important;-webkit-background-clip:unset !important}
+.st-sub{margin:6px 0 0;font-size:clamp(.74rem,1.35vw,.95rem);font-weight:700;color:#cffbff !important;letter-spacing:.01em;
+  text-shadow:0 2px 10px rgba(0,0,0,0.95);min-height:1.4em}
 
 /* 글자 하나하나 등장 */
 .ch{display:inline-block;opacity:0;transform:translateY(14px) rotateX(-55deg);filter:blur(6px);
   animation:chIn .78s cubic-bezier(.2,.8,.25,1) forwards}
 @keyframes chIn{to{opacity:1;transform:none;filter:blur(0)}}
-.st-main .ch{background:linear-gradient(180deg,#ffffff,#cdffe9);-webkit-background-clip:text;background-clip:text;color:transparent}
 
-/* 조깅 장면 하단 카피 */
+/* ---------- 조깅 장면 하단 카피 (순백색 · 100% 가독성) ---------- */
 .run-caption{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) translateY(14px);width:min(94%,620px);
-  text-align:center;z-index:4;opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.25,1);pointer-events:none}
+  text-align:center;z-index:5;opacity:0;transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.25,1);pointer-events:none;
+  padding:14px 22px 16px;border-radius:24px;background:rgba(4,22,26,0.68);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.28);box-shadow:0 12px 32px rgba(0,0,0,0.45)}
 .run-caption.on{opacity:1;transform:translateX(-50%) translateY(0)}
-.rc-main{margin:0;font-size:clamp(1.3rem,3.1vw,2.15rem);font-weight:800;letter-spacing:-.045em;line-height:1.25;
-  background:linear-gradient(100deg,#0c3b32,#1f7a5c 45%,#2fae7e);-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 2px 10px rgba(255,255,255,.95)) drop-shadow(0 0 1px rgba(255,255,255,1))}
-.rc-sub{margin:8px 0 0;font-size:clamp(.78rem,1.55vw,1rem);font-weight:700;color:#153f34;letter-spacing:.01em;
-  filter:drop-shadow(0 1px 8px rgba(255,255,255,.95))}
+.rc-main{margin:0;font-size:clamp(1.3rem,3.1vw,2.15rem);font-weight:900;letter-spacing:-.045em;line-height:1.25;
+  color:#ffffff !important;background:none !important;-webkit-background-clip:unset !important;
+  text-shadow:0 3px 18px rgba(0,0,0,0.9),0 1px 3px rgba(0,0,0,0.95),0 0 1px rgba(0,0,0,1);
+  filter:drop-shadow(0 4px 16px rgba(0,0,0,0.85))}
+.rc-sub{margin:8px 0 0;font-size:clamp(.82rem,1.6vw,1.05rem);font-weight:700;letter-spacing:.01em;
+  color:#ffffff !important;
+  text-shadow:0 2px 12px rgba(0,0,0,0.95),0 1px 2px rgba(0,0,0,1);
+  filter:drop-shadow(0 2px 10px rgba(0,0,0,0.8))}
 .rc-sub .rc-sub-ch{display:inline-block;opacity:0;transform:translateY(8px);animation:chIn .6s ease forwards}
-.run-caption::before{content:'';position:absolute;left:50%;top:-14px;width:56px;height:3px;border-radius:3px;
-  transform:translateX(-50%);background:linear-gradient(90deg,transparent,#2fae7e,transparent)}
-
+.run-caption::before{content:'';position:absolute;left:50%;top:-1px;width:60px;height:3px;border-radius:3px;
+  transform:translateX(-50%);background:linear-gradient(90deg,transparent,#2fd6a0,transparent)}
 /* ---------- 제품 카드 (2개 구성) ---------- */
 .product-img.duo{gap:0;background:linear-gradient(180deg,#f7faf6,#eef5ef);position:relative}
 .product-img.duo img{width:50%;height:88%;object-fit:contain}
