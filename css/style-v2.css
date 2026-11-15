@@ -413,3 +413,28 @@
 .found-id{font-size:1.55rem;font-weight:900;color:var(--forest-d);letter-spacing:0.04em;display:block}
 .found-date{display:block;font-size:0.8rem;color:var(--muted);margin-top:4px}
 .found-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+
+/* =========================================================
+   제품 착용법 영상 및 자료실 고도화
+   ========================================================= */
+.media-thumb .media-badge{position:absolute;top:10px;left:10px;background:rgba(19,56,44,0.9);color:#ffffff;backdrop-filter:blur(4px);font-size:0.75rem;font-weight:800;padding:4px 10px;border-radius:8px;letter-spacing:0.02em;box-shadow:0 2px 8px rgba(0,0,0,0.22);z-index:2}
+.media-body h4{font-size:1.06rem;font-weight:800;color:var(--forest-d);margin:0 0 6px;line-height:1.45}
+.media-sub{font-size:0.83rem;font-weight:700;color:var(--forest);margin:0 0 8px}
+.media-desc{font-size:0.87rem;color:var(--ink);line-height:1.55;margin:0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.media-notice-hint{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 11px;background:#f0fbf5;border:1px solid #c4ebd5;border-radius:8px;font-size:0.78rem;font-weight:700;color:var(--forest)}
+
+/* 영상 재생 모달 내 복합 착용 가이드 및 상담문의 게시판 안내 박스 */
+.video-notice-card{margin:16px 0 14px;background:linear-gradient(145deg,#f0fbf5 0%,#ffffff 100%);border:1.5px solid #a3dfc0;border-radius:18px;padding:18px 22px;box-shadow:0 6px 20px rgba(31,92,70,0.08);text-align:left}
+.vnc-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.vnc-badge{background:var(--forest);color:#ffffff;font-size:0.76rem;font-weight:800;padding:4px 12px;border-radius:999px;box-shadow:0 2px 6px rgba(31,92,70,0.2)}
+.vnc-head b{font-size:1.04rem;color:var(--forest-d)}
+.vnc-text{margin:0 0 14px;font-size:0.92rem;line-height:1.65;color:var(--ink)}
+.vnc-action{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:12px;border-top:1px dashed #c6e8d6;flex-wrap:wrap}
+.vnc-action span{font-size:0.88rem;color:var(--forest-d);font-weight:700}
+.vnc-action .btn{font-size:0.86rem;padding:7px 16px;box-shadow:0 4px 12px rgba(31,92,70,0.15)}
+.video-modal-info{margin-top:12px;font-size:0.92rem;line-height:1.6;text-align:left}
+.vmi-sub{font-size:0.94rem;color:var(--forest);margin-bottom:6px}
+
+/* 상품 카드 내 착용법 영상 버튼 */
+.product-actions-grid{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.product-actions-grid .btn{flex:1;text-align:center;white-space:nowrap;padding:9px 12px;font-size:0.88rem}

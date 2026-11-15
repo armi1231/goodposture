@@ -168,7 +168,11 @@
               ${link ? `<a class="btn btn-primary" href="${esc(link)}" target="_blank" rel="noopener">온라인 렌탈계약</a>
                         <button class="btn btn-line" data-qr="${esc(link)}" data-name="${esc(p.name)}">QR 보기</button>`
                      : `<a class="btn btn-primary" href="#/consult/write?cat=렌탈상담&title=${encodeURIComponent(p.name + ' 렌탈 신청')}">렌탈 신청하기</a>`}
-            </div>` : `<a class="product-more" href="#/rental">렌탈 신청 →</a>`}
+            </div>` : `
+            <div class="product-actions-grid">
+              ${['R1090', 'SM880', 'BB484'].includes(p.code) ? `<button class="btn btn-line btn-sm" data-play-code="${esc(p.code)}">▶ 착용법 영상</button>` : ''}
+              <a class="btn btn-primary btn-sm" href="#/rental">렌탈 신청 →</a>
+            </div>`}
         </div>
       </article>`;
   }
@@ -619,9 +623,15 @@
   function videoCard(v) {
     const id = ytId(v.url);
     const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+    const badge = v.productCode ? `<span class="media-badge">${esc(v.productCode)}</span>` : '';
     return `<button class="media-card" data-video="${esc(v.id)}">
-      <div class="media-thumb video ${thumb ? '' : 'noimg'}">${thumb ? `<img src="${thumb}" alt="" loading="lazy">` : ''}<span class="play">▶</span></div>
-      <div class="media-body"><h4>${esc(v.title)}</h4><p>${esc(v.desc || '')}</p></div></button>`;
+      <div class="media-thumb video ${thumb ? '' : 'noimg'}">${thumb ? `<img src="${thumb}" alt="${esc(v.title)}" loading="lazy">` : ''}<span class="play">▶</span>${badge}</div>
+      <div class="media-body">
+        <h4>${esc(v.title)}</h4>
+        ${v.subTitle ? `<p class="media-sub">${esc(v.subTitle)}</p>` : ''}
+        <p class="media-desc">${esc(v.desc || '')}</p>
+        ${v.notice ? `<div class="media-notice-hint">💡 복합 착용 참고 · 게시판 문의 안내</div>` : ''}
+      </div></button>`;
   }
   function docCard(d) {
     const cover = (d.pages && d.pages[0]) || '';
@@ -636,6 +646,25 @@
     if (src) return `<div class="player"><video src="${esc(src)}" controls playsinline></video></div>`;
     return `<div class="player empty-player"><p>영상 준비 중입니다</p></div>`;
   }
+  function openVideoModal(v) {
+    if (!v) return;
+    const noticeHtml = v.notice ? `
+      <div class="video-notice-card">
+        <div class="vnc-head"><span class="vnc-badge">💡 착용 가이드 안내</span> <b>입는 바른자세 복합 착용 참고</b></div>
+        <p class="vnc-text">${esc(v.notice)}</p>
+        <div class="vnc-action">
+          <span>영상 속 제품이나 착용법에 대해 궁금하신 점이 있으신가요?</span>
+          <a href="#/consult/write?cat=제품문의&title=${encodeURIComponent((v.productCode || '입는 바른자세') + ' 제품 착용 문의')}" class="btn btn-primary btn-sm" data-close>상담문의 게시판 바로가기 →</a>
+        </div>
+      </div>` : '';
+    modal(`<h3>${esc(v.title)}</h3>
+      ${playerHTML(v)}
+      ${noticeHtml}
+      <div class="video-modal-info">
+        ${v.subTitle ? `<p class="vmi-sub"><b>${esc(v.subTitle)}</b></p>` : ''}
+        <p class="muted">${esc(v.desc || '')}</p>
+      </div>`, { wide: true });
+  }
   function mountProducts(el) {
     $$('.tab', el).forEach(t => t.addEventListener('click', () => {
       $$('.tab', el).forEach(x => x.classList.toggle('on', x === t));
@@ -643,7 +672,13 @@
     }));
     $$('[data-video]', el).forEach(b => b.addEventListener('click', () => {
       const v = S.data.materials.find(m => m.id === b.dataset.video);
-      modal(`<h3>${esc(v.title)}</h3>${playerHTML(v)}<p class="muted">${esc(v.desc || '')}</p>`, { wide: true });
+      openVideoModal(v);
+    }));
+    $$('[data-play-code]', el).forEach(b => b.addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = b.dataset.playCode;
+      const v = S.data.materials.find(m => m.type === 'video' && m.productCode === code);
+      if (v) openVideoModal(v);
     }));
     $$('[data-doc]', el).forEach(b => b.addEventListener('click', () => {
       const d = S.data.materials.find(m => m.id === b.dataset.doc);

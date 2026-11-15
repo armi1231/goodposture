@@ -196,7 +196,25 @@
           desc: '중체 R1090 + 상체 SM880을 함께 쓰는 2개 구성', contractUrl: C.qr.R1090_SM880, visible: true, order: 9 }
       ],
       materials: [
-        { id: uid(), type: 'doc', title: '착한 창업 안내서 (최종본)', desc: '바른자세 렌탈 플랫폼 창업 안내 · 2026.10.21',
+        { id: 'mat_r1090_video', type: 'video', productCode: 'R1090', order: 1,
+          title: 'R1090 착용법 영상',
+          subTitle: '중체 언박싱 & 일상 셀프 시연 플로우',
+          desc: '허리·복부·골반을 감싸 바른자세를 잡아주는 중체 하의형 R1090의 올바른 착용법 및 일상 셀프 시연 안내 영상입니다.',
+          url: 'https://youtu.be/MUql3kJ3k0E?si=KAVd6fhv9TFUukwh', createdAt: t },
+        { id: 'mat_sm880_video', type: 'video', productCode: 'SM880', order: 2,
+          title: 'SM880 착용법 영상',
+          subTitle: '상체 테이핑 지퍼 착용 & 셀프 시연법',
+          desc: '굽은 등과 말린 어깨를 바로잡는 상체 테이핑 SM880의 지퍼 위치, 착용 방향 및 올바른 셀프 착탈의 안내 영상입니다.',
+          url: 'https://youtu.be/VVH0jG0sp_k?si=qYnDwUTfO6Wy7kXL', createdAt: t },
+        { id: 'mat_bb484_video', type: 'video', productCode: 'BB484', order: 3,
+          title: 'BB484 착용법 및 입는 바른자세 복합 착용 가이드',
+          subTitle: '여성 프리미엄 라인 셀프 시연 & 다제품 통합 착용',
+          desc: '상체 보정 BB484 착용법과 함께 특허받은 입는 바른자세의 다른 제품들도 함께 착용하여 전신을 정렬하는 방법을 참고해서 보실 수 있는 영상입니다.',
+          notice: '본 영상은 BB484 착용법과 함께 특허받은 입는 바른자세의 다른 제품도 함께 착용하는 영상으로 참고해서 보실 수 있습니다. 영상 속 제품이나 착용법에 대해 궁금하신 점은 별도로 상담문의 게시판에 남겨주시면 친절히 안내해 드리겠습니다.',
+          url: 'https://youtu.be/4xoaI-uRN6k?si=HEg8xmNDv-CM_5Er', createdAt: t },
+        { id: 'mat_brochure_doc', type: 'doc', order: 4,
+          title: '착한 창업 안내서 (최종본)',
+          desc: '바른자세 렌탈 플랫폼 창업 안내 · 2026.10.21',
           pages: ['assets/brochure/p01.jpg', 'assets/brochure/p03.jpg', 'assets/brochure/p04.jpg', 'assets/brochure/p05.jpg',
                   'assets/brochure/p06.jpg', 'assets/brochure/p07.jpg', 'assets/brochure/p08.jpg'], url: '', createdAt: t }
       ],
@@ -405,6 +423,57 @@
           img: ''
         });
       }
+
+      /* v6 — 제품 설명자료 · 제품영상에 R1090, SM880, BB484 착용법 영상 3종 탑재 및 복합 착용 안내 메시지 동기화 */
+      if (!d.materials) d.materials = [];
+      const defaultVideos = [
+        {
+          id: 'mat_r1090_video',
+          type: 'video',
+          productCode: 'R1090',
+          order: 1,
+          title: 'R1090 착용법 영상',
+          subTitle: '중체 언박싱 & 일상 셀프 시연 플로우',
+          desc: '허리·복부·골반을 감싸 바른자세를 잡아주는 중체 하의형 R1090의 올바른 착용법 및 일상 셀프 시연 안내 영상입니다.',
+          url: 'https://youtu.be/MUql3kJ3k0E?si=KAVd6fhv9TFUukwh'
+        },
+        {
+          id: 'mat_sm880_video',
+          type: 'video',
+          productCode: 'SM880',
+          order: 2,
+          title: 'SM880 착용법 영상',
+          subTitle: '상체 테이핑 지퍼 착용 & 셀프 시연법',
+          desc: '굽은 등과 말린 어깨를 바로잡는 상체 테이핑 SM880의 지퍼 위치, 착용 방향 및 올바른 셀프 착탈의 안내 영상입니다.',
+          url: 'https://youtu.be/VVH0jG0sp_k?si=qYnDwUTfO6Wy7kXL'
+        },
+        {
+          id: 'mat_bb484_video',
+          type: 'video',
+          productCode: 'BB484',
+          order: 3,
+          title: 'BB484 착용법 및 입는 바른자세 복합 착용 가이드',
+          subTitle: '여성 프리미엄 라인 셀프 시연 & 다제품 통합 착용',
+          desc: '상체 보정 BB484 착용법과 함께 특허받은 입는 바른자세의 다른 제품들도 함께 착용하여 전신을 정렬하는 방법을 참고해서 보실 수 있는 영상입니다.',
+          notice: '본 영상은 BB484 착용법과 함께 특허받은 입는 바른자세의 다른 제품도 함께 착용하는 영상으로 참고해서 보실 수 있습니다. 영상 속 제품이나 착용법에 대해 궁금하신 점은 별도로 상담문의 게시판에 남겨주시면 친절히 안내해 드리겠습니다.',
+          url: 'https://youtu.be/4xoaI-uRN6k?si=HEg8xmNDv-CM_5Er'
+        }
+      ];
+      defaultVideos.forEach(v => {
+        const exist = d.materials.find(m => m.id === v.id || (m.type === 'video' && m.url && m.url.includes(v.url.split('?')[0])));
+        if (!exist) {
+          d.materials.push(Object.assign({ createdAt: now() }, v));
+        } else {
+          exist.title = v.title;
+          exist.subTitle = v.subTitle;
+          exist.desc = v.desc;
+          exist.notice = v.notice;
+          exist.productCode = v.productCode;
+          exist.order = v.order;
+          exist.url = v.url;
+        }
+      });
+      d.materials.sort((a, b) => (a.order || 99) - (b.order || 99));
     },
 
     /* 세션 */
