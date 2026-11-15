@@ -721,19 +721,21 @@
       <div class="app-hero-mockup reveal" aria-hidden="true">
         <img src="assets/app/play_slimminggo_mockup.png" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱 화면" loading="lazy">
       </div>
-      <div class="app-features">
-        <div class="card"><h4>📸 촬영 한 번으로 AI 골격 분석</h4><p>특수 검사판이나 검사복 없이 스마트폰 카메라만으로 정면·측면 촬영부터 3D 분석까지 빠르게 끝납니다.</p></div>
-        <div class="card"><h4>🔍 한눈에 보는 문제점</h4><p>거북목·굽은 등·말린 어깨·골반 경사 등 정상 체형과 내 체형을 입체적으로 비교하고 통증 유발 부위를 쉽게 보여줍니다.</p></div>
-        <div class="card"><h4>🌿 체형 맞춤 솔루션</h4><p>맞춤 스트레칭과 바른 생활습관, 특허받은 입는 바른자세 제품(R1090·BB484·SM880)까지 내 몸에 꼭 맞게 안내합니다.</p></div>
-        <div class="card"><h4>🪑 좌식 생활 앉은 자세 체크</h4><p>서 있는 자세뿐 아니라 하루 중 가장 오랜 시간을 보내는 책상 및 운전 시 앉은 자세까지 정밀하게 측정합니다.</p></div>
-      </div>
-      <div class="app-download card">
-        <h3>플레이 슬리밍고 2.1 다운로드</h3>
-        <div class="dl-row">
-          <div><div class="qr">${qrSvg(s.appIos, 5)}</div><a class="store-btn dark" href="${esc(s.appIos)}" target="_blank" rel="noopener"><small>Download on the</small>App Store</a></div>
-          <div><div class="qr">${qrSvg(s.appAndroid, 5)}</div><a class="store-btn dark" href="${esc(s.appAndroid)}" target="_blank" rel="noopener"><small>GET IT ON</small>Google Play</a></div>
+      <div class="app-detail-content reveal">
+        <div class="app-features">
+          <div class="card"><h4>📸 촬영 한 번으로 AI 골격 분석</h4><p>특수 검사판이나 검사복 없이 스마트폰 카메라만으로 정면·측면 촬영부터 3D 분석까지 빠르게 끝납니다.</p></div>
+          <div class="card"><h4>🔍 한눈에 보는 문제점</h4><p>거북목·굽은 등·말린 어깨·골반 경사 등 정상 체형과 내 체형을 입체적으로 비교하고 통증 유발 부위를 쉽게 보여줍니다.</p></div>
+          <div class="card"><h4>🌿 체형 맞춤 솔루션</h4><p>맞춤 스트레칭과 바른 생활습관, 특허받은 입는 바른자세 제품(R1090·BB484·SM880)까지 내 몸에 꼭 맞게 안내합니다.</p></div>
+          <div class="card"><h4>🪑 좌식 생활 앉은 자세 체크</h4><p>서 있는 자세뿐 아니라 하루 중 가장 오랜 시간을 보내는 책상 및 운전 시 앉은 자세까지 정밀하게 측정합니다.</p></div>
         </div>
-        <p class="fine">앱에서 측정한 자세점수와 분석 결과를 들고 가까운 카페 드 슬리밍고 매장에서 입는 바른자세를 직접 체험해 보세요.</p>
+        <div class="app-download card">
+          <h3>플레이 슬리밍고 2.1 다운로드</h3>
+          <div class="dl-row">
+            <div><div class="qr">${qrSvg(s.appIos, 5)}</div><a class="store-btn dark" href="${esc(s.appIos)}" target="_blank" rel="noopener"><small>Download on the</small>App Store</a></div>
+            <div><div class="qr">${qrSvg(s.appAndroid, 5)}</div><a class="store-btn dark" href="${esc(s.appAndroid)}" target="_blank" rel="noopener"><small>GET IT ON</small>Google Play</a></div>
+          </div>
+          <p class="fine">앱에서 측정한 자세점수와 분석 결과를 들고 가까운 카페 드 슬리밍고 매장에서 입는 바른자세를 직접 체험해 보세요.</p>
+        </div>
       </div>
     </div></section>`;
   }

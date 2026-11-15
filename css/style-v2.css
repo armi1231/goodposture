@@ -314,12 +314,38 @@
    플레이슬리밍고 2.1 목업 & 3대 보상플랜 · 2대 특전 · 12시간 교육 고도화
    ========================================================= */
 
-/* 앱 목업 그래픽 */
-.app-mockup{display:flex;justify-content:center;align-items:center;padding:14px}
-.app-mockup img{max-width:340px;width:100%;height:auto;filter:drop-shadow(0 20px 36px rgba(0,0,0,0.18));transition:transform 0.4s ease}
-.app-mockup:hover img{transform:translateY(-6px) scale(1.02)}
-.app-hero-mockup{text-align:center;margin-bottom:32px}
-.app-hero-mockup img{max-width:380px;width:100%;height:auto;filter:drop-shadow(0 24px 44px rgba(31,92,70,0.22))}
+/* 앱 목업 그래픽 & 레이아웃 고도화 (PC 화면 최적 비율 배분) */
+.app-detail{display:grid;grid-template-columns:minmax(360px, 460px) 1.25fr;gap:48px;align-items:center;padding:20px 0 60px}
+.app-hero-mockup{display:flex;justify-content:center;align-items:center;margin:0;padding:10px}
+.app-hero-mockup img{max-width:440px;width:100%;height:auto;filter:drop-shadow(0 24px 48px rgba(31,92,70,0.20));transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),filter 0.4s ease}
+.app-hero-mockup:hover img{transform:translateY(-8px) scale(1.02);filter:drop-shadow(0 32px 64px rgba(31,92,70,0.28))}
+
+.app-detail-content{display:flex;flex-direction:column;gap:24px}
+.app-features{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.app-features .card{padding:26px 24px;border-radius:22px;border:1.5px solid #d9ede2;background:#ffffff;box-shadow:0 10px 28px -6px rgba(31,92,70,0.08);transition:all 0.3s cubic-bezier(0.16,1,0.3,1)}
+.app-features .card:hover{transform:translateY(-3px);border-color:#2fd6a0;box-shadow:0 16px 36px -8px rgba(31,92,70,0.16)}
+.app-features .card h4{font-size:1.15rem;font-weight:800;color:var(--forest-d);margin:0 0 10px;line-height:1.4}
+.app-features .card p{margin:0;line-height:1.68;color:var(--ink);font-size:0.95rem}
+.app-download.card{border-radius:24px;border:1.5px solid #d9ede2;box-shadow:0 10px 28px -6px rgba(31,92,70,0.08);padding:28px 32px;background:#ffffff}
+
+/* 홈 화면 앱 밴드 그래픽 */
+.app-band{background:linear-gradient(180deg,#f5faf6 0%,#ffffff 100%)}
+.app-inner{display:grid;grid-template-columns:minmax(320px, 420px) 1fr;gap:50px;align-items:center}
+.app-mockup{display:flex;justify-content:center;align-items:center;padding:10px}
+.app-mockup img{max-width:390px;width:100%;height:auto;filter:drop-shadow(0 24px 48px rgba(31,92,70,0.20));transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),filter 0.4s ease}
+.app-mockup:hover img{transform:translateY(-8px) scale(1.02);filter:drop-shadow(0 32px 64px rgba(31,92,70,0.28))}
+
+@media (max-width: 980px){
+  .app-detail{grid-template-columns:1fr;gap:36px;padding:10px 0 40px}
+  .app-hero-mockup img{max-width:340px}
+  .app-inner{grid-template-columns:1fr;gap:30px}
+  .app-mockup img{max-width:320px}
+}
+@media (max-width: 640px){
+  .app-features{grid-template-columns:1fr;gap:14px}
+  .app-hero-mockup img{max-width:280px}
+  .app-mockup img{max-width:280px}
+}
 
 /* 3대 보상플랜 & 2대 특전 카드 */
 .plans-wrap{display:flex;flex-direction:column;gap:22px;margin:28px 0}
