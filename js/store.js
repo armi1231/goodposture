@@ -287,7 +287,8 @@
         { id: uid(), name: '카페 드 슬리밍고 동탄파라곤점', region: '경기', naverUrl: 'https://naver.me/xucy9APl', address: '', phone: '', img: '' },
         { id: uid(), name: '카페 드 슬리밍고 강남점', region: '서울', naverUrl: 'https://naver.me/xJixXHhV', address: '', phone: '', img: '' },
         { id: uid(), name: '카페 드 슬리밍고 제주중앙점', region: '제주', naverUrl: 'https://naver.me/xk1Pw0WA', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 울산남구점', region: '울산', naverUrl: 'https://naver.me/5mIoKouD', address: '', phone: '', img: '' }
+        { id: uid(), name: '카페 드 슬리밍고 울산남구점', region: '울산', naverUrl: 'https://naver.me/5mIoKouD', address: '', phone: '', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 부산W스퀘어점', region: '부산', naverUrl: 'https://naver.me/5R4Pz7TL', address: '부산광역시 남구 분포로 145 W스퀘어 2053호', phone: '', img: '' }
       ],
       posts: { guestbook: [], consult: [], apply: [] }
     };
@@ -391,6 +392,19 @@
       }
       if (!s.supabaseUrl) s.supabaseUrl = C.supabaseUrl || 'https://jurwrizrcfzhzvfpgkot.supabase.co';
       if (!s.supabaseAnonKey) s.supabaseAnonKey = C.supabaseAnonKey || 'sb_publishable_DlVWQXL7L0adgtjsZZryiQ_Ufs2_8jH';
+      const hasBusan = (d.stores || []).some(st => st.name && st.name.includes('부산W스퀘어'));
+      if (!hasBusan) {
+        if (!d.stores) d.stores = [];
+        d.stores.push({
+          id: uid(),
+          name: '카페 드 슬리밍고 부산W스퀘어점',
+          region: '부산',
+          naverUrl: 'https://naver.me/5R4Pz7TL',
+          address: '부산광역시 남구 분포로 145 W스퀘어 2053호',
+          phone: '',
+          img: ''
+        });
+      }
     },
 
     /* 세션 */
@@ -417,6 +431,40 @@
       await this.save();
       this.setSession(u.id);
       return u;
+    },
+
+    /* 계정 찾기 / 비밀번호 재설정 */
+    findId({ name, phone }) {
+      const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+      const cleanName = String(name || '').trim();
+      if (!cleanName || !cleanPhone) throw new Error('이름과 연락처를 모두 입력해 주세요.');
+      const user = (this.data.users || []).find(u => {
+        const uPhone = String(u.phone || '').replace(/[^0-9]/g, '');
+        return u.name && u.name.trim() === cleanName && uPhone === cleanPhone;
+      });
+      if (!user) return null;
+      return { loginId: user.loginId, name: user.name, joinedAt: user.joinedAt };
+    },
+
+    verifyUserForReset({ loginId, name, phone }) {
+      const cleanId = String(loginId || '').trim();
+      const cleanName = String(name || '').trim();
+      const cleanPhone = String(phone || '').replace(/[^0-9]/g, '');
+      if (!cleanId || !cleanName || !cleanPhone) throw new Error('아이디, 이름, 연락처를 모두 입력해 주세요.');
+      const user = (this.data.users || []).find(u => {
+        const uPhone = String(u.phone || '').replace(/[^0-9]/g, '');
+        return u.loginId === cleanId && u.name && u.name.trim() === cleanName && uPhone === cleanPhone;
+      });
+      return user || null;
+    },
+
+    async resetPassword({ loginId, name, phone, newPw }) {
+      const user = this.verifyUserForReset({ loginId, name, phone });
+      if (!user) throw new Error('일치하는 회원 정보를 찾을 수 없습니다.');
+      if (!newPw || newPw.length < 6) throw new Error('새 비밀번호는 6자리 이상이어야 합니다.');
+      user.pw = await hash(newPw);
+      await this.save();
+      return true;
     },
 
     /* 백업 */

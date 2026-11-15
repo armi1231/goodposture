@@ -365,3 +365,25 @@
 .roadmap-table th{background:#f3f9f5;color:var(--forest-d);font-weight:800}
 .roadmap-table td{border-top:1px solid #edf4f0;color:var(--ink)}
 .roadmap-table td b{color:var(--forest)}
+
+
+/* =========================================================
+   아이디 / 비밀번호 찾기 및 재설정
+   ========================================================= */
+.auth-sub-links{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px;font-size:0.86rem;color:var(--muted);flex-wrap:wrap}
+.auth-sub-links a{color:var(--forest);font-weight:700;text-decoration:none;transition:color 0.2s}
+.auth-sub-links a:hover{color:var(--leaf);text-decoration:underline}
+.auth-sub-links .sep{color:#c5ded0;font-size:0.75rem}
+
+.find-tabs{display:flex;border-bottom:2px solid #e1eee7;margin-bottom:22px}
+.find-tab{flex:1;text-align:center;padding:12px 14px;background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;font-weight:800;font-size:0.95rem;color:var(--muted);text-decoration:none;transition:all 0.2s}
+.find-tab:hover{color:var(--forest)}
+.find-tab.on{color:var(--forest-d);border-bottom-color:var(--forest)}
+
+.found-card{background:linear-gradient(145deg,#ffffff 0%,#f1faf4 100%);border:1.5px solid #a8dfc1;border-radius:18px;padding:24px 20px;text-align:center;margin-top:16px;box-shadow:0 8px 24px rgba(31,92,70,0.08)}
+.found-card .fc-icon{font-size:2.4rem;margin-bottom:8px}
+.found-card h4{margin:0 0 8px;font-size:1.15rem;color:var(--forest-d);font-weight:800}
+.found-box{background:#ffffff;border:2px dashed #2fd6a0;border-radius:14px;padding:14px 22px;display:inline-block;margin:10px 0 16px;box-shadow:0 4px 14px rgba(47,214,160,0.12)}
+.found-id{font-size:1.55rem;font-weight:900;color:var(--forest-d);letter-spacing:0.04em;display:block}
+.found-date{display:block;font-size:0.8rem;color:var(--muted);margin-top:4px}
+.found-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}

@@ -739,16 +739,22 @@
   }
 
   /* =======================================================
-     로그인 / 회원가입
+     로그인 / 회원가입 / 계정 찾기
      ======================================================= */
-  function viewLogin() {
+  function viewLogin(prefId = '') {
     return `${pageHead('로그인', '다시 만나 반가워요')}
     <section class="sec"><div class="wrap auth">
       <form class="card form" id="loginForm">
-        <label>아이디<input name="loginId" required autocomplete="username"></label>
+        <label>아이디<input name="loginId" required autocomplete="username" value="${esc(prefId)}"></label>
         <label>비밀번호<input name="pw" type="password" required autocomplete="current-password"></label>
         <button class="btn btn-primary btn-lg block">로그인</button>
-        <p class="center muted">아직 회원이 아니신가요? <a href="#/signup">회원가입</a></p>
+        <div class="auth-sub-links">
+          <a href="#/find-account?tab=id">아이디 찾기</a>
+          <span class="sep">|</span>
+          <a href="#/find-account?tab=pw${prefId ? '&id=' + encodeURIComponent(prefId) : ''}">비밀번호 재설정</a>
+          <span class="sep">|</span>
+          <a href="#/signup">회원가입</a>
+        </div>
       </form>
     </div></section>`;
   }
@@ -762,6 +768,111 @@
       const back = sessionStorage.getItem('bjs_back'); sessionStorage.removeItem('bjs_back');
       location.hash = back || (u.isAdmin ? '#/admin' : '#/mypage');
     });
+  }
+
+  /* 아이디 / 비밀번호 찾기 */
+  function viewFindAccount(activeTab = 'id', query = {}) {
+    const isPw = activeTab === 'pw';
+    const initId = query.id || '';
+    return `${pageHead('계정 찾기', isPw ? '비밀번호 재설정' : '아이디 찾기', '가입 시 등록하신 회원 정보로 확인합니다.')}
+    <section class="sec"><div class="wrap auth">
+      <div class="card form">
+        <div class="find-tabs" role="tablist">
+          <a class="find-tab ${!isPw ? 'on' : ''}" href="#/find-account?tab=id">아이디 찾기</a>
+          <a class="find-tab ${isPw ? 'on' : ''}" href="#/find-account?tab=pw${initId ? '&id=' + encodeURIComponent(initId) : ''}">비밀번호 재설정</a>
+        </div>
+
+        ${!isPw ? `
+          <!-- 아이디 찾기 -->
+          <form id="findIdForm">
+            <label>이름<input name="name" required placeholder="가입 시 등록한 실명"></label>
+            <label>연락처<input name="phone" type="tel" required placeholder="010-0000-0000"></label>
+            <button class="btn btn-primary btn-lg block" style="margin-top:12px">아이디 찾기</button>
+          </form>
+          <div id="idResult"></div>
+        ` : `
+          <!-- 비밀번호 재설정 -->
+          <form id="findPwForm">
+            <label>아이디<input name="loginId" required placeholder="아이디" value="${esc(initId)}"></label>
+            <label>이름<input name="name" required placeholder="가입 시 등록한 실명"></label>
+            <label>연락처<input name="phone" type="tel" required placeholder="010-0000-0000"></label>
+            <div style="border-top:1px dashed #d5ece0;margin:18px 0 14px;padding-top:14px">
+              <label>새 비밀번호<input name="newPw" type="password" required minlength="6" placeholder="영문·숫자 조합 6자리 이상" autocomplete="new-password"></label>
+              <label>새 비밀번호 확인<input name="newPw2" type="password" required minlength="6" placeholder="새 비밀번호 다시 입력" autocomplete="new-password"></label>
+            </div>
+            <button class="btn btn-primary btn-lg block">비밀번호 재설정</button>
+          </form>
+          <div id="pwResult"></div>
+        `}
+
+        <div class="auth-sub-links" style="margin-top:22px">
+          <a href="#/login">← 로그인 화면으로 돌아가기</a>
+          <span class="sep">|</span>
+          <a href="#/signup">회원가입</a>
+        </div>
+      </div>
+    </div></section>`;
+  }
+
+  function mountFindAccount(el) {
+    const fId = $('#findIdForm', el);
+    if (fId) {
+      fId.addEventListener('submit', e => {
+        e.preventDefault();
+        const f = formData(fId);
+        try {
+          const res = S.findId({ name: f.name, phone: f.phone });
+          const resBox = $('#idResult', el);
+          if (!res) {
+            resBox.innerHTML = `<div class="found-card" style="border-color:#ffb27f;background:#fff8f3">
+              <div class="fc-icon">⚠️</div>
+              <h4>일치하는 회원을 찾을 수 없습니다</h4>
+              <p class="muted" style="font-size:0.86rem;margin-bottom:12px">입력하신 이름과 연락처를 다시 확인해 주세요.<br>아직 가입하지 않으셨다면 회원가입을 먼저 진행해 주세요.</p>
+              <a class="btn btn-line btn-sm" href="#/signup">회원가입 하러 가기</a>
+            </div>`;
+            return;
+          }
+          resBox.innerHTML = `<div class="found-card">
+            <div class="fc-icon">🎉</div>
+            <h4>회원님의 아이디를 찾았습니다</h4>
+            <div class="found-box">
+              <b class="found-id">${esc(res.loginId)}</b>
+              <span class="found-date">가입일: ${fmtDate(res.joinedAt, true)}</span>
+            </div>
+            <div class="found-actions">
+              <a class="btn btn-primary" href="#/login?id=${encodeURIComponent(res.loginId)}">이 아이디로 로그인하기</a>
+              <a class="btn btn-line" href="#/find-account?tab=pw&id=${encodeURIComponent(res.loginId)}">비밀번호도 재설정</a>
+            </div>
+          </div>`;
+        } catch (err) {
+          toast(err.message);
+        }
+      });
+    }
+
+    const fPw = $('#findPwForm', el);
+    if (fPw) {
+      fPw.addEventListener('submit', async e => {
+        e.preventDefault();
+        const f = formData(fPw);
+        if (f.newPw !== f.newPw2) return toast('새 비밀번호가 서로 일치하지 않습니다.');
+        if (f.newPw.length < 6) return toast('새 비밀번호는 6자리 이상이어야 합니다.');
+        try {
+          await S.resetPassword({ loginId: f.loginId, name: f.name, phone: f.phone, newPw: f.newPw });
+          const resBox = $('#pwResult', el);
+          fPw.style.display = 'none';
+          resBox.innerHTML = `<div class="found-card">
+            <div class="fc-icon">🔒✨</div>
+            <h4>비밀번호가 성공적으로 변경되었습니다!</h4>
+            <p class="muted" style="margin-bottom:16px">새로운 비밀번호로 지금 바로 로그인하실 수 있습니다.</p>
+            <a class="btn btn-primary btn-lg block" href="#/login?id=${encodeURIComponent(f.loginId)}">새 비밀번호로 로그인하기</a>
+          </div>`;
+          toast('비밀번호를 성공적으로 재설정했습니다.');
+        } catch (err) {
+          toast(err.message);
+        }
+      });
+    }
   }
 
   function profileFields(u, isNew) {
@@ -1534,7 +1645,8 @@
     else if (a === 'rental') { html = viewRental(); mount = mountRental; }
     else if (a === 'stores') html = viewStores();
     else if (a === 'app') html = viewApp();
-    else if (a === 'login') { html = viewLogin(); mount = mountLogin; }
+    else if (a === 'login') { html = viewLogin(query.id || ''); mount = mountLogin; }
+    else if (a === 'find-account' || a === 'find') { html = viewFindAccount(query.tab || 'id', query); mount = mountFindAccount; }
     else if (a === 'signup') { html = viewSignup(); mount = mountSignup; }
     else if (a === 'mypage') { if (!me()) html = needLogin('마이페이지'); else { html = viewMypage(); mount = mountMypage; } }
     else if (a === 'edu') { html = viewEdu(); mount = mountEdu; }
