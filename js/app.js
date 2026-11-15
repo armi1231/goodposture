@@ -68,35 +68,99 @@
     } catch (e) { return ''; }
   }
   function fileToDataURL(file, max = 1400, q = .82) {
-    return new Promise((res, rej) => {
-      const fr = new FileReader();
-      fr.onload = () => {
-        const raw = fr.result;
+    return new Promise((res) => {
+      if (!file) return res('');
+      const isImg = (file.type && file.type.startsWith('image/')) ||
+        /\.(jpe?g|png|gif|webp|bmp|jfif|heic|heif|svg)$/i.test(file.name || '');
+      if (!isImg && file.type) return res('');
+
+      // 1. URL.createObjectURL을 통한 메모리 절약형 고속 로딩 시도 (대용량 스마트폰 사진 대응)
+      let objectUrl = null;
+      try {
+        objectUrl = (window.URL || window.webkitURL).createObjectURL(file);
+      } catch (e) {
+        objectUrl = null;
+      }
+
+      const fallbackFR = () => {
+        try {
+          const fr = new FileReader();
+          fr.onload = () => {
+            const raw = fr.result || '';
+            const img = new Image();
+            img.onload = () => {
+              try {
+                const w = img.naturalWidth || img.width;
+                const h = img.naturalHeight || img.height;
+                if (w && h) {
+                  const s = Math.min(1, max / Math.max(w, h));
+                  const c = document.createElement('canvas');
+                  c.width = Math.max(1, Math.round(w * s));
+                  c.height = Math.max(1, Math.round(h * s));
+                  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                  return res(c.toDataURL('image/jpeg', q));
+                }
+              } catch (e) {}
+              res(raw);
+            };
+            img.onerror = () => res(raw);
+            img.src = raw;
+          };
+          fr.onerror = () => res('');
+          fr.readAsDataURL(file);
+        } catch (e) {
+          res('');
+        }
+      };
+
+      if (objectUrl) {
         const img = new Image();
+        const cleanup = () => {
+          try { (window.URL || window.webkitURL).revokeObjectURL(objectUrl); } catch (e) {}
+        };
         img.onload = () => {
           try {
-            const s = Math.min(1, max / Math.max(img.width, img.height));
-            const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-            res(c.toDataURL('image/jpeg', q));
-          } catch (e) {
-            res(raw);
-          }
+            const w = img.naturalWidth || img.width;
+            const h = img.naturalHeight || img.height;
+            if (w && h) {
+              const s = Math.min(1, max / Math.max(w, h));
+              const c = document.createElement('canvas');
+              c.width = Math.max(1, Math.round(w * s));
+              c.height = Math.max(1, Math.round(h * s));
+              const ctx = c.getContext('2d');
+              ctx.drawImage(img, 0, 0, c.width, c.height);
+              cleanup();
+              return res(c.toDataURL('image/jpeg', q));
+            }
+          } catch (e) {}
+          cleanup();
+          fallbackFR();
         };
         img.onerror = () => {
-          if (typeof raw === 'string') res(raw);
-          else rej(new Error('이미지를 불러오지 못했습니다.'));
+          cleanup();
+          fallbackFR();
         };
-        img.src = raw;
-      };
-      fr.onerror = () => rej(new Error('파일을 읽지 못했습니다.'));
-      fr.readAsDataURL(file);
+        img.src = objectUrl;
+      } else {
+        fallbackFR();
+      }
     });
   }
   async function readImages(input, limit = 5) {
-    const files = Array.from(input.files || []).slice(0, limit);
+    const rawFiles = Array.from((input && input.files) || input || []).slice(0, limit);
     const out = [];
-    for (const f of files) if (f.type.startsWith('image/')) out.push(await fileToDataURL(f));
+    for (const f of rawFiles) {
+      if (!f) continue;
+      const isImg = (f.type && f.type.startsWith('image/')) ||
+        /\.(jpe?g|png|gif|webp|bmp|jfif|heic|heif|svg)$/i.test(f.name || '');
+      if (!isImg && f.type) continue;
+      try {
+        const dataUrl = await fileToDataURL(f);
+        if (dataUrl) out.push(dataUrl);
+      } catch (e) {
+        console.warn('readImages file process error:', e);
+      }
+    }
     return out;
   }
   function ytId(url) {
@@ -1384,15 +1448,17 @@
                 <small>예시: 900101 - 1****** (앞면 사진만 첨부 / 비밀글로 관리자만 안전하게 확인합니다)</small>
               </div>
             </div>
-            <label for="idCardInput" class="idcard-upload-box" id="idCardBox">
-              <input type="file" id="idCardInput" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .heic, .HEIC">
-              <div class="idcard-upload-icon">📁</div>
-              <div class="idcard-upload-prompt"><b>여기를 클릭하여 신분증 사진을 선택</b>하거나 파일을 끌어다 놓으세요</div>
-              <div class="idcard-upload-sub">JPG, PNG, GIF, WebP 이미지 파일 지원 (스마트폰 촬영 사진 · PC 캡처 모두 가능)</div>
-              <div class="idcard-upload-btn-row">
-                <span class="btn btn-primary btn-sm">💻 내 PC에서 파일 찾기</span>
-              </div>
-            </label>
+            <div class="idcard-upload-container">
+              <input type="file" id="idCardInput" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" class="sr-only-file">
+              <label for="idCardInput" class="idcard-upload-box" id="idCardBox">
+                <div class="idcard-upload-icon">📁</div>
+                <div class="idcard-upload-prompt"><b>여기를 클릭하여 신분증 사진을 선택</b>하거나 파일을 끌어다 놓으세요</div>
+                <div class="idcard-upload-sub">스마트폰 촬영 사진 · PC 캡처 모두 가능 (JPG, PNG, GIF, WebP 지원)</div>
+                <div class="idcard-upload-btn-row">
+                  <span class="btn btn-primary btn-sm">📎 파일 찾기 / 사진 선택</span>
+                </div>
+              </label>
+            </div>
             <div id="idCardPreviewWrap" style="display:none;" class="idcard-preview-wrap">
               <img id="idCardThumb" class="idcard-thumb" src="" alt="신분증 미리보기" title="클릭 시 크게 보기">
               <div class="idcard-preview-info">
@@ -1507,8 +1573,23 @@
           <label class="agree"><input type="checkbox" name="formDone" required> 창업 신청서(구글폼) 작성을 완료했습니다.</label>
           <label class="agree"><input type="checkbox" name="paid" required> 온라인 교육비 ${won(set().eduFee)} 입금을 완료했습니다.</label>` : ''}
         <label>내용<textarea name="body" rows="9" required placeholder="${b === 'apply' ? '연락 가능한 시간, 희망 교육 방식(매장/헬퍼 방문) 등을 자유롭게 적어 주세요.' : '내용을 입력해 주세요.'}"></textarea></label>
-        <label>사진 첨부 <small>(최대 5장, 자동으로 용량을 줄여 저장합니다)</small><input type="file" name="images" accept="image/*" multiple id="imgInput"></label>
-        <div class="thumbs" id="thumbs"></div>
+        
+        <div class="board-file-uploader" id="boardFileUploader">
+          <div class="bfu-head">
+            <span class="bfu-title">📷 사진 첨부 <small>(최대 5장 · 자동 최적화 저장)</small></span>
+            <span class="bfu-counter" id="bfuCounter">0 / 5장</span>
+          </div>
+          <input type="file" id="imgInput" name="images" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" multiple class="sr-only-file">
+          <label for="imgInput" class="bfu-dropzone" id="imgDropzone">
+            <div class="bfu-icon">📁</div>
+            <div class="bfu-prompt"><b>여기를 클릭하여 사진을 첨부</b>하거나 이미지를 끌어다 놓으세요</div>
+            <div class="bfu-sub">스마트폰 촬영 사진 · PC 캡처 (JPG, PNG, WebP, GIF 등 지원)</div>
+            <div class="bfu-btn-row">
+              <span class="btn btn-primary btn-sm">📎 파일 찾기 / 사진 선택</span>
+            </div>
+          </label>
+          <div class="bfu-preview-grid" id="thumbs"></div>
+        </div>
         ${B.allowSecret ? `<label class="agree"><input type="checkbox" name="secret" checked> 비밀글로 남기기 <small>(작성자와 관리자만 볼 수 있어요)</small></label>` : ''}
         <div class="form-actions"><a class="btn btn-line" href="#/${b}">취소</a><button class="btn btn-primary">등록하기</button></div>
       </form>
@@ -1527,17 +1608,20 @@
 
       async function handleFile(file) {
         if (!file) return;
-        if (!file.type.startsWith('image/') && !file.name.match(/\.(jpe?g|png|gif|webp|bmp|heic)$/i)) {
+        const isImg = (file.type && file.type.startsWith('image/')) ||
+          /\.(jpe?g|png|gif|webp|bmp|jfif|heic|heif|svg)$/i.test(file.name || '');
+        if (!isImg && file.type) {
           return toast('이미지 파일(JPG, PNG, GIF, WebP 등)만 첨부할 수 있습니다.');
         }
-        toast('신분증 사진을 불러오는 중입니다...');
+        toast('신분증 사진을 불러와 최적화 중입니다...');
         try {
           idCardDataUrl = await fileToDataURL(file, 1400, 0.82);
+          if (!idCardDataUrl) throw new Error('변환 실패');
           idThumb.src = idCardDataUrl;
           idBox.style.display = 'none';
           idPrevWrap.style.display = 'flex';
           const fn = $('#idCardFileName', el);
-          if (fn) fn.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+          if (fn) fn.textContent = `${file.name || '신분증 사진'} (${Math.round((file.size || idCardDataUrl.length * 0.75) / 1024)} KB)`;
           toast('신분증 사진이 정상적으로 첨부되었습니다!');
         } catch (err) {
           console.error('File load error:', err);
@@ -1595,7 +1679,7 @@
         idInput.value = '';
         idThumb.src = '';
         idPrevWrap.style.display = 'none';
-        idBox.style.display = 'block';
+        idBox.style.display = 'flex';
       });
 
       const showZoom = () => {
@@ -1888,14 +1972,130 @@
       return;
     }
     const form = $('#postForm', el); if (!form) return;
-    let imgs = [];
-    $('#imgInput', el).addEventListener('change', async e => {
-      imgs = await readImages(e.target, 5);
-      $('#thumbs', el).innerHTML = imgs.map(s => `<img src="${s}" alt="">`).join('');
-    });
+    const imgInput = $('#imgInput', el);
+    const dropzone = $('#imgDropzone', el);
+    const thumbsEl = $('#thumbs', el);
+    const counterEl = $('#bfuCounter', el);
+    let attachedFiles = [];
+
+    function renderThumbs() {
+      if (counterEl) counterEl.textContent = `${attachedFiles.length} / 5장`;
+      if (!thumbsEl) return;
+      if (!attachedFiles.length) {
+        thumbsEl.innerHTML = '';
+        return;
+      }
+      thumbsEl.innerHTML = attachedFiles.map((item, idx) => `
+        <div class="bfu-thumb-item" data-idx="${idx}">
+          <img src="${item.dataUrl}" alt="${esc(item.name || '첨부사진')}" title="${esc(item.name || '')}">
+          <span class="thumb-name">${esc(item.name || '사진 ' + (idx + 1))}</span>
+          <button type="button" class="bfu-thumb-del" data-del-idx="${idx}" title="삭제">✕</button>
+        </div>
+      `).join('');
+
+      $$('.bfu-thumb-del', thumbsEl).forEach(btn => {
+        btn.addEventListener('click', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.delIdx, 10);
+          attachedFiles.splice(idx, 1);
+          renderThumbs();
+          toast('사진이 삭제되었습니다.');
+        });
+      });
+    }
+
+    async function addFiles(files) {
+      const fileList = Array.from(files || []);
+      if (!fileList.length) return;
+
+      const remaining = 5 - attachedFiles.length;
+      if (remaining <= 0) {
+        return toast('사진은 최대 5장까지 첨부할 수 있습니다.');
+      }
+
+      const toProcess = fileList.slice(0, remaining);
+      if (fileList.length > remaining) {
+        toast(`최대 5장까지만 첨부할 수 있어 ${toProcess.length}장만 추가됩니다.`);
+      } else {
+        toast('사진을 불러와 최적화 중입니다...');
+      }
+
+      let addedCount = 0;
+      for (const f of toProcess) {
+        const isImg = (f.type && f.type.startsWith('image/')) ||
+          /\.(jpe?g|png|gif|webp|bmp|jfif|heic|heif|svg)$/i.test(f.name || '');
+        if (!isImg && f.type) continue;
+        try {
+          const dataUrl = await fileToDataURL(f, 1400, 0.82);
+          if (dataUrl) {
+            attachedFiles.push({
+              id: S.uid(),
+              name: f.name || `photo_${Date.now()}.jpg`,
+              size: f.size || Math.round(dataUrl.length * 0.75),
+              dataUrl
+            });
+            addedCount++;
+          }
+        } catch (err) {
+          console.warn('File process error:', err);
+        }
+      }
+
+      renderThumbs();
+      if (addedCount > 0) {
+        toast(`${addedCount}장의 사진이 정상적으로 첨부되었습니다!`);
+      }
+      if (imgInput) imgInput.value = '';
+    }
+
+    if (imgInput) {
+      imgInput.addEventListener('change', e => {
+        addFiles(e.target.files);
+      });
+    }
+
+    if (dropzone) {
+      ['dragenter', 'dragover'].forEach(name => {
+        dropzone.addEventListener(name, e => {
+          e.preventDefault(); e.stopPropagation();
+          dropzone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        dropzone.addEventListener(name, e => {
+          e.preventDefault(); e.stopPropagation();
+          dropzone.classList.remove('dragover');
+        });
+      });
+      dropzone.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length) {
+          addFiles(dt.files);
+        }
+      });
+    }
+
+    const onFormPaste = e => {
+      const items = (e.clipboardData || window.clipboardData)?.items;
+      if (!items) return;
+      const pasteFiles = [];
+      for (const item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const f = item.getAsFile();
+          if (f) pasteFiles.push(f);
+        }
+      }
+      if (pasteFiles.length) {
+        addFiles(pasteFiles);
+      }
+    };
+    window.addEventListener('paste', onFormPaste);
+
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const f = formData(form), u = me();
+      const imgs = attachedFiles.map(x => x.dataUrl);
       const post = {
         id: S.uid(), title: f.title, body: f.body, author: u ? u.name : f.author, authorId: u ? u.id : null,
         guestPw: !u && f.guestPw ? await S.hash(f.guestPw) : null, date: S.now(), images: imgs,
@@ -2381,9 +2581,9 @@
         <label>온라인 렌탈계약 링크 <small>(전자계약 페이지 주소 — QR 자동 생성)</small><input name="contractUrl" value="${esc(p.contractUrl)}" placeholder="https://"></label>
         <div class="grid2"><label>구성<select name="kind"><option value="single" ${p.kind !== 'bundle' ? 'selected' : ''}>단품</option><option value="bundle" ${p.kind === 'bundle' ? 'selected' : ''}>2개 구성(세트)</option></select></label>
         <label>월 렌탈료 표시 확인<input value="${p.price ? won(p.price) : ''}" readonly></label></div>
-        <label>상품 이미지 1<input type="file" accept="image/*" id="pImg"></label>
+        <label>상품 이미지 1<input type="file" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" id="pImg"></label>
         <div class="thumbs" id="pThumb">${p.img ? `<img src="${esc(p.img)}" alt="">` : ''}</div>
-        <label>상품 이미지 2 <small>(2개 구성일 때 오른쪽 제품)</small><input type="file" accept="image/*" id="pImg2"></label>
+        <label>상품 이미지 2 <small>(2개 구성일 때 오른쪽 제품)</small><input type="file" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" id="pImg2"></label>
         <div class="thumbs" id="pThumb2">${p.img2 ? `<img src="${esc(p.img2)}" alt="">` : ''}</div>
         <label class="agree"><input type="checkbox" name="visible" ${p.visible !== false ? 'checked' : ''}> 렌탈신청 화면에 노출</label>
         <button class="btn btn-primary">저장</button></form>`);
@@ -2464,7 +2664,7 @@
         <label>네이버 플레이스 링크<input name="naverUrl" value="${esc(s.naverUrl)}"></label>
         <label>주소<input name="address" value="${esc(s.address)}"></label>
         <label>전화번호<input name="phone" value="${esc(s.phone)}"></label>
-        <label>매장 사진<input type="file" accept="image/*" id="sImg"></label><div class="thumbs" id="sThumb">${s.img ? `<img src="${esc(s.img)}" alt="">` : ''}</div>
+        <label>매장 사진<input type="file" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" id="sImg"></label><div class="thumbs" id="sThumb">${s.img ? `<img src="${esc(s.img)}" alt="">` : ''}</div>
         <button class="btn btn-primary">저장</button></form>`);
       let img = s.img;
       $('#sImg', m.el).addEventListener('change', async e => { img = (await readImages(e.target, 1))[0] || img; $('#sThumb', m.el).innerHTML = `<img src="${img}" alt="">`; });
