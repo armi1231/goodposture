@@ -6,8 +6,10 @@
    · 창업 근거 섹션 (비교표 · 수익구조 · 기술 지표)
    ========================================================= */
 
-/* 레이어 1: 스테이지 기본 베이스 */
-.hero-stage{position:relative;aspect-ratio:4/5;max-height:min(78vh,720px);width:100%;justify-self:center;overflow:hidden;border-radius:36px;background:#041a20}
+/* 스테이지 래퍼 및 외부 상단 바 (사운드 버튼을 영상 테두리 밖 우측 상단에 배치) */
+.hero-stage-wrap{position:relative;width:100%;max-width:580px;justify-self:center;display:flex;flex-direction:column;align-items:stretch}
+.hero-stage-topbar{display:flex;justify-content:flex-end;align-items:center;width:100%;padding:0 4px 10px 0;z-index:20}
+.hero-stage{position:relative;aspect-ratio:4/5;max-height:min(76vh,700px);width:100%;overflow:hidden;border-radius:36px;background:#041a20}
 
 /* 레이어 2: AI 측정 실사 해부학 비디오 (posture_scan.mp4) */
 .hero-scan-video{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;object-fit:cover;object-position:center 38%;
@@ -120,18 +122,25 @@
 .run-caption::before{content:'';position:absolute;left:50%;top:-1px;width:70px;height:3px;border-radius:3px;
   transform:translateX(-50%);background:linear-gradient(90deg,transparent,#2fd6a0,transparent)}
 
-/* ---------- 음향 & 대화 & 자연 BGM 토글 버튼 ---------- */
-.hero-sound-btn{position:absolute;top:18px;right:22px;z-index:12;display:inline-flex;align-items:center;gap:7px;
-  padding:8px 16px;border-radius:999px;background:rgba(4,26,32,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  border:1px solid rgba(125,255,178,0.45);box-shadow:0 8px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.3);
+/* ---------- 음향 & 대화 & 자연 BGM 토글 버튼 (영상 테두리 밖 우측 상단) ---------- */
+.hero-sound-btn{position:relative;top:auto;right:auto;z-index:20;display:inline-flex;align-items:center;gap:7px;
+  padding:8px 18px;border-radius:999px;background:rgba(4,26,32,0.88);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1.5px solid rgba(125,255,178,0.5);box-shadow:0 8px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.3);
   color:#ffffff;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.2,0.8,0.25,1);user-select:none}
-.hero-sound-btn:hover{background:rgba(6,42,50,0.95);border-color:#7dffb2;transform:translateY(-2px);
-  box-shadow:0 12px 28px rgba(0,0,0,0.6),0 0 16px rgba(47,214,160,0.35)}
-.hero-sound-btn.is-active{background:linear-gradient(135deg,rgba(31,92,70,0.95),rgba(15,60,45,0.98));border-color:#2fd6a0;color:#7dffb2}
+.hero-sound-btn:hover{background:rgba(6,42,50,0.96);border-color:#7dffb2;transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.6),0 0 16px rgba(47,214,160,0.4)}
+.hero-sound-btn.is-active{background:linear-gradient(135deg,rgba(31,92,70,0.96),rgba(15,60,45,0.98));border-color:#2fd6a0;color:#7dffb2}
 .hero-sound-btn .hsb-icon{font-size:1rem}
 @keyframes soundPulse{0%,100%{box-shadow:0 8px 24px rgba(0,0,0,0.5),0 0 0 rgba(47,214,160,0)}50%{box-shadow:0 8px 24px rgba(0,0,0,0.5),0 0 14px rgba(47,214,160,0.55)}}
 .hero-sound-btn:not(.is-active){animation:soundPulse 2.4s ease-in-out infinite}
-@media (max-width:640px){.hero-sound-btn{top:12px;right:14px;padding:6px 12px;font-size:0.74rem}}
+@media (max-width:960px){
+  .hero-stage-wrap{order:-1;width:min(520px,100%);max-width:100%}
+  .hero-stage-topbar{padding:0 2px 8px 0}
+  .hero-stage{aspect-ratio:1/1;max-height:none}
+}
+@media (max-width:640px){
+  .hero-sound-btn{padding:6px 14px;font-size:0.75rem}
+}
 /* ---------- 제품 카드 (2개 구성) ---------- */
 .product-img.duo{gap:0;background:linear-gradient(180deg,#f7faf6,#eef5ef);position:relative}
 .product-img.duo img{width:50%;height:88%;object-fit:contain}
@@ -299,3 +308,60 @@
   .done-slides{display:none}
   .lec-stage{aspect-ratio:16/10}
 }
+
+
+/* =========================================================
+   플레이슬리밍고 2.1 목업 & 3대 보상플랜 · 2대 특전 · 12시간 교육 고도화
+   ========================================================= */
+
+/* 앱 목업 그래픽 */
+.app-mockup{display:flex;justify-content:center;align-items:center;padding:14px}
+.app-mockup img{max-width:340px;width:100%;height:auto;filter:drop-shadow(0 20px 36px rgba(0,0,0,0.18));transition:transform 0.4s ease}
+.app-mockup:hover img{transform:translateY(-6px) scale(1.02)}
+.app-hero-mockup{text-align:center;margin-bottom:32px}
+.app-hero-mockup img{max-width:380px;width:100%;height:auto;filter:drop-shadow(0 24px 44px rgba(31,92,70,0.22))}
+
+/* 3대 보상플랜 & 2대 특전 카드 */
+.plans-wrap{display:flex;flex-direction:column;gap:22px;margin:28px 0}
+.plan-card{position:relative;background:#ffffff;border:1.5px solid #d9ede2;border-radius:24px;padding:26px 30px;box-shadow:0 10px 30px -8px rgba(31,92,70,0.08);transition:all 0.3s ease}
+.plan-card:hover{border-color:#2fd6a0;transform:translateY(-2px);box-shadow:0 16px 36px -10px rgba(31,92,70,0.16)}
+.plan-card.hot{border-color:#2fd6a0;background:linear-gradient(145deg,#ffffff 0%,#f0fbf5 100%)}
+.plan-card.privilege{border-color:#ffd86b;background:linear-gradient(145deg,#ffffff 0%,#fffdf2 100%)}
+.plan-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.plan-badge{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:var(--forest);color:#ffffff;font-size:0.95rem;font-weight:900}
+.plan-badge.gold{background:linear-gradient(135deg,#e5a93b,#d48812);color:#ffffff}
+.plan-head h3{margin:0;font-size:1.32rem;font-weight:800;color:var(--forest-d)}
+.plan-tag{margin-left:auto;font-size:0.78rem;font-weight:800;color:var(--forest);background:#e3f5eb;padding:4px 12px;border-radius:999px}
+.plan-tag.gold{color:#9e6a00;background:#fff3cc}
+.plan-body p{margin:0 0 10px;line-height:1.65;color:var(--ink);font-size:0.95rem}
+.plan-box{background:#f6faf8;border-radius:14px;padding:14px 18px;margin-top:12px;font-size:0.9rem;border-left:4px solid var(--forest)}
+.plan-box.gold{background:#fffcee;border-left-color:#e5a93b}
+.plan-box b{color:var(--forest-d)}
+.plan-box p{margin:4px 0;line-height:1.55}
+
+/* 투명한 정산 일정 테이블 */
+.pay-schedule-table{width:100%;border-collapse:collapse;margin:18px 0;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.04);border:1.5px solid #dcf0e6}
+.pay-schedule-table th{background:linear-gradient(135deg,#1f5c46,#154232);color:#ffffff;padding:14px 18px;font-size:0.92rem;text-align:left;font-weight:800}
+.pay-schedule-table td{padding:15px 18px;border-bottom:1px solid #edf4f0;font-size:0.9rem;color:var(--ink);line-height:1.55}
+.pay-schedule-table tr:last-child td{border-bottom:none}
+.pay-tag{display:inline-block;padding:4px 9px;border-radius:6px;font-size:0.75rem;font-weight:800;margin-right:6px}
+.pay-tag.green{background:#e3f7ed;color:#13734b}
+.pay-tag.blue{background:#e5f3ff;color:#0d5cb6}
+.pay-tag.gold{background:#fff2d6;color:#9b6500}
+
+/* 교육과정 서브 목록 및 현장실습 카드 */
+.lec-sub-items{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.lec-sub-items li{font-size:0.83rem;color:var(--ink);display:flex;align-items:flex-start;gap:7px;line-height:1.5}
+.lec-sub-items li::before{content:'•';color:var(--leaf);font-weight:900;font-size:1.1em;line-height:1}
+.lec-act-box{margin-top:10px;padding:8px 14px;background:#f0f8f3;border-radius:10px;font-size:0.8rem;color:var(--forest);font-weight:700;border:1px dashed #b9e3cb}
+.offline-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:16px}
+.offline-card{background:#ffffff;border:1.5px solid #d5ece0;border-radius:16px;padding:16px 18px;box-shadow:0 4px 14px rgba(31,92,70,0.05);transition:transform 0.2s ease}
+.offline-card:hover{transform:translateY(-2px);border-color:#2fd6a0}
+.offline-card small{display:inline-block;font-size:0.74rem;font-weight:800;color:var(--cta-d);background:#fff3e6;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+.offline-card b{display:block;font-size:0.98rem;color:var(--forest-d);margin-bottom:6px}
+.offline-card p{margin:0;font-size:0.84rem;color:var(--muted);line-height:1.5}
+.roadmap-table{width:100%;border-collapse:collapse;margin-top:14px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #dceee4}
+.roadmap-table th,.roadmap-table td{padding:12px 16px;font-size:0.88rem;text-align:left}
+.roadmap-table th{background:#f3f9f5;color:var(--forest-d);font-weight:800}
+.roadmap-table td{border-top:1px solid #edf4f0;color:var(--ink)}
+.roadmap-table td b{color:var(--forest)}

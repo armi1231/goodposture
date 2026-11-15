@@ -51,6 +51,10 @@ window.SITE_CONFIG = {
   contactPhone: '010-9283-1231',
   kakaoId: 'armi1231',
 
+  // 클라우드 데이터 저장소 (Supabase 연동)
+  supabaseUrl: 'https://jurwrizrcfzhzvfpgkot.supabase.co',
+  supabaseAnonKey: '',
+
   // 첫 관리자 계정 (최초 실행 시 1회 생성 → 로그인 후 마이페이지에서 비밀번호를 꼭 바꾸세요)
   admin: { loginId: 'admin', password: 'slimminggo1231!' }
 };

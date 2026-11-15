@@ -267,9 +267,9 @@
 
   function multiplierCards() {
     return `<div class="multi-grid">
-      <div class="multi reveal"><b>4<small>배</small></b><div><h4>기본 적용</h4><p>교육 이수 후 바로 적용합니다.</p><span class="tag">피움 · 임시사업권</span></div></div>
-      <div class="multi reveal"><b>8<small>배</small></b><div><h4>누적 50만점 이상</h4><p>1년 계약기간 중 달성 시, 익월부터 적용합니다.</p><span class="tag">이룸 · 정식사업권</span></div></div>
-      <div class="multi reveal hot"><b>10<small>배</small></b><div><h4>월 실적</h4><p>월 100만점 이상 달성 시 당월 적용</p><span class="tag">월 실적 보너스</span></div></div>
+      <div class="multi reveal"><b>4<small>배</small></b><div><h4>기본 사업권 (입문 3시간 이수)</h4><p>온라인 입문 3시간(01~09강) 이수 후 사업승인 인정서 발급 즉시 시작 (계약 1년)</p><span class="tag">스타트 · 4배 사업권</span></div></div>
+      <div class="multi reveal hot"><b>8<small>배</small></b><div><h4>50만점 달성 시 일일 승급!</h4><p>총 12시간 교육 이수 + 누적 50만점 달성 시 월말 기다리지 않고 즉시 승급</p><span class="tag">성장 업그레이드 · 8배 사업권</span></div></div>
+      <div class="multi reveal"><b>응원금</b><div><h4>매월 바르게 응원금</h4><p>50만점 달성자 모두에게 회사 총계약 약정료 점수 균등 배분 (월 유지조건 없음)</p><span class="tag">공동분배 나눔 혜택</span></div></div>
     </div>`;
   }
 
@@ -287,10 +287,10 @@
   function campSection() {
     return `<section class="sec camp"><div class="wrap camp-inner">
       <div class="camp-copy reveal">
-        <p class="eyebrow light">이룸 등급 특별 초대</p>
-        <h2>제주 웰니스캠프 1박 2일</h2>
-        <p>이룸 등급에 오른 분을 회사가 제주로 초대합니다. 항공료만 부담하면 1박 2일간 식대와 숙소는 모두 무상 제공. 특허받은 입는 바른자세를 더 깊이 알아보고, 제주에서 힐링 여행도 함께합니다.</p>
-        <ul class="camp-list"><li>식대 · 숙소 무상 제공</li><li>입는 바른자세 심화 세미나</li><li>제주 힐링 여행</li><li>수료 시 <b>드림 등급</b> · VVIP 동일 자격</li></ul>
+        <p class="eyebrow light">50만점 달성 축하 특전 01</p>
+        <h2>제주 본사 웰니스캠프 초청 (1박 2일 참가비 0원)</h2>
+        <p>누적 50만점을 달성하신 창업자를 제주도 본사 웰니스캠프에 정중히 초청합니다. 1박 2일간 전문 세미나와 숙소, 식대는 전액 본사에서 무상 지원하며(항공권 본인 부담), 입는 바른자세의 깊은 가치와 제주 힐링 여행을 함께 누립니다.</p>
+        <ul class="camp-list"><li>1박 2일 참가비 0원 (숙소 · 식대 전액 지원)</li><li>입는 바른자세 전문가 심화 과정</li><li>제주 본사 웰니스 힐링 프로그램</li><li>PA사업부 창업 기회 제공 (VVIP 조건 면제)</li></ul>
       </div>
       <div class="camp-art" aria-hidden="true">
         <svg viewBox="0 0 400 300"><defs><linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe9ff"/><stop offset="1" stop-color="#5cc6e8"/></linearGradient></defs>
@@ -303,30 +303,26 @@
 
   function eduBreakdown() {
     return `<div class="edu-bar reveal">
-        <div class="eb eb-1" style="flex:3"><b>온라인 3시간</b><span>필수 · 이수 즉시 4배 임시사업권</span></div>
-        <div class="eb eb-2" style="flex:6"><b>온라인 6시간</b><span>내가 가능한 시간에 자율 이수</span></div>
-        <div class="eb eb-3" style="flex:3"><b>오프라인 3시간</b><span>매장 또는 1:1 방문</span></div>
+        <div class="eb eb-1" style="flex:3"><b>1단계: 온라인 입문 3시간</b><span>01~09강 · 이수 즉시 4배 사업권 시작</span></div>
+        <div class="eb eb-2" style="flex:6"><b>2단계: 온라인 실무 6시간</b><span>10~27강 · 50만점 달성 시 8배 승급</span></div>
+        <div class="eb eb-3" style="flex:3"><b>3단계: 오프라인 실습 3시간</b><span>180분 현장 실습 · 첫 30일 로드맵</span></div>
       </div>
       <div class="edu-cards">
-        <div class="card reveal"><h4>${icon('sprout')} 온라인 9시간</h4><p>홈페이지 온라인교육 메뉴에서 동영상 강의로 수강합니다. 처음 3시간을 이수하면 월 렌탈료 4배의 임시사업권이 생깁니다.</p></div>
-        <div class="card reveal"><h4>${icon('link')} 오프라인 3시간</h4><p>지정된 매장에서 개별 일정을 따로 맞추거나, 전문 헬퍼가 직접 방문해 1:1로 진행합니다.</p></div>
+        <div class="card reveal"><h4>${icon('sprout')} 12시간 체계적 전문 교육 (교육비 3만원)</h4><p>온라인 9시간(20분씩 27강)과 오프라인 현장 실습 3시간(180분)으로 구성됩니다. 처음 3시간(01~09강)을 이수하면 즉시 4배 사업권이 승인되며, 1교시(01~03강) 60분 통합 영상과 퀴즈를 온라인에서 바로 수강할 수 있습니다.</p></div>
+        <div class="card reveal"><h4>${icon('link')} 오프라인 현장 실습 3시간 & 수료 기준</h4><p>R1090·BB484·SM880 제품 체험, 고객 시착 지원, 상담 및 계약 역할연습, 첫 30일 활동계획을 완성합니다. <b>구매나 계약 실적은 교육 수료 조건이 아니며</b>, 누구나 차근차근 바른자세 가이드로 성장할 수 있습니다.</p></div>
       </div>`;
   }
 
   function appBand() {
     const s = set();
     return `<section class="sec app-band"><div class="wrap app-inner">
-      <div class="phone reveal" aria-hidden="true">
-        <div class="phone-screen">
-          <p class="ps-title">AI 자세 분석</p>
-          <svg viewBox="0 0 120 220" class="ps-body"><circle cx="60" cy="26" r="13"/><path d="M60 40v70M36 56h48M60 110l-16 60M60 110l16 60M36 56l-8 46M84 56l8 46"/><path class="ps-line" d="M60 8v200"/></svg>
-          <p class="ps-score">자세점수 <b>98</b></p>
-        </div>
+      <div class="app-mockup reveal" aria-hidden="true">
+        <img src="assets/app/play_slimminggo_mockup.png" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱" loading="lazy">
       </div>
       <div class="app-copy reveal">
-        <p class="eyebrow">플레이 슬리밍고 앱</p>
-        <h2>사진 한 장으로 내 자세 점수를 확인하세요</h2>
-        <p class="lead">슬리밍고가 직접 개발한 AI 자세측정 앱. 스마트폰으로 자세를 찍으면 자세점수와 문제점을 바로 확인하고, 체형에 맞는 해결책까지 안내받을 수 있어요.</p>
+        <p class="eyebrow">플레이 슬리밍고 2.1 앱</p>
+        <h2>자세를 읽고, 습관을 바꾸는 AI</h2>
+        <p class="lead">슬리밍고그룹이 직접 개발한 AI 자세측정 전문 앱 <b>플레이 슬리밍고 2.1</b>.<br>스마트폰 카메라로 사진 한 장을 찍으면 거북목·굽은 등·골반 비대칭 등 내 자세점수를 즉시 확인하고, 체형에 꼭 맞는 입는 바른자세 솔루션까지 안내받을 수 있습니다.</p>
         <div class="app-btns">
           <a class="store-btn" href="${esc(s.appIos)}" target="_blank" rel="noopener"><small>Download on the</small>App Store</a>
           <a class="store-btn" href="${esc(s.appAndroid)}" target="_blank" rel="noopener"><small>GET IT ON</small>Google Play</a>
@@ -363,13 +359,12 @@
     return `${pageHead('착한 창업', '바른 자세를 전하는 일,<br>당신의 새로운 사업이 됩니다', '개설비 0원 · 온라인 교육비 3만원 · 기본교육 12시간')}
     <section class="sec"><div class="wrap narrow">
       <div class="letter reveal">
-        <p>새로운 시작을 준비하시는 창업자 여러분을 환영합니다.</p>
-        <p>한 나라의 미래는 다음 세대의 건강한 성장과 오늘을 살아가는 사람들의 활기찬 일상에서 시작됩니다. 미래의 성장동력이 될 아동·청소년, 사회의 현재를 이끄는 청년·장년층, 건강하고 멋진 노후를 준비하는 시니어까지. 바른 자세는 모든 세대가 일상에서 함께 가꾸어야 할 기본입니다.</p>
-        <p>우리는 이러한 필요에 응답하는 가장 기본적이고 현실적인 대안으로, 생활 속에서 실천할 수 있는 바른 자세 솔루션을 제안합니다. 공부하고 일하고 걷는 매일의 순간에 바른 자세를 더하는 것, 그 가까운 실천에서 바른자세 사업의 가치와 가능성을 찾습니다.</p>
-        <p>국내 최초 바른 자세 습관 교정 제품 플랫폼과 연결하는 렌탈 중개 창업은 고객의 체험과 선택을 돕는 사업입니다. 개설비 0원, 5평의 체험 공간과 기존 매장의 숍인숍 활용으로 시작의 부담을 낮췄습니다.</p>
-        <p>별도 매장이 없는 경우에도 특별상담 이후 조건을 충족하면 창업할 수 있습니다. 온라인 상담과 방문 체험을 중심으로 준비하며, 본사의 교육과 전문 헬퍼의 현장 영업 지원이 함께합니다.</p>
-        <p>고객에게는 생애 전반에 걸쳐 바른 자세를 경험할 기회를, 여러분에게는 지역사회의 건강한 일상에 기여하며 새로운 가능성을 펼칠 기회를 전하고자 합니다.</p>
-        <p class="letter-em">시작은 가볍게, 고객과의 신뢰는 단단하게.<br>모든 세대의 바른 일상을 향한 여러분의 도전에 함께하겠습니다.</p>
+        <p>새로운 시작과 건강한 일상을 꿈꾸시는 모든 분들을 진심으로 환영합니다.</p>
+        <p>우리 몸의 모든 활력과 건강의 기초는 바로 내 몸의 중심 기둥인 <b>'바른 자세'</b>로부터 시작됩니다. 뼈와 골격이 바른 정렬을 이루고, 굽어진 척추와 말린 어깨가 시원하게 펴질 때, 숨 쉬는 공기와 흐르는 혈액이 온몸을 원활히 순환하며 스스로 치유하고 회복하는 자연 생명력을 갖게 됩니다. 바른 자세는 단순한 외면의 곧음을 넘어, 삶의 질과 평생 건강을 지탱하는 가장 본질적인 뿌리입니다.</p>
+        <p>슬리밍고그룹의 <b>'전국민 바른자세 만들기 문화캠페인'</b>은 단순한 제품 판매나 렌탈 비즈니스가 아닌, 전 세대의 삶을 지키는 <b>공익적 문화운동</b>입니다. 무거운 책가방과 스마트폰에 굽어가는 <b>아동·청소년</b>, 장시간 좌식 생활과 피로에 지친 <b>청년·중장년층</b>, 그리고 건강하고 활기찬 노후를 준비하는 <b>시니어 세대</b>까지—모든 이웃이 바른자세로 건강한 웃음을 되찾도록 돕는 따뜻한 공동체적 연대입니다.</p>
+        <p>이 뜻깊은 문화캠페인에 동참하실 수 있도록 우리는 창업의 모든 문턱을 없앴습니다. <b>가맹비 0원, 인테리어 0원, 재고 부담 0원</b>. 오직 치킨 한 마리 값인 <b>3만 원의 12시간 진정성 있는 교육</b>만으로 누구나 우리 동네와 이웃의 자세를 바로 세우는 정직한 <b>'바른자세 건강 가이드'</b>로 출발하실 수 있습니다.</p>
+        <p>물건을 강매하거나 매달 실적에 쫓길 필요가 전혀 없습니다. 고객이 가까운 매장에서 특허받은 입는 바른자세를 직접 체험하고, 몸의 변화를 스스로 느껴 선택할 수 있도록 돕는 정직한 안내자로서 함께 손잡고 걷는 동행입니다.</p>
+        <p class="letter-em">이곳을 찾아주신 분이 창업을 결심한 예비 파트너이든, 혹은 나 자신과 가족의 건강을 돌보고자 하는 동행자이든 상관없습니다.<br>바른자세로 몸을 바로 세우고 마음을 잇는 이 건강한 여정에 언제나 함께하겠습니다.</p>
         <div class="letter-sign">
           <small>(주)슬리밍고그룹 바른자세 렌탈 플랫폼</small>
           <b>착한 창업 가이드 ${esc(guide().name)}</b>
@@ -410,7 +405,7 @@
           <tr><td>인건비</td><td>직원 고용 필요</td><td class="hl-col">1인 활동</td></tr>
           <tr><td>재고 부담</td><td>원재료 · 상품 매입</td><td class="hl-col">없음</td></tr>
           <tr><td>영업 시간</td><td>매장 운영 시간에 묶임</td><td class="hl-col">자유 (본업 병행)</td></tr>
-          <tr><td>보증금</td><td>임대보증금 선납</td><td class="hl-col">선납 없음 · 수수료 20% 적립</td></tr>
+          <tr><td>보증금</td><td>임대보증금 선납</td><td class="hl-col">선납 없음 · 18회차 완납 시 20% 전액 반환</td></tr>
           <tr><td>시작 지원</td><td>오픈 교육 위주</td><td class="hl-col">12시간 교육 + 4회 동행</td></tr>
           <tr><td>시작 비용</td><td>수천만 원 이상</td><td class="hl-col"><b>3만원</b></td></tr>
         </tbody>
@@ -420,12 +415,12 @@
       <h3 class="sub-title">매장 · 재고 · 직원 ZERO</h3>
       <p>고정비가 없으니 리스크도 낮습니다. 계약할 때마다 쌓이는 <b>[ 수익구조 ]</b>입니다.</p>
       <ol class="flow4">
-        <li class="reveal"><b>STEP 1</b><span>렌탈 계약</span></li>
-        <li class="reveal"><b>STEP 2</b><span>수수료 발생</span></li>
-        <li class="reveal"><b>STEP 3</b><span>20% 적립</span></li>
-        <li class="reveal"><b>STEP 4</b><span>적립분 지급</span></li>
+        <li class="reveal"><b>STEP 1</b><span>렌탈 계약 체결</span></li>
+        <li class="reveal"><b>STEP 2</b><span>판매수수료 발생</span></li>
+        <li class="reveal"><b>STEP 3</b><span>20% 안심 적립 (80% 지급)</span></li>
+        <li class="reveal"><b>STEP 4</b><span>18회차 납입 시 20% 전액 반환</span></li>
       </ol>
-      <p class="fine">* 수익은 개인 활동에 따라 다릅니다. 수수료 기준은 상담 시 안내합니다.</p>
+      <p class="fine">* 수익은 개인 활동에 따라 다릅니다. 수수료 기준은 본사 공식 보상플랜에 따릅니다.</p>
     </div></section>
 
     <section class="sec"><div class="wrap">
@@ -443,38 +438,143 @@
     </div></section>
 
     <section class="sec" id="fee"><div class="wrap">
-      <div class="sec-head reveal"><p class="eyebrow">수수료 기준</p><h2>성과를 계산하는 세 가지 기준</h2><p class="lead">수수료 = 일반 고객 월 렌탈료 × 적용 배수</p></div>
-      ${multiplierCards()}
-      <p class="fine">8배의 '익월'은 실적을 달성한 달의 다음 달입니다.</p>
-
-      <h3 class="sub-title">상품별 수수료 <small>공제 전 산출액</small></h3>
-      <div class="table-wrap"><table class="table">
-        <thead><tr><th>상품</th><th>월 렌탈료</th><th>4배</th><th>8배</th><th>10배</th></tr></thead>
-        <tbody>${[['R1090', 37800], ['BB484', 19900], ['SM880', 37800]].map(([n, p]) => `<tr><td><b>${n}</b></td><td>${won(p)}</td><td>${won(p * 4)}</td><td>${won(p * 8)}</td><td>${won(p * 10)}</td></tr>`).join('')}</tbody>
-      </table></div>
-      <div class="check-box">
-        <h4>정산 전에 확인하세요</h4>
-        <ul><li>상품별 정산기준금액과 실적 인정일</li><li>취소·반품에 따른 차감 및 수수료 반환</li><li>상향 배수의 적용일·유지 조건과 지급 대상</li><li>보증금 적립·선택한 헬퍼 비용·세금 등 정산 항목</li></ul>
+      <div class="sec-head reveal">
+        <p class="eyebrow">공식 보상플랜</p>
+        <h2>3개의 보상플랜과 2개의 특전</h2>
+        <p class="lead">누구나 공평하게 시작하고, 함께 나눌수록 커지는 슬리밍고그룹 착한창업의 투명한 보상 시스템입니다.</p>
       </div>
-      <p class="notice">계산표는 확정 수익이나 매월 반복 지급을 의미하지 않습니다. 실제 지급액과 지급 횟수는 수수료 약정과 정산명세에 따릅니다.</p>
+
+      <div class="plans-wrap">
+        <!-- 01. 기본수수료 4배 -> 8배 일일 승급 -->
+        <div class="plan-card hot reveal">
+          <div class="plan-head">
+            <span class="plan-badge">01</span>
+            <h3>사업 시작 기본수수료 4배 ➔ 8배 일일 즉시 승급</h3>
+            <span class="plan-tag">1년 계약 · 일일 승급</span>
+          </div>
+          <div class="plan-body">
+            <p><b>온라인 입문교육 3시간(01~09강)</b>을 이수하면 사업승인 인정서가 발급되며, 그날부터 <b>4배 사업권</b>으로 1년 계약이 시작됩니다.<br>
+            총 12시간 교육 이수 후 <b>누적 50만점</b>을 달성하면, 월말까지 기다릴 필요 없이 <b>당일 즉시 8배로 일일 승급</b>되어 정식 사업권 혜택을 누립니다.</p>
+            
+            <div class="table-wrap"><table class="table plan-table">
+              <thead><tr><th>상품명</th><th>산정 점수</th><th>기본 4배 수수료</th><th class="hl">승급 8배 수수료</th></tr></thead>
+              <tbody>
+                <tr><td><b>R1090 (중체 하의)</b></td><td>37,800점</td><td>151,200원</td><td class="hl"><b>302,400원</b></td></tr>
+                <tr><td><b>BB484 (상체)</b></td><td>19,900점</td><td>79,600원</td><td class="hl"><b>159,200원</b></td></tr>
+                <tr><td><b>SM880 (상체 테이핑)</b></td><td>37,800점</td><td>151,200원</td><td class="hl"><b>302,400원</b></td></tr>
+              </tbody>
+            </table></div>
+            <div class="plan-box">
+              <b>🔄 1년 후 재계약 안내</b>
+              <p>사업권 계약기간은 사업 첫날부터 1년입니다. 1년 후 재계약 시 교육비 3만 원 납부 및 12시간 재교육을 통해 기존 인정받은 8배 사업권 자격과 혜택을 그대로 연장 유지합니다.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 02. 매월 바르게 응원금 -->
+        <div class="plan-card reveal">
+          <div class="plan-head">
+            <span class="plan-badge">02</span>
+            <h3>매월 바르게 응원금</h3>
+            <span class="plan-tag">월 유지조건 없음 · 균등 분배</span>
+          </div>
+          <div class="plan-body">
+            <p>누적 50만점 판매를 달성한 모든 창업자에게 회사의 성장을 함께 나누는 <b>'매월 바르게 응원금'</b>을 지급합니다.<br>
+            <strong style="color:var(--forest)">★ 매월 추가 판매 실적을 채워야 하는 '월 유지조건'이 전혀 없습니다!</strong></p>
+            <div class="plan-box">
+              <b>📊 배분 기준 및 계산 공식</b>
+              <p><code>해당 월 회사의 총계약 약정료 점수 ÷ 지급 대상 인원수 (균등 배분)</code></p>
+              <p>예) 해당 월 회사 총계약 약정료 10,000,000점 ÷ 대상자 20명 = <b>1인당 500,000원</b> 균등 지급 (부가세 포함, 세금 공제 전)</p>
+              <p><small>* 지급 기간: 50만점 달성월의 익월 매출분부터 최초 1년 계약 종료 전월 매출분까지 매월 25일 정기 지급</small></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 03. 창업 소개 수수료 100% -->
+        <div class="plan-card reveal">
+          <div class="plan-head">
+            <span class="plan-badge">03</span>
+            <h3>창업 소개 수수료 100%</h3>
+            <span class="plan-tag">1인당 최대 200만원 · 소급 100% 전액 지급</span>
+          </div>
+          <div class="plan-body">
+            <p>내가 직접 소개한 창업자가 4배 기간 동안 받는 판매수수료의 <b>100%를 본인에게 그대로 매칭 지급</b>합니다 (1인당 최대 약 200만 원 한도).<br>
+            소개 시점에 본인이 50만점을 달성하지 못했더라도 걱정하지 마세요. 1년 계약기간 내 본인이 50만점을 달성하면 <b>이전에 발생한 소개수수료까지 전액 100% 소급 지급</b>됩니다!</p>
+            <div class="plan-box">
+              <b>💡 본사 공식 발표 소급 지급 실례</b>
+              <p>창업자 5명을 소개해 각 27만점씩 총 135만점 달성 시 ➔ 본인이 1년 내 50만점 달성 즉시 <b>540만 원 전액 소급 지급!</b> (매월 25일 지급)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 04. 50만점 달성 축하 2대 특전 -->
+        <div class="plan-card privilege reveal">
+          <div class="plan-head">
+            <span class="plan-badge gold">04</span>
+            <h3>50만점 달성 축하 2개의 특전</h3>
+            <span class="plan-tag gold">제주 캠프 0원 · PA 창업 특혜</span>
+          </div>
+          <div class="plan-body">
+            <div class="grid2" style="margin-top:12px">
+              <div class="plan-box gold">
+                <b>🌴 특전 01 · 제주 본사 웰니스캠프 초청</b>
+                <p>누적 50만점 달성 시 1박 2일 제주 본사 웰니스캠프에 전액 무료(참가비 0원)로 초청합니다. 숙소, 식대, 최고급 전문 세미나 전액 본사 지원 (항공권만 본인 부담).</p>
+              </div>
+              <div class="plan-box gold">
+                <b>🏢 특전 02 · 상위 PA사업부 창업 기회 제공</b>
+                <p>오프라인 거점 매장을 운영하는 상위 PA사업부 창업 시, 까다로운 VVIP 달성 조건을 전액 면제해 드립니다 (1개월 내 신청 시 1,300만 원 / 1개월 이후 2,000만 원 특별 혜택).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 정산 및 지급일 안내 -->
+      <div class="sec-head reveal" style="margin-top:40px">
+        <p class="eyebrow">투명한 정산</p>
+        <h2>매출 적용 기간과 정산 · 지급일 안내</h2>
+        <p class="lead">정직하고 투명한 정산 시스템으로 신뢰를 약속합니다.</p>
+      </div>
+
+      <div class="table-wrap"><table class="pay-schedule-table">
+        <thead><tr><th>구분</th><th>매출 집계 기간</th><th>지급일</th><th>지급 항목 및 세부 사항</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="pay-tag green">판매수수료 1차</span></td>
+            <td>매월 1일 ~ 15일 마감</td>
+            <td><b>익월 3일</b></td>
+            <td>해당 기간 발생한 기본 4배 / 승급 8배 판매수수료</td>
+          </tr>
+          <tr>
+            <td><span class="pay-tag green">판매수수료 2차</span></td>
+            <td>매월 16일 ~ 말일 마감</td>
+            <td><b>익월 18일</b></td>
+            <td>해당 기간 발생한 기본 4배 / 승급 8배 판매수수료</td>
+          </tr>
+          <tr>
+            <td><span class="pay-tag blue">월 마감 항목</span></td>
+            <td>전월 1일 ~ 말일 마감</td>
+            <td><b>익월 25일</b></td>
+            <td>창업 소개수수료 100%, 매월 바르게 응원금, 프로모션 수당</td>
+          </tr>
+          <tr>
+            <td><span class="pay-tag gold">★ 20% 적립금 전액 반환</span></td>
+            <td>고객 18회차 납입 완료 시</td>
+            <td><b>익월 25일</b></td>
+            <td><b>판매자 면책 완료</b> 및 선납 없이 적립되었던 <b>20% 보증금 전액 100% 반환</b> (무이자)</td>
+          </tr>
+        </tbody>
+      </table></div>
+
+      <div class="plan-box" style="margin-top:16px">
+        <b>🛡️ 20% 적립금 제도와 18회차 완전 면책</b>
+        <p>초기 보증금 선납 부담 없이 발생 수수료의 20%를 안전하게 적립하고 80%를 정산일에 즉시 지급받습니다. 고객이 18회차 납입을 완료하면 판매자의 모든 사후 책임이 완전히 면책되며, 그동안 적립된 <b>20% 적립금 전액이 익월 25일에 100% 환급</b>됩니다.</p>
+      </div>
+
+      <p class="notice" style="margin-top:20px">※ 계산표 및 사례는 슬리밍고그룹 공식 사업운영 안내에 따른 것이며, 실제 지급액은 본인의 활동 실적과 정산 명세에 따릅니다.</p>
     </div></section>
 
     <section class="sec sec-tint"><div class="wrap">
-      <div class="sec-head reveal"><p class="eyebrow">정산 일정</p><h2>월 두 번, 정해진 날에 정산</h2></div>
-      <div class="pay-grid">
-        <div class="pay reveal"><small>매월 15일 마감</small><b>익월 3일 지급</b></div>
-        <div class="pay reveal"><small>매월 말일 마감</small><b>익월 18일 지급</b></div>
-      </div>
-      <h3 class="sub-title">보증금이 없는 경우</h3>
-      <p>발생 수수료의 20%를 보증금으로 적립하고, 나머지 80%를 정산일에 지급합니다.</p>
-      <div class="table-wrap"><table class="table">
-        <thead><tr><th>발생 수수료 / 기본 4배</th><th>20% 적립</th><th>80% 지급 대상</th></tr></thead>
-        <tbody>${[['R1090', 151200], ['BB484', 79600], ['SM880', 151200]].map(([n, v]) => `<tr><td><b>${n}</b> / ${won(v)}</td><td>${won(v * .2)}</td><td>${won(v * .8)}</td></tr>`).join('')}</tbody>
-      </table></div>
-      <p class="fine">보증금이 없는 경우의 예시이며, 세금·헬퍼 비용·취소 환수 등은 반영하지 않았습니다.</p>
-    </div></section>
-
-    <section class="sec"><div class="wrap">
       <div class="sec-head reveal"><p class="eyebrow">고객 서비스</p><h2>오래 사용하는 제품을 위해</h2></div>
       <div class="svc-grid">
         <div class="svc reveal"><small>339제도</small><b>개당 330,000원</b><p>서비스계약기간 중 동일 상품의 새 제품으로 교체합니다. 다른 품목으로 교환할 수 없으며, 단종된 경우에는 기능이 가장 유사한 대체상품을 제공합니다.</p></div>
@@ -482,13 +582,13 @@
       </div>
     </div></section>
 
-    <section class="sec sec-tint"><div class="wrap">
+    <section class="sec"><div class="wrap">
       <div class="sec-head reveal"><p class="eyebrow">성장 단계</p><h2>여섯 단계 회원 등급</h2></div>
       ${gradeJourney()}
     </div></section>
 
-    <section class="sec"><div class="wrap">
-      <div class="sec-head reveal"><p class="eyebrow">교육</p><h2>총 12시간 = 온라인 9시간 + 오프라인 3시간</h2></div>
+    <section class="sec sec-tint"><div class="wrap">
+      <div class="sec-head reveal"><p class="eyebrow">교육 과정</p><h2>총 12시간 = 온라인 9시간 + 오프라인 3시간</h2></div>
       ${eduBreakdown()}
     </div></section>
     ${ctaBand()}`;
@@ -616,21 +716,24 @@
      ======================================================= */
   function viewApp() {
     const s = set();
-    return `${pageHead('플레이 슬리밍고', 'AI 자세측정 앱, 플레이 슬리밍고', '슬리밍고가 직접 개발한 앱으로, 사진을 찍어 내 자세점수와 문제점을 바로 확인할 수 있어요.')}
+    return `${pageHead('플레이 슬리밍고 2.1', '자세를 읽고, 습관을 바꾸는 AI', '슬리밍고그룹이 개발한 AI 체형 측정 전문 앱으로, 사진 한 장으로 자세점수와 부위별 문제점을 즉시 확인합니다.')}
     <section class="sec"><div class="wrap app-detail">
+      <div class="app-hero-mockup reveal" aria-hidden="true">
+        <img src="assets/app/play_slimminggo_mockup.png" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱 화면" loading="lazy">
+      </div>
       <div class="app-features">
-        <div class="card"><h4>📸 촬영 한 번으로 체형 점수</h4><p>검사판이나 검사복 없이 스마트폰만으로 촬영부터 분석까지 빠르게 끝납니다.</p></div>
-        <div class="card"><h4>🔍 한눈에 보는 문제점</h4><p>정상 체형과 내 체형을 눈으로 비교하고, 체형별 통증 예상 부위를 쉽게 보여줍니다.</p></div>
-        <div class="card"><h4>🌿 맞춤 해결책</h4><p>스트레칭, 운동, 바른 생활자세, 특허받은 입는 바른자세까지 체형에 맞게 안내합니다.</p></div>
-        <div class="card"><h4>🪑 앉은 자세도 체크</h4><p>서 있는 자세뿐 아니라 일상에서 가장 오래 취하는 앉은 자세까지 측정합니다.</p></div>
+        <div class="card"><h4>📸 촬영 한 번으로 AI 골격 분석</h4><p>특수 검사판이나 검사복 없이 스마트폰 카메라만으로 정면·측면 촬영부터 3D 분석까지 빠르게 끝납니다.</p></div>
+        <div class="card"><h4>🔍 한눈에 보는 문제점</h4><p>거북목·굽은 등·말린 어깨·골반 경사 등 정상 체형과 내 체형을 입체적으로 비교하고 통증 유발 부위를 쉽게 보여줍니다.</p></div>
+        <div class="card"><h4>🌿 체형 맞춤 솔루션</h4><p>맞춤 스트레칭과 바른 생활습관, 특허받은 입는 바른자세 제품(R1090·BB484·SM880)까지 내 몸에 꼭 맞게 안내합니다.</p></div>
+        <div class="card"><h4>🪑 좌식 생활 앉은 자세 체크</h4><p>서 있는 자세뿐 아니라 하루 중 가장 오랜 시간을 보내는 책상 및 운전 시 앉은 자세까지 정밀하게 측정합니다.</p></div>
       </div>
       <div class="app-download card">
-        <h3>앱 다운로드</h3>
+        <h3>플레이 슬리밍고 2.1 다운로드</h3>
         <div class="dl-row">
           <div><div class="qr">${qrSvg(s.appIos, 5)}</div><a class="store-btn dark" href="${esc(s.appIos)}" target="_blank" rel="noopener"><small>Download on the</small>App Store</a></div>
           <div><div class="qr">${qrSvg(s.appAndroid, 5)}</div><a class="store-btn dark" href="${esc(s.appAndroid)}" target="_blank" rel="noopener"><small>GET IT ON</small>Google Play</a></div>
         </div>
-        <p class="fine">앱에서 측정한 결과를 들고 가까운 매장에서 입는 바른자세를 체험해 보세요.</p>
+        <p class="fine">앱에서 측정한 자세점수와 분석 결과를 들고 가까운 카페 드 슬리밍고 매장에서 입는 바른자세를 직접 체험해 보세요.</p>
       </div>
     </div></section>`;
   }
@@ -826,27 +929,59 @@
     const p1 = partProgress(u, 1);
     const lecList = part => S.data.lectures.filter(l => l.part === part).sort((a, b) => a.order - b.order).map((l, i) => {
       const done = lecDone(u, l), pc = lecPct(u, l);
+      const subs = (l.subLectures || []).map(s => `<li>${esc(s)}</li>`).join('');
+      const act = l.activities ? `<div class="lec-act-box">📝 <b>실천 과제:</b> ${esc(l.activities)}</div>` : '';
       return `<li class="lec ${done ? 'done' : ''}">
         <span class="lec-no">${done ? '✓' : i + 1}</span>
-        <div class="lec-info"><h4>${esc(l.title)} ${done ? '<em class="ok-chip">이수 완료</em>' : pc > 0 ? `<em class="pct-chip">${pc}% 시청</em>` : ''}</h4>
-          <p>${esc(l.desc || '')} · ${l.minutes}분 ${l.url || l.blob ? '' : '<em class="soon">영상 준비 중</em>'}${!done && pc > 0 && pc < 100 ? ' · 100% 시청 + 퀴즈 제출 필요' : ''}</p></div>
+        <div class="lec-info">
+          <h4>${esc(l.title)} ${done ? '<em class="ok-chip">이수 완료</em>' : pc > 0 ? `<em class="pct-chip">${pc}% 시청</em>` : ''}</h4>
+          <p>${esc(l.desc || '')} · <b>${l.minutes}분</b> ${l.url || l.blob ? '' : '<em class="soon">영상 준비 중</em>'}${!done && pc > 0 && pc < 100 ? ' · 100% 시청 + 퀴즈 제출 필요' : ''}</p>
+          ${subs ? `<ul class="lec-sub-items">${subs}</ul>` : ''}
+          ${act}
+        </div>
         <button class="btn ${done ? 'btn-line' : 'btn-primary'} btn-sm" data-lec="${l.id}">${done ? '다시 보기' : pc > 0 ? '이어서 보기' : '수강하기'}</button>
       </li>`;
     }).join('');
     return `${head}<section class="sec"><div class="wrap">
       ${isAdmin() ? `<div class="admin-strip">관리자: <a href="#/admin/lectures">강의 영상 등록·수정 →</a></div>` : ''}
-      ${p1.all && gIdx(u.grade) < 3 && !u.isAdmin ? `<div class="banner ok">🎉 1부 필수 3시간을 모두 이수했어요! 관리자 확인 후 <b>피움 등급(월 렌탈료 4배 임시사업권)</b>으로 등업됩니다.</div>` : ''}
+      ${p1.all && gIdx(u.grade) < 3 && !u.isAdmin ? `<div class="banner ok">🎉 1단계 필수 3시간(01~09강)을 모두 이수했어요! 관리자 확인 후 <b>피움 등급(월 렌탈료 4배 사업권)</b>으로 등업됩니다.</div>` : ''}
       ${eduBreakdown()}
       <div class="lec-wrap">
-        <div class="lec-part"><div class="lec-head"><h3>1부 · 필수 3시간</h3><span class="tag">이수 시 4배 임시사업권</span></div><ul class="lec-list">${lecList(1)}</ul></div>
-        <div class="lec-part"><div class="lec-head"><h3>2부 · 자율 6시간</h3><span class="tag soft">가능한 시간에 자유롭게</span></div><ul class="lec-list">${lecList(2)}</ul></div>
+        <div class="lec-part"><div class="lec-head"><h3>1단계: 온라인 입문교육 · 3시간</h3><span class="tag">이수 즉시 4배 사업권 시작 (01~09강)</span></div><ul class="lec-list">${lecList(1)}</ul></div>
+        <div class="lec-part"><div class="lec-head"><h3>2단계: 온라인 실무교육 · 6시간</h3><span class="tag soft">자율 이수 · 50만점 달성 시 8배 승급 (10~27강)</span></div><ul class="lec-list">${lecList(2)}</ul></div>
         <div class="lec-part offline card">
-          <h3>오프라인 · 3시간</h3>
-          <div class="grid2">
-            <div><h4>📍 지정 매장 개별 일정</h4><p class="muted">가까운 카페 드 슬리밍고 매장에서 일정을 따로 맞춰 진행합니다.</p></div>
-            <div><h4>🚗 전문 헬퍼 1:1 방문</h4><p class="muted">전문 헬퍼가 직접 방문해 1:1로 진행합니다.</p></div>
+          <div class="lec-head">
+            <h3>3단계: 오프라인 현장 실습 · 3시간 (180분)</h3>
+            <span class="tag">직접 입어보고, 설명해보고, 첫 활동계획 완성</span>
           </div>
-          <a class="btn btn-primary" href="#/consult/write?cat=창업상담&title=${encodeURIComponent('오프라인 교육 일정 신청')}">오프라인 교육 일정 신청</a>
+          <p class="lead" style="margin-top:10px">가까운 전국 카페 드 슬리밍고 지정 매장에서 진행되며, 전문 헬퍼가 1:1로 함께 동행하여 실무를 안내합니다.</p>
+          <div class="offline-grid">
+            <div class="offline-card"><small>1단계 · 15분</small><b>준비와 기본 안내</b><p>제품·위생·동의사항 확인 및 실습 순서 이해</p></div>
+            <div class="offline-card"><small>2단계 · 60분</small><b>제품별 직접 체험</b><p>R1090 · BB484 · SM880 착용 방향, 사이즈, 착탈의 및 관리 연습</p></div>
+            <div class="offline-card"><small>3단계 · 35분</small><b>고객 시착 지원 실습</b><p>고객 동의 획득, 신체 측정 및 사이즈 선택, 올바른 착용 상태 점검</p></div>
+            <div class="offline-card"><small>4단계 · 35분</small><b>상담·계약 역할연습</b><p>고객 생활불편 경청, 제품·비용 설명 및 렌탈 신청 절차 롤플레잉</p></div>
+            <div class="offline-card"><small>5단계 · 35분</small><b>학습 확인 및 활동 준비</b><p>개인별 실습 피드백 및 첫 30일 활동계획서 완성</p></div>
+          </div>
+
+          <div class="plan-box" style="margin-top:20px">
+            <b>✅ 교육 수료 안내</b>
+            <p>온라인 27강과 오프라인 실습 3시간(180분)을 이수하고, 학습 확인 활동 및 첫 활동계획서 작성을 마치면 정식 수료가 확정됩니다.<br>
+            <strong style="color:var(--cta-d)">※ 제품 구매나 계약 실적은 교육 수료 조건이 절대 아닙니다.</strong> 누구나 부담 없이 배움에 전념할 수 있습니다.</p>
+          </div>
+
+          <div style="margin-top:20px">
+            <h4>📅 수료 후 첫 30일 실천 로드맵</h4>
+            <div class="table-wrap"><table class="table roadmap-table">
+              <thead><tr><th>기간</th><th>실천할 일</th></tr></thead>
+              <tbody>
+                <tr><td><b>1주차</b></td><td>담당 매장과 연결하고, 고객 소개문과 무료 체험 예약을 준비합니다.</td></tr>
+                <tr><td><b>2주차</b></td><td>체험·상담을 실전처럼 연습하고 고객의 예상 질문과 답변을 정리합니다.</td></tr>
+                <tr><td><b>3주차</b></td><td>모바일 렌탈 신청 절차와 제품 인수 후 고객 안내 매뉴얼을 점검합니다.</td></tr>
+                <tr><td><b>4주차</b></td><td>고객관리 기록과 활동 내용을 돌아보고 다음 달 실행 계획을 세웁니다.</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+          <p style="margin-top:18px"><a class="btn btn-primary" href="#/consult/write?cat=창업상담&title=${encodeURIComponent('오프라인 교육 일정 신청')}">오프라인 현장 실습 일정 신청하기</a></p>
         </div>
       </div>
     </div></section>`;
@@ -1176,7 +1311,7 @@
     },
     settings() {
       const s = set();
-      const f = (k, label, ph = '', type = 'text') => `<label>${label}<input name="${k}" type="${type}" value="${esc(s[k])}" placeholder="${esc(ph)}"></label>`;
+      const f = (k, label, ph = '', type = 'text') => `<label>${label}<input name="${k}" type="${type}" value="${esc(s[k] || '')}" placeholder="${esc(ph)}"></label>`;
       return `<form class="form card" id="settingsForm">
         <h3>사이트 설정</h3>
         ${f('formUrl', '창업 신청 구글폼 링크', 'https://forms.gle/...')}
@@ -1188,7 +1323,16 @@
         <div class="grid2">${f('recommenderName', '기본 추천인 이름')}${f('recommenderNo', '기본 추천인 번호')}</div>
         <div class="grid3">${f('guideTitle', '운영자 호칭', '착한 창업 가이드')}${f('guideName', '운영자 이름')}${f('kakaoId', '카카오톡 ID')}</div>
         <div class="grid2">${f('contactPhone', '상담 전화번호')}${f('heroJoggerVideo', '메인 조깅 장면 실사 영상(mp4 경로, 선택)', 'assets/hero/joggers_v6.mp4')}</div>
-        <button class="btn btn-primary">저장</button>
+        
+        <div class="card" style="margin-top:16px;background:#f3fbf6;border:1.5px solid #a8dfc1;padding:18px">
+          <h4>☁️ Supabase 클라우드 저장소 연동</h4>
+          <p class="fine" style="margin:4px 0 12px">여러 방문자나 관리자 기기 간에 데이터(회원·게시판·설정)를 실시간 공유합니다.</p>
+          ${f('supabaseUrl', 'Supabase 프로젝트 URL', 'https://jurwrizrcfzhzvfpgkot.supabase.co')}
+          ${f('supabaseAnonKey', 'Supabase Anon (Public) Key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...')}
+          <p class="fine">※ Supabase 콘솔 > Project Settings > API > Project API keys 에 있는 <code>anon</code> <code>public</code> 키를 붙여넣으세요.</p>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:16px">저장</button>
       </form>`;
     },
     backup() {
@@ -1339,7 +1483,15 @@
 
     // 설정
     const sf = $('#settingsForm', el);
-    if (sf) sf.addEventListener('submit', async e => { e.preventDefault(); const f = formData(sf); f.eduFee = +f.eduFee || 30000; Object.assign(S.data.settings, f); await save('설정을 저장했습니다.'); syncGlobal(); });
+    if (sf) sf.addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = formData(sf);
+      f.eduFee = +f.eduFee || 30000;
+      Object.assign(S.data.settings, f);
+      if (S.setSupabaseConfig) await S.setSupabaseConfig(f.supabaseUrl, f.supabaseAnonKey);
+      await save('설정을 저장했습니다.');
+      syncGlobal();
+    });
 
     // 백업
     const ex = $('#exportBtn', el);

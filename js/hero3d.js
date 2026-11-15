@@ -32,7 +32,7 @@
     const runCaption = opts.runCaption || null;
     const scanVideo = opts.scanVideoEl || stage.querySelector('#heroScanVideo');
     const video = opts.videoEl || stage.querySelector('#heroVideo');
-    const soundBtn = opts.soundBtn || stage.querySelector('#heroSoundBtn');
+    const soundBtn = opts.soundBtn || stage.querySelector('#heroSoundBtn') || document.querySelector('#heroSoundBtn');
     const natureAudio = opts.natureAudio || stage.querySelector('#natureAudio');
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 

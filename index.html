@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
 <link rel="stylesheet" href="css/style.css?v=20261115_11">
-<link rel="stylesheet" href="css/style-v2.css?v=20261115_11">
-<link rel="preload" as="video" href="assets/hero/posture_scan.mp4?v=20261115_11" type="video/mp4">
+<link rel="stylesheet" href="css/style-v2.css?v=20261115_12">
+<link rel="preload" as="video" href="assets/hero/posture_scan.mp4?v=20261115_12" type="video/mp4">
 <link rel="preload" as="image" href="assets/hero/human_side_left.png?v=20261115_08">
 </head>
 <body>
@@ -88,42 +88,46 @@
       <p class="hero-guide">상담 · 추천인 연결 <b>착한 창업 가이드 이아름</b> <a href="tel:01092831231">010-9283-1231</a> <button type="button" class="kakao-chip" data-copy="armi1231">카톡 ID armi1231</button></p>
     </div>
 
-    <div class="hero-stage" id="heroStage" data-phase="scan">
-      <div class="scan-frame" aria-hidden="true">
-        <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
-        <div class="grid-bg"></div>
+    <div class="hero-stage-wrap">
+      <div class="hero-stage-topbar">
+        <button type="button" class="hero-sound-btn" id="heroSoundBtn" aria-label="음향 켜기 (대화 및 자연 BGM)">
+          <span class="hsb-icon">🔊</span><span class="hsb-text">소리 켜기</span>
+        </button>
       </div>
-      <video id="heroScanVideo" class="hero-scan-video" src="assets/hero/posture_scan.mp4?v=20261115_11" autoplay muted playsinline loop preload="auto" aria-label="AI 해부학 정밀 체형 측정 영상"></video>
-      <div class="hero-canvas" id="heroCanvas"></div>
-      <video id="heroVideo" class="hero-video" src="assets/hero/joggers_v6.mp4?v=20261115_11" autoplay muted playsinline loop preload="auto" aria-label="바른자세로 함께 조깅하는 40대 남녀"></video>
-      <audio id="natureAudio" src="assets/audio/nature_bgm.mp3?v=20261115_11" loop preload="auto"></audio>
-      <button type="button" class="hero-sound-btn" id="heroSoundBtn" aria-label="음향 켜기 (대화 및 자연 BGM)">
-        <span class="hsb-icon">🔊</span><span class="hsb-text">소리 켜기</span>
-      </button>
-      <div class="hero-type" id="heroTyping" aria-hidden="true">
-        <p class="st-main"></p>
-        <p class="st-sub"></p>
-      </div>
-            <div class="run-caption" id="runCaption" aria-hidden="true">
-        <p class="rc-main" id="rcChars"><span style="--i:0">바</span><span style="--i:1">른</span><span style="--i:2">자</span><span style="--i:3">세</span><span style="--i:4">가</span> <span style="--i:5">아</span><span style="--i:6">름</span><span style="--i:7">답</span><span style="--i:8">고</span> <span style="--i:9">건</span><span style="--i:10">강</span><span style="--i:11">한</span> <span style="--i:12">몸</span><span style="--i:13">이</span><span style="--i:14">다</span></p>
-      </div>
-      <div class="hud" aria-hidden="true">
-        <div class="hud-top">
-          <span class="hud-tag">AI POSTURE SCAN</span>
-          <span class="hud-app">PLAY SLIMMINGGO</span>
+      <div class="hero-stage" id="heroStage" data-phase="scan">
+        <div class="scan-frame" aria-hidden="true">
+          <i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i>
+          <div class="grid-bg"></div>
         </div>
-        <div class="hud-score">
-          <small>자세점수</small>
-          <b id="hudScore">52</b>
-          <div class="hud-bar"><i id="hudBar"></i></div>
+        <video id="heroScanVideo" class="hero-scan-video" src="assets/hero/posture_scan.mp4?v=20261115_12" autoplay muted playsinline loop preload="auto" aria-label="AI 해부학 정밀 체형 측정 영상"></video>
+        <div class="hero-canvas" id="heroCanvas"></div>
+        <video id="heroVideo" class="hero-video" src="assets/hero/joggers_v6.mp4?v=20261115_12" autoplay muted playsinline loop preload="auto" aria-label="바른자세로 함께 조깅하는 40대 남녀"></video>
+        <audio id="natureAudio" src="assets/audio/nature_bgm.mp3?v=20261115_12" loop preload="auto"></audio>
+        <div class="hero-type" id="heroTyping" aria-hidden="true">
+          <p class="st-main"></p>
+          <p class="st-sub"></p>
         </div>
-        <ul class="hud-list">
-          <li>목 기울기 <b id="hudNeck">24°</b></li>
-          <li>어깨 말림 <b id="hudShoulder">18°</b></li>
-          <li>골반 경사 <b id="hudPelvis">14°</b></li>
-          <li>무릎 굽힘 <b id="hudKnee">21°</b></li>
-        </ul>
-        <p class="hud-caption" id="hudCaption"></p>
+        <div class="run-caption" id="runCaption" aria-hidden="true">
+          <p class="rc-main" id="rcChars"><span style="--i:0">바</span><span style="--i:1">른</span><span style="--i:2">자</span><span style="--i:3">세</span><span style="--i:4">가</span> <span style="--i:5">아</span><span style="--i:6">름</span><span style="--i:7">답</span><span style="--i:8">고</span> <span style="--i:9">건</span><span style="--i:10">강</span><span style="--i:11">한</span> <span style="--i:12">몸</span><span style="--i:13">이</span><span style="--i:14">다</span></p>
+        </div>
+        <div class="hud" aria-hidden="true">
+          <div class="hud-top">
+            <span class="hud-tag">AI POSTURE SCAN</span>
+            <span class="hud-app">PLAY SLIMMINGGO</span>
+          </div>
+          <div class="hud-score">
+            <small>자세점수</small>
+            <b id="hudScore">52</b>
+            <div class="hud-bar"><i id="hudBar"></i></div>
+          </div>
+          <ul class="hud-list">
+            <li>목 기울기 <b id="hudNeck">24°</b></li>
+            <li>어깨 말림 <b id="hudShoulder">18°</b></li>
+            <li>골반 경사 <b id="hudPelvis">14°</b></li>
+            <li>무릎 굽힘 <b id="hudKnee">21°</b></li>
+          </ul>
+          <p class="hud-caption" id="hudCaption"></p>
+        </div>
       </div>
     </div>
   </div>
@@ -168,11 +172,12 @@
 
 <script src="assets/vendor/three.min.js"></script>
 <script src="assets/vendor/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" defer></script>
-<script src="js/config.js?v=20261115_11"></script>
-<script src="js/store.js?v=20261115_11"></script>
-<script src="js/hero3d.js?v=20261115_11"></script>
-<script src="js/lecture.js?v=20261115_11"></script>
-<script src="js/app.js?v=20261115_11"></script>
+<script src="js/config.js?v=20261115_12"></script>
+<script src="js/store.js?v=20261115_12"></script>
+<script src="js/hero3d.js?v=20261115_12"></script>
+<script src="js/lecture.js?v=20261115_12"></script>
+<script src="js/app.js?v=20261115_12"></script>
 </body>
 </html>
