@@ -268,7 +268,7 @@
 
   async function persist(data) {
     await persistLocal(data);
-    persistToSupabase(data).catch(() => {});
+    return await persistToSupabase(data);
   }
 
   /* ---------- 유틸 ---------- */

@@ -256,6 +256,46 @@
 .ok-chip{display:inline-block;background:#e3faee;color:#137a4d;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:800;font-style:normal;margin-left:6px}
 .pct-chip{display:inline-block;background:#fff4e3;color:#b96a1d;border-radius:6px;padding:1px 7px;font-size:.7rem;font-weight:800;font-style:normal;margin-left:6px}
 
+/* 수강 완료된 퀴즈 게이트 & '1강 수강완료' 버튼 */
+.quiz-gate.done-gate{background:linear-gradient(180deg,#eefbf3 0%,#ffffff 100%);border:1.5px solid #a3e7c0;box-shadow:0 12px 30px -18px rgba(31,92,70,.35)}
+.quiz-gate.done-gate .qg-head h4{color:var(--forest-d);font-size:1.1rem;font-weight:800}
+.qg-badge.ok{background:#2fd6a0;color:#073726;border-color:#20b583}
+.qg-action-wrap{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:stretch}
+.btn-done,
+.btn.btn-done{
+  flex:1;
+  min-width:200px;
+  background:#2fd6a0 !important;
+  color:#063524 !important;
+  font-weight:800 !important;
+  font-size:1.05rem !important;
+  border:none !important;
+  border-radius:14px !important;
+  padding:14px 22px !important;
+  box-shadow:0 8px 20px -4px rgba(47,214,160,.45) !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  cursor:default !important;
+  pointer-events:none !important;
+  letter-spacing:-0.02em !important;
+}
+.qg-btn-re{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px 20px;
+  border-radius:14px;
+  font-size:.92rem;
+  font-weight:700;
+  text-decoration:none;
+  background:#ffffff;
+  border:1.5px solid #a3e7c0;
+  color:var(--forest-d);
+}
+.qg-btn-re:hover{background:#eefbf3;border-color:#2fd6a0;color:var(--forest-d)}
+.qg-note.ok{color:#137a4d;font-weight:600;background:rgba(47,214,160,.12);padding:9px 13px;border-radius:8px;border-left:3px solid #2fd6a0;margin-top:12px}
+
 /* 수강 완료 화면 */
 .done-wrap{position:relative;padding:6px 0 4px;overflow:hidden}
 .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
