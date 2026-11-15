@@ -1408,7 +1408,7 @@
         const vSrc = (set().heroJoggerVideo || '').trim();
         const targetSrc = (vSrc && !vSrc.includes('joggers.mp4') && !vSrc.includes('joggers_v6.mp4'))
           ? vSrc
-          : 'assets/hero/joggers_v6.mp4?v=20261115_09';
+          : 'assets/hero/joggers_v6.mp4?v=20261115_11';
         if (vid && vid.getAttribute('src') !== targetSrc) {
           vid.setAttribute('src', targetSrc);
           vid.load();

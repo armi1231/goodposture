@@ -53,32 +53,54 @@
     camera.position.set(0, 1.02, 5.2);
     camera.lookAt(0, .95, 0);
 
-    /* 바닥 홀로그램 스캔 그리드 & 링 */
+    /* 바닥 홀로그램 스캔 그리드 & 회전 링 */
     const floor = new THREE.Group();
     scene.add(floor);
-    const polar = new THREE.PolarGridHelper(1.15, 12, 5, 64, 0x2fd6a0, 0x2fd6a0);
+    const polar = new THREE.PolarGridHelper(1.2, 12, 5, 64, 0x2fd6a0, 0x2fd6a0);
     polar.material.transparent = true;
-    polar.material.opacity = .28;
+    polar.material.opacity = .38;
     polar.material.depthWrite = false;
     floor.add(polar);
 
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(.98, 1.03, 72),
-      new THREE.MeshBasicMaterial({ color: 0x7dffb2, transparent: true, opacity: .50, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
+      new THREE.RingGeometry(.98, 1.04, 72),
+      new THREE.MeshBasicMaterial({ color: 0x7dffb2, transparent: true, opacity: .75, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
     );
     ring.rotation.x = -Math.PI / 2;
     floor.add(ring);
 
-    /* AI 수직 스캔 레이저 라인 */
-    const scan = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.4, .014),
-      new THREE.MeshBasicMaterial({ color: 0xbdfddf, transparent: true, opacity: .95, blending: THREE.AdditiveBlending, depthWrite: false })
+    const innerRing = new THREE.Mesh(
+      new THREE.RingGeometry(.54, .57, 48),
+      new THREE.MeshBasicMaterial({ color: 0x2fd6a0, transparent: true, opacity: .60, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    innerRing.rotation.x = -Math.PI / 2;
+    floor.add(innerRing);
+
+    /* AI 수직 스캔 고휘도 레이저 빔 (고휘도 백색 코어 + 네온 그린 라인 + 에메랄드 산란광) */
+    const scanGroup = new THREE.Group();
+    scene.add(scanGroup);
+
+    const scanCore = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.85, .022),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 1.0, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    const scanBand = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.85, .07),
+      new THREE.MeshBasicMaterial({ color: 0x7dffb2, transparent: true, opacity: .88, blending: THREE.AdditiveBlending, depthWrite: false })
     );
     const scanGlow = new THREE.Mesh(
-      new THREE.PlaneGeometry(1.4, .24),
-      new THREE.MeshBasicMaterial({ color: 0x2fd6a0, transparent: true, opacity: .18, blending: THREE.AdditiveBlending, depthWrite: false })
+      new THREE.PlaneGeometry(1.85, .38),
+      new THREE.MeshBasicMaterial({ color: 0x2fd6a0, transparent: true, opacity: .38, blending: THREE.AdditiveBlending, depthWrite: false })
     );
-    scene.add(scan, scanGlow);
+    scanGroup.add(scanCore, scanBand, scanGlow);
+
+    const tickGeo = new THREE.PlaneGeometry(.06, .06);
+    const tickMat = new THREE.MeshBasicMaterial({ color: 0x7dffb2, transparent: true, opacity: .95, blending: THREE.AdditiveBlending, depthWrite: false });
+    const tickL = new THREE.Mesh(tickGeo, tickMat);
+    tickL.position.x = -0.92;
+    const tickR = new THREE.Mesh(tickGeo, tickMat);
+    tickR.position.x = 0.92;
+    scanGroup.add(tickL, tickR);
 
     function typeInto(el, text) {
       if (!el) return;
@@ -295,16 +317,20 @@
 
       applyAudioBalance(isRunPhase);
 
-      /* 수직 스캔 레이저 라인 */
-      const sy = .1 + (Math.sin(el * 1.5) * .5 + .5) * 1.72;
-      scan.position.set(0, sy, .26);
-      scanGlow.position.set(0, sy, .25);
-      scan.material.opacity = isScanPhase ? (.95 * (1 - straighten * .45)) : 0;
-      scanGlow.material.opacity = isScanPhase ? .18 : 0;
+      /* 수직 스캔 레이저 라인 (발끝 0.08부터 머리끝 1.88까지 스캔 왕복) */
+      const sy = .08 + (Math.sin(el * 1.8) * .5 + .5) * 1.80;
+      scanGroup.position.set(0, sy, .28);
+      scanGroup.visible = isScanPhase;
+      scanCore.material.opacity = isScanPhase ? 1.0 : 0;
+      scanBand.material.opacity = isScanPhase ? .88 : 0;
+      scanGlow.material.opacity = isScanPhase ? .38 : 0;
+      tickL.material.opacity = isScanPhase ? .95 : 0;
+      tickR.material.opacity = isScanPhase ? .95 : 0;
 
       floor.visible = isScanPhase;
-      ring.material.opacity = .50;
-      polar.material.opacity = .28;
+      ring.material.opacity = .75;
+      polar.material.opacity = .38;
+      floor.rotation.y = el * 0.25;
       ring.scale.setScalar(1 + Math.sin(el * 3) * .03);
 
       /* HUD 수치 업데이트 (영상 속 변화와 100% 동기화) */

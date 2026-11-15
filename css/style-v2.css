@@ -6,35 +6,93 @@
    · 창업 근거 섹션 (비교표 · 수익구조 · 기술 지표)
    ========================================================= */
 
-/* ---------- AI 측정 실사 해부학 비디오 (posture_scan.mp4) ---------- */
+/* 레이어 1: 스테이지 기본 베이스 */
+.hero-stage{position:relative;aspect-ratio:4/5;max-height:min(78vh,720px);width:100%;justify-self:center;overflow:hidden;border-radius:36px;background:#041a20}
+
+/* 레이어 2: AI 측정 실사 해부학 비디오 (posture_scan.mp4) */
 .hero-scan-video{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;object-fit:cover;object-position:center 38%;
-  box-shadow:0 50px 90px -30px rgba(6,35,40,.6), inset 0 0 0 1px rgba(127,233,255,.2);
   opacity:1;transform:scale(1);transition:opacity 0.8s cubic-bezier(0.2,0.8,0.25,1), transform 0.8s cubic-bezier(0.2,0.8,0.25,1);
   pointer-events:none;z-index:2}
 .hero-stage[data-phase=run] .hero-scan-video{opacity:0 !important;transform:scale(0.96) !important;pointer-events:none !important}
-@media (max-width:960px){.hero-scan-video{inset:0;width:100%;height:100%;border-radius:26px}}
 
-/* ---------- 40대 동양인 남녀 실사 조깅 비디오 (joggers_v6.mp4) ---------- */
+/* 레이어 3: 40대 남녀 실사 조깅 비디오 (joggers_v6.mp4) */
 .hero-video{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;object-fit:cover;object-position:center 30%;
-  box-shadow:0 50px 90px -30px rgba(6,35,40,.6), inset 0 0 0 1px rgba(255,255,255,.2);
   opacity:0;transform:scale(0.96);transition:opacity 0.9s cubic-bezier(0.2,0.8,0.25,1), transform 0.9s cubic-bezier(0.2,0.8,0.25,1);
   pointer-events:none;z-index:3}
-.hero-stage[data-phase=run] .hero-video{opacity:1 !important;transform:scale(1) !important;pointer-events:auto !important;z-index:5 !important}
-.hero-stage[data-phase=run] .hero-canvas{opacity:0 !important;visibility:hidden !important;transition:opacity 0.4s ease}
-.hero-stage[data-phase=run] .scan-frame{opacity:0 !important}
-@media (max-width:960px){.hero-video{inset:0;width:100%;height:100%;border-radius:26px}}
+.hero-stage[data-phase=run] .hero-video{opacity:1 !important;transform:scale(1) !important;pointer-events:auto !important;z-index:3 !important}
 
-/* ---------- 히어로 스캔 타이핑 카피 (선명한 순백색 텍스트) ---------- */
-.hero-type{position:absolute;left:50%;transform:translateX(-50%);bottom:76px;width:min(92%,520px);text-align:center;pointer-events:none;z-index:4;
-  padding:10px 18px 12px;border-radius:20px;background:rgba(2,16,22,0.65);backdrop-filter:blur(8px);border:1px solid rgba(127,233,255,0.25)}
-.hero-stage[data-phase=run] .hero-type{display:none !important;opacity:0 !important;visibility:hidden !important}
+/* 레이어 4: 사이버 측정 프레임 · 네온 모서리 브래킷 · 디지털 그리드 */
+.scan-frame{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;background:transparent !important;
+  box-shadow:0 50px 90px -30px rgba(6,35,40,.6), inset 0 0 0 1.5px rgba(127,233,255,.35);
+  pointer-events:none;z-index:4;overflow:hidden;opacity:1;transition:opacity 0.8s ease}
+.hero-stage[data-phase=run] .scan-frame{opacity:0 !important;visibility:hidden !important}
+.scan-frame .grid-bg{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(127,233,255,.09) 1px, transparent 1px),linear-gradient(90deg, rgba(127,233,255,.09) 1px, transparent 1px);
+  background-size:28px 28px;mask-image:radial-gradient(circle at 50% 50%, #000 45%, transparent 85%);pointer-events:none}
+.scan-frame .c{position:absolute;width:32px;height:32px;border:2.5px solid #7dffb2;opacity:0.95;box-shadow:0 0 12px rgba(125,255,178,0.6);pointer-events:none}
+.scan-frame .tl{top:18px;left:18px;border-right:0;border-bottom:0;border-radius:10px 0 0 0}
+.scan-frame .tr{top:18px;right:18px;border-left:0;border-bottom:0;border-radius:0 10px 0 0}
+.scan-frame .bl{bottom:18px;left:18px;border-right:0;border-top:0;border-radius:0 0 0 10px}
+.scan-frame .br{bottom:18px;right:18px;border-left:0;border-top:0;border-radius:0 0 10px 0}
+
+/* 레이어 5: Three.js WebGL 실시간 레이저 스캔 빔 & 회전 홀로그램 링 */
+.hero-canvas{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;pointer-events:none;z-index:5;overflow:hidden;opacity:1;transition:opacity 0.4s ease}
+.hero-canvas canvas{width:100% !important;height:100% !important;display:block}
+.hero-stage[data-phase=run] .hero-canvas{opacity:0 !important;visibility:hidden !important}
+
+/* 레이어 6: 고선명 HUD 오버레이 (헤더 · 점수 52->98 · 우측상단 측정 항목) */
+.hud{position:absolute;inset:2% 3% 0;width:94%;height:98%;pointer-events:none;z-index:8 !important;opacity:1 !important;visibility:visible !important;transition:opacity 0.6s ease}
 .hero-stage[data-phase=run] .hud{display:none !important;opacity:0 !important;visibility:hidden !important;pointer-events:none !important}
 .hero-stage[data-phase=run] .hud-caption{display:none !important}
+
+.hud-top{position:absolute;top:18px;left:24px;right:24px;display:flex !important;justify-content:space-between !important;align-items:center;letter-spacing:0.12em;font-weight:800;font-size:0.72rem;z-index:8;pointer-events:none}
+.hud-tag{color:#7dffb2;display:inline-flex;align-items:center;gap:8px;background:rgba(4,26,32,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;border:1px solid rgba(125,255,178,0.45);box-shadow:0 6px 16px rgba(0,0,0,0.55)}
+.hud-tag::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#7dffb2;box-shadow:0 0 10px #7dffb2;animation:pulse 1.4s infinite}
+.hud-app{color:#cffbff;opacity:0.95;background:rgba(4,26,32,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:5px 12px;border-radius:999px;border:1px solid rgba(127,233,255,0.35);box-shadow:0 6px 16px rgba(0,0,0,0.55);display:inline-block !important}
+
+/* 좌측 상단: 자세점수 (52 -> 98 실시간 상승 및 프로그레스 바) */
+.hud-score{position:absolute;top:54px;left:20px;background:rgba(4,26,32,0.90);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1.5px solid rgba(125,255,178,0.5);border-radius:16px;padding:12px 18px;min-width:130px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.25);z-index:8;pointer-events:none}
+.hud-score small{display:flex;align-items:center;gap:6px;color:#a8f5d0;font-size:0.74rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase}
+.hud-score small::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#7dffb2;box-shadow:0 0 8px #7dffb2}
+.hud-score b{font-size:2.35rem;line-height:1.05;font-weight:900;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.85), 0 0 16px rgba(125,255,178,0.55);font-variant-numeric:tabular-nums;display:block;margin-top:4px}
+.hud-bar{height:6px;background:rgba(255,255,255,0.15);border-radius:6px;overflow:hidden;margin-top:8px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.5)}
+.hud-bar i{display:block;height:100%;background:linear-gradient(90deg,#ff8a5c 0%,#ffd86b 40%,#7dffb2 100%);box-shadow:0 0 10px rgba(125,255,178,0.7);transform-origin:left;transform:scaleX(0.52);transition:transform 0.1s linear}
+
+/* 우측 상단: 관절별 측정 항목 (목 기울기·어깨·골반·무릎 각도 및 정상 회복 ✔) */
+.hud-list{position:absolute;top:54px;right:20px;list-style:none;margin:0;padding:0;display:flex !important;flex-direction:column;gap:7px;z-index:8;pointer-events:none}
+.hud-list li{background:rgba(4,26,32,0.90);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,138,92,0.6);border-radius:12px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:142px;color:#e2f5ff;font-size:0.78rem;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,0.55);transition:all 0.4s ease}
+.hud-list li b{color:#ff9f7d;font-size:0.95rem;font-weight:900;font-variant-numeric:tabular-nums;text-shadow:0 0 10px rgba(255,138,92,0.6)}
+.hud-list li.ok{border-color:rgba(125,255,178,0.85);background:rgba(4,38,30,0.94);box-shadow:0 8px 24px rgba(0,0,0,0.6), 0 0 14px rgba(125,255,178,0.35);color:#ffffff}
+.hud-list li.ok b{color:#7dffb2;text-shadow:0 0 12px rgba(125,255,178,0.85)}
+.hud-list li.ok::after{content:'✔';color:#7dffb2;font-size:0.85rem;font-weight:900;margin-left:4px}
+
+/* 레이어 7: 하단 순백색 실시간 분석 타이핑 카피 */
+.hero-type{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;width:min(92%,520px);text-align:center;pointer-events:none;z-index:8;
+  padding:10px 20px 12px;border-radius:22px;background:rgba(2,16,22,0.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(127,233,255,0.4);box-shadow:0 14px 34px rgba(0,0,0,0.7), 0 0 20px rgba(47,214,160,0.25)}
+.hero-stage[data-phase=run] .hero-type{display:none !important;opacity:0 !important;visibility:hidden !important}
 .st-main{margin:0;font-size:clamp(1.05rem,2.1vw,1.5rem);font-weight:900;letter-spacing:-.02em;color:#ffffff !important;
   text-shadow:0 2px 14px rgba(0,0,0,0.95),0 0 2px rgba(0,0,0,1)}
 .st-main .ch{color:#ffffff !important;background:none !important;-webkit-background-clip:unset !important}
 .st-sub{margin:6px 0 0;font-size:clamp(.74rem,1.35vw,.95rem);font-weight:700;color:#cffbff !important;letter-spacing:.01em;
   text-shadow:0 2px 10px rgba(0,0,0,0.95);min-height:1.4em}
+
+/* 모바일 및 반응형 최적화 (640px 이하에서도 점수와 항목이 절대 사라지지 않음) */
+@media (max-width:960px){
+  .hero-scan-video, .hero-video, .scan-frame, .hero-canvas, .hud{inset:0 !important;width:100% !important;height:100% !important;border-radius:26px !important}
+}
+@media (max-width:640px){
+  .hud-top{top:12px;left:12px;right:12px;font-size:0.65rem}
+  .hud-top .hud-tag, .hud-top .hud-app{padding:3px 8px}
+  .hud-score{top:44px;left:10px;padding:8px 12px;min-width:98px;border-radius:12px}
+  .hud-score b{font-size:1.7rem}
+  .hud-list{display:flex !important;top:44px;right:10px;gap:4px}
+  .hud-list li{padding:4px 8px;min-width:108px;font-size:0.7rem;gap:8px;border-radius:8px}
+  .hud-list li b{font-size:0.82rem}
+  .hero-type{bottom:14px;padding:8px 14px}
+}
 
 /* 글자 하나하나 등장 */
 .ch{display:inline-block;opacity:0;transform:translateY(14px) rotateX(-55deg);filter:blur(6px);
