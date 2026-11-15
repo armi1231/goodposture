@@ -1409,6 +1409,7 @@
         hero = window.initHero({
           stage: $('#heroStage'), canvasWrap: $('#heroCanvas'), videoEl: vid,
           typeEl: $('#heroTyping'), runCaption: $('#runCaption'),
+          soundBtn: $('#heroSoundBtn'), natureAudio: $('#natureAudio'),
           hud: { score: $('#hudScore'), bar: $('#hudBar'), neck: $('#hudNeck'), shoulder: $('#hudShoulder'), pelvis: $('#hudPelvis'), knee: $('#hudKnee'), caption: null }
         });
       } else if (hero) hero.resume();

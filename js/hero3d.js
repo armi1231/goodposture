@@ -721,6 +721,8 @@
     const typeEl = opts.typeEl || null;
     const runCaption = opts.runCaption || null;
     const video = opts.videoEl || stage.querySelector('#heroVideo');
+    const soundBtn = opts.soundBtn || stage.querySelector('#heroSoundBtn');
+    const natureAudio = opts.natureAudio || stage.querySelector('#natureAudio');
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let renderer;
@@ -796,14 +798,94 @@
       { el: hud.knee, a: 21, b: 0, unit: '°' }
     ];
 
-    let lastPhase = '';
-    function setPhase(p, main, sub) {
-      if (p === lastPhase) return;
-      lastPhase = p;
-      stage.dataset.phase = p;
-      typeInto(typeEl ? typeEl.querySelector('.st-main') : null, main);
-      typeInto(typeEl ? typeEl.querySelector('.st-sub') : null, sub || '');
+    /* ---------------- 음향 & 대화 및 자연 BGM 제어 ---------------- */
+    let soundEnabled = false;
+
+    function applyAudioBalance(isRunPhase) {
+      if (!soundEnabled) return;
+      if (isRunPhase) {
+        if (video) {
+          video.muted = false;
+          video.volume = 1.0;
+        }
+        if (natureAudio) {
+          // 조깅 영상 속 대화가 선명하고 또렷하게 들리도록 자연 BGM 볼륨 부드럽게 더킹
+          natureAudio.volume = 0.18;
+        }
+      } else {
+        if (video) {
+          video.muted = true;
+        }
+        if (natureAudio) {
+          // 3D 스캔 및 교정 단계: 산뜻한 숲속 새소리와 경쾌한 어쿠스틱 악기 BGM
+          natureAudio.volume = 0.50;
+        }
+      }
     }
+
+    function updateSoundUI() {
+      if (!soundBtn) return;
+      soundBtn.classList.toggle('is-active', soundEnabled);
+      const icon = soundBtn.querySelector('.hsb-icon');
+      const text = soundBtn.querySelector('.hsb-text');
+      if (soundEnabled) {
+        if (icon) icon.textContent = '🔊';
+        if (text) text.textContent = '사운드 ON';
+        soundBtn.setAttribute('aria-label', '음향 끄기');
+        soundBtn.title = '클릭하여 음소거';
+      } else {
+        if (icon) icon.textContent = '🔇';
+        if (text) text.textContent = '소리 켜기';
+        soundBtn.setAttribute('aria-label', '음향 켜기 (대화 및 자연 BGM)');
+        soundBtn.title = '클릭하여 조깅 대화 및 자연 새소리 BGM 듣기';
+      }
+    }
+
+    function enableSound() {
+      if (soundEnabled) return;
+      soundEnabled = true;
+      updateSoundUI();
+      if (natureAudio) {
+        natureAudio.play().catch(() => {});
+      }
+      if (video) {
+        video.muted = false;
+        video.volume = 1.0;
+        video.play().catch(() => {});
+      }
+      applyAudioBalance(stage.dataset.phase === 'run');
+    }
+
+    function disableSound() {
+      soundEnabled = false;
+      updateSoundUI();
+      if (natureAudio) {
+        natureAudio.pause();
+      }
+      if (video) {
+        video.muted = true;
+      }
+    }
+
+    function toggleSound() {
+      if (soundEnabled) disableSound();
+      else enableSound();
+    }
+
+    if (soundBtn) {
+      soundBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSound();
+      });
+    }
+
+    // 히어로 스테이지 클릭 시에도 자연스럽게 소리 활성화
+    stage.addEventListener('click', (e) => {
+      if (e.target.closest('a, button, input, .kakao-chip')) return;
+      if (!soundEnabled) {
+        enableSound();
+      }
+    });
 
     // 비디오 자동 재생 보장
     if (video) {
@@ -811,14 +893,31 @@
       video.loop = true;
       video.playsInline = true;
       video.play().catch(() => {});
-      // 브라우저 터치/클릭 시 자동재생 차단 즉시 해제
-      const playOnce = () => {
-        video.play().catch(() => {});
-        window.removeEventListener('click', playOnce);
-        window.removeEventListener('touchstart', playOnce);
-      };
-      window.addEventListener('click', playOnce);
-      window.addEventListener('touchstart', playOnce);
+    }
+
+    // 브라우저 최초 제스처 시 비디오 재생 보장
+    const unlockAutoplay = () => {
+      if (video && video.paused) video.play().catch(() => {});
+      window.removeEventListener('click', unlockAutoplay);
+      window.removeEventListener('touchstart', unlockAutoplay);
+    };
+    window.addEventListener('click', unlockAutoplay, { once: true });
+    window.addEventListener('touchstart', unlockAutoplay, { once: true });
+
+    let lastPhase = '';
+    function setPhase(p, main, sub) {
+      if (p === lastPhase) return;
+      // 조깅 영상 진입 시 0초부터 시작하여 남녀의 활기찬 대화 음성이 첫마디부터 생생하게 재생
+      if (p === 'run' && lastPhase !== 'run') {
+        if (video) {
+          video.currentTime = 0;
+          video.play().catch(() => {});
+        }
+      }
+      lastPhase = p;
+      stage.dataset.phase = p;
+      typeInto(typeEl ? typeEl.querySelector('.st-main') : null, main);
+      typeInto(typeEl ? typeEl.querySelector('.st-sub') : null, sub || '');
     }
 
     /* 21초 전체 루프: 인체 체형 측정 → 바른자세 교정 → 자세 98점 → 40대 남녀 실사 조깅 영상 */
@@ -853,6 +952,7 @@
 
       /* 3D 인체 및 골격 자세 업데이트: 조깅 영상 단계에서는 완전히 감추어 뒷모습 노출 원천 차단 */
       const isRunPhase = (t >= 9.2 && t < 20.2);
+      applyAudioBalance(isRunPhase);
 
       if (isRunPhase) {
         model.root.visible = false;
@@ -925,6 +1025,7 @@
         running = false;
         pausedAt = performance.now();
         if (video) video.pause();
+        if (natureAudio) natureAudio.pause();
       },
       resume() {
         if (running) return;
@@ -932,6 +1033,7 @@
         running = true;
         requestAnimationFrame(frame);
         if (video) video.play().catch(() => {});
+        if (soundEnabled && natureAudio) natureAudio.play().catch(() => {});
         resize();
       },
       resize

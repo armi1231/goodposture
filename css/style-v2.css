@@ -53,6 +53,19 @@
 }
 .run-caption::before{content:'';position:absolute;left:50%;top:-1px;width:70px;height:3px;border-radius:3px;
   transform:translateX(-50%);background:linear-gradient(90deg,transparent,#2fd6a0,transparent)}
+
+/* ---------- 음향 & 대화 & 자연 BGM 토글 버튼 ---------- */
+.hero-sound-btn{position:absolute;top:18px;right:22px;z-index:12;display:inline-flex;align-items:center;gap:7px;
+  padding:8px 16px;border-radius:999px;background:rgba(4,26,32,0.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(125,255,178,0.45);box-shadow:0 8px 24px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.3);
+  color:#ffffff;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.3s cubic-bezier(0.2,0.8,0.25,1);user-select:none}
+.hero-sound-btn:hover{background:rgba(6,42,50,0.95);border-color:#7dffb2;transform:translateY(-2px);
+  box-shadow:0 12px 28px rgba(0,0,0,0.6),0 0 16px rgba(47,214,160,0.35)}
+.hero-sound-btn.is-active{background:linear-gradient(135deg,rgba(31,92,70,0.95),rgba(15,60,45,0.98));border-color:#2fd6a0;color:#7dffb2}
+.hero-sound-btn .hsb-icon{font-size:1rem}
+@keyframes soundPulse{0%,100%{box-shadow:0 8px 24px rgba(0,0,0,0.5),0 0 0 rgba(47,214,160,0)}50%{box-shadow:0 8px 24px rgba(0,0,0,0.5),0 0 14px rgba(47,214,160,0.55)}}
+.hero-sound-btn:not(.is-active){animation:soundPulse 2.4s ease-in-out infinite}
+@media (max-width:640px){.hero-sound-btn{top:12px;right:14px;padding:6px 12px;font-size:0.74rem}}
 /* ---------- 제품 카드 (2개 구성) ---------- */
 .product-img.duo{gap:0;background:linear-gradient(180deg,#f7faf6,#eef5ef);position:relative}
 .product-img.duo img{width:50%;height:88%;object-fit:contain}
