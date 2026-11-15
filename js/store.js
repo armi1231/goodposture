@@ -159,15 +159,17 @@
     return Array.from(map.values());
   }
 
-  function mergePosts(localPosts = {}, remotePosts = {}) {
+  function mergePosts(localPosts = {}, remotePosts = {}, delSet = new Set()) {
     const out = {};
     ['guestbook', 'consult', 'apply', 'rentalApply'].forEach(b => {
       const lList = (localPosts && localPosts[b]) || [];
       const rList = (remotePosts && remotePosts[b]) || [];
       const map = new Map();
-      rList.forEach(p => { if (p && p.id) map.set(p.id, p); });
+      rList.forEach(p => {
+        if (p && p.id && !delSet.has(p.id)) map.set(p.id, p);
+      });
       lList.forEach(p => {
-        if (!p || !p.id) return;
+        if (!p || !p.id || delSet.has(p.id)) return;
         if (map.has(p.id)) {
           const rPost = map.get(p.id);
           const cMap = new Map();
@@ -178,7 +180,7 @@
           map.set(p.id, p);
         }
       });
-      out[b] = Array.from(map.values()).sort((x, y) => new Date(y.createdAt || 0) - new Date(x.createdAt || 0));
+      out[b] = Array.from(map.values()).sort((x, y) => new Date(y.createdAt || y.date || 0) - new Date(x.createdAt || x.date || 0));
     });
     return out;
   }
@@ -186,11 +188,16 @@
   function mergeData(local, remote) {
     if (!remote) return local;
     if (!local) return remote;
+    const delSet = new Set((local && local.deletedPostIds) || []);
+    ((remote && remote.deletedPostIds) || []).forEach(id => delSet.add(id));
+    const mergedDeleted = Array.from(delSet);
+
     return Object.assign({}, remote, local, {
       version: Math.max(local.version || 1, remote.version || 1),
       settings: Object.assign({}, remote.settings || {}, local.settings || {}),
       users: mergeUsers(local.users, remote.users),
-      posts: mergePosts(local.posts, remote.posts),
+      deletedPostIds: mergedDeleted,
+      posts: mergePosts(local.posts, remote.posts, delSet),
       rentalProducts: (remote.rentalProducts && remote.rentalProducts.length) ? remote.rentalProducts : local.rentalProducts,
       lectures: (remote.lectures && remote.lectures.length) ? remote.lectures : local.lectures,
       materials: (remote.materials && remote.materials.length) ? remote.materials : local.materials,
@@ -446,7 +453,8 @@
         { id: uid(), name: '카페 드 슬리밍고 울산남구점', region: '울산', naverUrl: 'https://naver.me/5mIoKouD', address: '', phone: '', img: '' },
         { id: uid(), name: '카페 드 슬리밍고 부산W스퀘어점', region: '부산', naverUrl: 'https://naver.me/5R4Pz7TL', address: '부산광역시 남구 분포로 145 W스퀘어 2053호', phone: '', img: '' }
       ],
-      posts: { guestbook: [], consult: [], apply: [], rentalApply: [] }
+      posts: { guestbook: [], consult: [], apply: [], rentalApply: [] },
+      deletedPostIds: []
     };
   }
 
@@ -482,6 +490,17 @@
     },
     save() { return persist(this.data); },
 
+    deletePost(b, id) {
+      if (!this.data || !this.data.posts || !this.data.posts[b]) return Promise.resolve(false);
+      this.data.posts[b] = this.data.posts[b].filter(x => x && x.id !== id);
+      if (!this.data.deletedPostIds) this.data.deletedPostIds = [];
+      if (!this.data.deletedPostIds.includes(id)) {
+        this.data.deletedPostIds.push(id);
+        if (this.data.deletedPostIds.length > 500) this.data.deletedPostIds.shift();
+      }
+      return this.save();
+    },
+
     /* 이전 버전 데이터 보정 */
     migrate() {
       const d = this.data, C = window.SITE_CONFIG, s = d.settings;
@@ -490,6 +509,7 @@
       if (!d.posts.consult) d.posts.consult = [];
       if (!d.posts.apply) d.posts.apply = [];
       if (!d.posts.rentalApply) d.posts.rentalApply = [];
+      if (!d.deletedPostIds) d.deletedPostIds = [];
       if ((d.version || 1) < 2) {
         if (!s.contactPhone) s.contactPhone = C.contactPhone;
         if (!s.kakaoId) s.kakaoId = C.kakaoId;

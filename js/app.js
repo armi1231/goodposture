@@ -2299,8 +2299,7 @@
       if (del) {
         del.addEventListener('click', async () => {
           if (!confirmBox('이 렌탈접수 글을 삭제할까요?')) return;
-          S.data.posts.rentalApply = S.data.posts.rentalApply.filter(x => x.id !== id);
-          await S.save();
+          await S.deletePost('rentalApply', id);
           toast('삭제했습니다.');
           location.hash = '#/rentalApply';
         });
@@ -2353,7 +2352,9 @@
     const del = $('#delBtn', el);
     if (del) del.addEventListener('click', async () => {
       if (!confirmBox('이 글을 삭제할까요?')) return;
-      S.data.posts[b] = S.data.posts[b].filter(x => x.id !== id); await S.save(); toast('삭제했습니다.'); location.hash = '#/' + b;
+      await S.deletePost(b, id);
+      toast('삭제했습니다.');
+      location.hash = '#/' + b;
     });
     const rf = $('#replyForm', el);
     if (rf) rf.addEventListener('submit', async e => {
