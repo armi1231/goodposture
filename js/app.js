@@ -67,7 +67,7 @@
       return q.createSvgTag({ cellSize: cell, margin: 2, scalable: true });
     } catch (e) { return ''; }
   }
-  function fileToDataURL(file, max = 1400, q = .82) {
+  function fileToDataURL(file, max = 1000, q = .75) {
     return new Promise((res) => {
       if (!file) return res('');
       const fr = new FileReader();
@@ -1553,7 +1553,7 @@
         }
         toast('신분증 사진을 불러와 최적화 중입니다...');
         try {
-          idCardDataUrl = await fileToDataURL(file, 1400, 0.82);
+          idCardDataUrl = await fileToDataURL(file, 1000, 0.75);
           if (!idCardDataUrl) throw new Error('변환 실패');
           idThumb.src = idCardDataUrl;
           idPrevWrap.style.display = 'flex';
@@ -1967,7 +1967,7 @@
           /\.(jpe?g|png|gif|webp|bmp|jfif|heic|heif|svg)$/i.test(f.name || '');
         if (!isImg && f.type) continue;
         try {
-          const dataUrl = await fileToDataURL(f, 1400, 0.82);
+          const dataUrl = await fileToDataURL(f, 1000, 0.75);
           if (dataUrl) {
             attachedFiles.push({
               id: S.uid(),
@@ -2761,6 +2761,21 @@
     $$('.reveal').forEach(e => io.observe(e));
   }
 
+  /* ---------- 자동 동기화 시 폼 입력 보호 ---------- */
+  function shouldSkipAutoRender() {
+    const hash = window.location.hash || '';
+    // 1. 글쓰기/수정 화면에서는 절대 자동 재렌더링 금지 (입력 내용 및 첨부파일 보호)
+    if (hash.includes('/write') || hash.includes('/edit')) return true;
+    // 2. 화면에 폼(신분증 업로드, 게시글 작성 등)이 존재하는 경우
+    if (document.querySelector('form#rentalPostForm, form#postForm, #idCardBlock, #postFileBlock, #thumbs, .idcard-card')) return true;
+    // 3. 사용자가 입력 필드에 포커스하고 있거나 입력 중인 경우
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT')) return true;
+    // 4. 모달창이 열려 있는 경우
+    if (document.querySelector('.modal-wrap, .modal-backdrop')) return true;
+    return false;
+  }
+
   /* ---------- 시작 ---------- */
   async function boot() {
     await S.init();
@@ -2775,7 +2790,9 @@
     // 타 기기(PC·모바일) 실시간 진행현황 동기화 이벤트 수신
     window.addEventListener('bjs_sync', () => {
       syncGlobal();
-      render();
+      if (!shouldSkipAutoRender()) {
+        render();
+      }
     });
 
     // 화면 복귀 / 포커스 시 클라우드 자동 동기화 (모바일 백그라운드 복귀 대응)
@@ -2786,7 +2803,9 @@
       if (S && S.syncSupabase) {
         S.syncSupabase().then(() => {
           syncGlobal();
-          render();
+          if (!shouldSkipAutoRender()) {
+            render();
+          }
         }).catch(() => {});
       }
     };
