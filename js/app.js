@@ -70,54 +70,10 @@
   function fileToDataURL(file, max = 1400, q = .82) {
     return new Promise((res) => {
       if (!file) return res('');
-      const isImg = (file.type && file.type.startsWith('image/')) ||
-        /\.(jpe?g|png|gif|webp|bmp|jfif|heic|heif|svg)$/i.test(file.name || '');
-      if (!isImg && file.type) return res('');
-
-      // 1. URL.createObjectURL을 통한 메모리 절약형 고속 로딩 시도 (대용량 스마트폰 사진 대응)
-      let objectUrl = null;
-      try {
-        objectUrl = (window.URL || window.webkitURL).createObjectURL(file);
-      } catch (e) {
-        objectUrl = null;
-      }
-
-      const fallbackFR = () => {
-        try {
-          const fr = new FileReader();
-          fr.onload = () => {
-            const raw = fr.result || '';
-            const img = new Image();
-            img.onload = () => {
-              try {
-                const w = img.naturalWidth || img.width;
-                const h = img.naturalHeight || img.height;
-                if (w && h) {
-                  const s = Math.min(1, max / Math.max(w, h));
-                  const c = document.createElement('canvas');
-                  c.width = Math.max(1, Math.round(w * s));
-                  c.height = Math.max(1, Math.round(h * s));
-                  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-                  return res(c.toDataURL('image/jpeg', q));
-                }
-              } catch (e) {}
-              res(raw);
-            };
-            img.onerror = () => res(raw);
-            img.src = raw;
-          };
-          fr.onerror = () => res('');
-          fr.readAsDataURL(file);
-        } catch (e) {
-          res('');
-        }
-      };
-
-      if (objectUrl) {
+      const fr = new FileReader();
+      fr.onload = () => {
+        const raw = fr.result || '';
         const img = new Image();
-        const cleanup = () => {
-          try { (window.URL || window.webkitURL).revokeObjectURL(objectUrl); } catch (e) {}
-        };
         img.onload = () => {
           try {
             const w = img.naturalWidth || img.width;
@@ -127,23 +83,17 @@
               const c = document.createElement('canvas');
               c.width = Math.max(1, Math.round(w * s));
               c.height = Math.max(1, Math.round(h * s));
-              const ctx = c.getContext('2d');
-              ctx.drawImage(img, 0, 0, c.width, c.height);
-              cleanup();
+              c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
               return res(c.toDataURL('image/jpeg', q));
             }
           } catch (e) {}
-          cleanup();
-          fallbackFR();
+          res(raw);
         };
-        img.onerror = () => {
-          cleanup();
-          fallbackFR();
-        };
-        img.src = objectUrl;
-      } else {
-        fallbackFR();
-      }
+        img.onerror = () => res(raw);
+        img.src = raw;
+      };
+      fr.onerror = () => res('');
+      fr.readAsDataURL(file);
     });
   }
   async function readImages(input, limit = 5) {
@@ -1448,16 +1398,12 @@
                 <small>예시: 900101 - 1****** (앞면 사진만 첨부 / 비밀글로 관리자만 안전하게 확인합니다)</small>
               </div>
             </div>
-            <div class="idcard-upload-container">
-              <input type="file" id="idCardInput" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" class="sr-only-file">
-              <label for="idCardInput" class="idcard-upload-box" id="idCardBox">
-                <div class="idcard-upload-icon">📁</div>
-                <div class="idcard-upload-prompt"><b>여기를 클릭하여 신분증 사진을 선택</b>하거나 파일을 끌어다 놓으세요</div>
-                <div class="idcard-upload-sub">스마트폰 촬영 사진 · PC 캡처 모두 가능 (JPG, PNG, GIF, WebP 지원)</div>
-                <div class="idcard-upload-btn-row">
-                  <span class="btn btn-primary btn-sm">📎 파일 찾기 / 사진 선택</span>
-                </div>
+            <div class="file-select-block" id="idCardBlock">
+              <label class="file-select-label">
+                <span class="fsl-title"><b>신분증 사진 선택 (앞면)</b> <small>스마트폰 촬영 사진 · PC 캡처 (JPG, PNG 등)</small></span>
+                <input type="file" id="idCardInput" class="form-file-input" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif">
               </label>
+              <p class="file-drop-hint">💡 스마트폰 앨범에서 사진을 선택하거나, PC에서 파일을 끌어다 놓기 / 화면 캡처 후 붙여넣기(Ctrl+V)도 가능합니다.</p>
             </div>
             <div id="idCardPreviewWrap" style="display:none;" class="idcard-preview-wrap">
               <img id="idCardThumb" class="idcard-thumb" src="" alt="신분증 미리보기" title="클릭 시 크게 보기">
@@ -1574,20 +1520,12 @@
           <label class="agree"><input type="checkbox" name="paid" required> 온라인 교육비 ${won(set().eduFee)} 입금을 완료했습니다.</label>` : ''}
         <label>내용<textarea name="body" rows="9" required placeholder="${b === 'apply' ? '연락 가능한 시간, 희망 교육 방식(매장/헬퍼 방문) 등을 자유롭게 적어 주세요.' : '내용을 입력해 주세요.'}"></textarea></label>
         
-        <div class="board-file-uploader" id="boardFileUploader">
-          <div class="bfu-head">
-            <span class="bfu-title">📷 사진 첨부 <small>(최대 5장 · 자동 최적화 저장)</small></span>
-            <span class="bfu-counter" id="bfuCounter">0 / 5장</span>
-          </div>
-          <input type="file" id="imgInput" name="images" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif, .heic, .HEIC" multiple class="sr-only-file">
-          <label for="imgInput" class="bfu-dropzone" id="imgDropzone">
-            <div class="bfu-icon">📁</div>
-            <div class="bfu-prompt"><b>여기를 클릭하여 사진을 첨부</b>하거나 이미지를 끌어다 놓으세요</div>
-            <div class="bfu-sub">스마트폰 촬영 사진 · PC 캡처 (JPG, PNG, WebP, GIF 등 지원)</div>
-            <div class="bfu-btn-row">
-              <span class="btn btn-primary btn-sm">📎 파일 찾기 / 사진 선택</span>
-            </div>
+        <div class="file-select-block" id="postFileBlock">
+          <label class="file-select-label">
+            <span class="fsl-title"><b>사진 첨부</b> <small>(최대 5장 · 자동으로 용량을 최적화하여 저장합니다)</small></span>
+            <input type="file" id="imgInput" name="images" class="form-file-input" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .jfif" multiple>
           </label>
+          <p class="file-drop-hint">💡 스마트폰 앨범에서 사진을 선택하거나, PC에서 파일을 끌어다 놓기 / 화면 캡처 후 붙여넣기(Ctrl+V)도 가능합니다.</p>
           <div class="bfu-preview-grid" id="thumbs"></div>
         </div>
         ${B.allowSecret ? `<label class="agree"><input type="checkbox" name="secret" checked> 비밀글로 남기기 <small>(작성자와 관리자만 볼 수 있어요)</small></label>` : ''}
@@ -1600,7 +1538,7 @@
       const form = $('#rentalPostForm', el);
       if (!form) return;
       let idCardDataUrl = '';
-      const idBox = $('#idCardBox', el);
+      const idBlock = $('#idCardBlock', el);
       const idInput = $('#idCardInput', el);
       const idPrevWrap = $('#idCardPreviewWrap', el);
       const idThumb = $('#idCardThumb', el);
@@ -1618,7 +1556,6 @@
           idCardDataUrl = await fileToDataURL(file, 1400, 0.82);
           if (!idCardDataUrl) throw new Error('변환 실패');
           idThumb.src = idCardDataUrl;
-          idBox.style.display = 'none';
           idPrevWrap.style.display = 'flex';
           const fn = $('#idCardFileName', el);
           if (fn) fn.textContent = `${file.name || '신분증 사진'} (${Math.round((file.size || idCardDataUrl.length * 0.75) / 1024)} KB)`;
@@ -1629,33 +1566,37 @@
         }
       }
 
-      idInput.addEventListener('change', e => {
-        if (e.target.files && e.target.files[0]) {
-          handleFile(e.target.files[0]);
-        }
-      });
+      if (idInput) {
+        idInput.addEventListener('change', e => {
+          if (e.target.files && e.target.files[0]) {
+            handleFile(e.target.files[0]);
+          }
+        });
+      }
 
       // Drag & Drop support
-      ['dragenter', 'dragover'].forEach(name => {
-        idBox.addEventListener(name, e => {
-          e.preventDefault();
-          e.stopPropagation();
-          idBox.classList.add('dragover');
+      if (idBlock) {
+        ['dragenter', 'dragover'].forEach(name => {
+          idBlock.addEventListener(name, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            idBlock.classList.add('dragover');
+          });
         });
-      });
-      ['dragleave', 'drop'].forEach(name => {
-        idBox.addEventListener(name, e => {
-          e.preventDefault();
-          e.stopPropagation();
-          idBox.classList.remove('dragover');
+        ['dragleave', 'drop'].forEach(name => {
+          idBlock.addEventListener(name, e => {
+            e.preventDefault();
+            e.stopPropagation();
+            idBlock.classList.remove('dragover');
+          });
         });
-      });
-      idBox.addEventListener('drop', e => {
-        const dt = e.dataTransfer;
-        if (dt && dt.files && dt.files[0]) {
-          handleFile(dt.files[0]);
-        }
-      });
+        idBlock.addEventListener('drop', e => {
+          const dt = e.dataTransfer;
+          if (dt && dt.files && dt.files[0]) {
+            handleFile(dt.files[0]);
+          }
+        });
+      }
 
       // Clipboard paste support (e.g. Win+Shift+S)
       const onPaste = e => {
@@ -1674,13 +1615,14 @@
       };
       window.addEventListener('paste', onPaste);
 
-      idRemove.addEventListener('click', () => {
-        idCardDataUrl = '';
-        idInput.value = '';
-        idThumb.src = '';
-        idPrevWrap.style.display = 'none';
-        idBox.style.display = 'flex';
-      });
+      if (idRemove) {
+        idRemove.addEventListener('click', () => {
+          idCardDataUrl = '';
+          if (idInput) idInput.value = '';
+          idThumb.src = '';
+          idPrevWrap.style.display = 'none';
+        });
+      }
 
       const showZoom = () => {
         if (!idCardDataUrl) return;
@@ -1973,13 +1915,11 @@
     }
     const form = $('#postForm', el); if (!form) return;
     const imgInput = $('#imgInput', el);
-    const dropzone = $('#imgDropzone', el);
+    const postFileBlock = $('#postFileBlock', el);
     const thumbsEl = $('#thumbs', el);
-    const counterEl = $('#bfuCounter', el);
     let attachedFiles = [];
 
     function renderThumbs() {
-      if (counterEl) counterEl.textContent = `${attachedFiles.length} / 5장`;
       if (!thumbsEl) return;
       if (!attachedFiles.length) {
         thumbsEl.innerHTML = '';
@@ -2055,20 +1995,20 @@
       });
     }
 
-    if (dropzone) {
+    if (postFileBlock) {
       ['dragenter', 'dragover'].forEach(name => {
-        dropzone.addEventListener(name, e => {
+        postFileBlock.addEventListener(name, e => {
           e.preventDefault(); e.stopPropagation();
-          dropzone.classList.add('dragover');
+          postFileBlock.classList.add('dragover');
         });
       });
       ['dragleave', 'drop'].forEach(name => {
-        dropzone.addEventListener(name, e => {
+        postFileBlock.addEventListener(name, e => {
           e.preventDefault(); e.stopPropagation();
-          dropzone.classList.remove('dragover');
+          postFileBlock.classList.remove('dragover');
         });
       });
-      dropzone.addEventListener('drop', e => {
+      postFileBlock.addEventListener('drop', e => {
         const dt = e.dataTransfer;
         if (dt && dt.files && dt.files.length) {
           addFiles(dt.files);

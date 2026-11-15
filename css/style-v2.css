@@ -504,18 +504,19 @@
 .idcard-warn-icon{font-size:1.4rem;line-height:1;flex-shrink:0}
 .idcard-warn b{color:#b34700}
 
-/* 범용 완전 은닉 파일 인풋 (스크린리더/키보드 접근성 유지, 클릭 간섭 차단) */
-.sr-only-file{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;opacity:0!important;pointer-events:none!important}
+/* 범용 네이티브 파일 인풋 블록 (PC·모바일 100% 호환 보장) */
+.file-select-block{background:#ffffff;border:1.5px solid #b5e4c8;border-radius:14px;padding:16px 18px;margin:8px 0 14px;transition:all 0.2s}
+.file-select-block:hover,.file-select-block.dragover{border-color:var(--forest);background:#f6fbf8;box-shadow:0 4px 14px rgba(31,92,70,0.06)}
+.file-select-label{display:flex!important;flex-direction:column!important;gap:8px!important;cursor:pointer}
+.fsl-title{font-size:0.93rem;color:var(--forest-d);font-weight:700}
+.fsl-title small{font-weight:500;color:var(--muted);font-size:0.82rem;margin-left:4px}
+.form-file-input{display:block!important;width:100%!important;padding:9px 12px!important;font-size:0.9rem!important;color:var(--ink)!important;background:#ffffff!important;border:1.5px solid #a3dfc0!important;border-radius:10px!important;cursor:pointer!important;transition:all 0.2s!important;box-sizing:border-box!important;opacity:1!important;position:static!important;pointer-events:auto!important}
+.form-file-input:hover{border-color:var(--forest)!important;background:#fbfefc!important}
+.form-file-input:focus{outline:none!important;border-color:var(--leaf)!important;box-shadow:0 0 0 3px rgba(52,169,106,0.15)!important}
+.form-file-input::file-selector-button{background:var(--forest)!important;color:#ffffff!important;font-weight:700!important;font-size:0.86rem!important;padding:7px 15px!important;margin-right:12px!important;border:none!important;border-radius:8px!important;cursor:pointer!important;transition:background 0.2s!important}
+.form-file-input::file-selector-button:hover{background:var(--forest-d)!important}
+.file-drop-hint{font-size:0.8rem;color:var(--muted);margin-top:8px;margin-bottom:0;line-height:1.4}
 
-/* 신분증 업로드 영역 */
-.idcard-upload-container{position:relative;width:100%}
-.idcard-upload-box{background:#ffffff;border:2px dashed #9fd9ba;border-radius:14px;padding:26px 18px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.idcard-upload-box:hover,.idcard-upload-box.dragover{border-color:var(--forest);background:#f0faf4;box-shadow:0 4px 14px rgba(31,92,70,0.08)}
-.idcard-upload-icon{font-size:2.4rem;color:var(--forest);margin-bottom:8px}
-.idcard-upload-prompt{font-size:0.98rem;font-weight:800;color:var(--forest-d);margin-bottom:6px}
-.idcard-upload-sub{font-size:0.83rem;color:var(--muted)}
-.idcard-upload-btn-row{margin-top:12px}
-.idcard-upload-btn-row .btn{pointer-events:none;box-shadow:0 3px 10px rgba(31,92,70,0.18)}
 .idcard-preview-wrap{display:flex;align-items:center;gap:16px;margin-top:14px;padding:14px;background:#ffffff;border:1.5px solid #a3dfc0;border-radius:14px;box-shadow:0 4px 14px rgba(31,92,70,0.08)}
 .idcard-thumb{width:120px;height:78px;object-fit:cover;border-radius:8px;border:1px solid #b5e4c8;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s}
 .idcard-thumb:hover{transform:scale(1.03)}
@@ -526,19 +527,8 @@
 .idcard-remove-btn{background:#fff0f0;color:#c0392b;border:1px solid #f9c2c2;border-radius:8px;padding:7px 12px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center}
 .idcard-remove-btn:hover{background:#c0392b;color:#ffffff}
 
-/* 게시판 공통 사진 업로더 (창업접수, 상담문의, 방명록 등) */
-.board-file-uploader{background:#ffffff;border:1.5px solid var(--line);border-radius:14px;padding:18px;margin:6px 0 14px;display:flex;flex-direction:column;gap:12px}
-.bfu-head{display:flex;align-items:center;justify-content:space-between}
-.bfu-title{font-weight:700;font-size:0.92rem;color:var(--forest-d)}
-.bfu-title small{font-weight:500;color:var(--muted);margin-left:4px}
-.bfu-counter{font-size:0.82rem;font-weight:700;color:var(--leaf);background:var(--mint);padding:3px 10px;border-radius:999px}
-.bfu-dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:22px 14px;border:2px dashed #9fd9ba;border-radius:12px;background:#f9fdfa;cursor:pointer;text-align:center;transition:all 0.2s}
-.bfu-dropzone:hover,.bfu-dropzone.dragover{border-color:var(--forest);background:#f0faf4;box-shadow:0 4px 14px rgba(31,92,70,0.06)}
-.bfu-icon{font-size:2rem;margin-bottom:6px}
-.bfu-prompt{font-size:0.92rem;color:var(--forest-d);margin-bottom:4px}
-.bfu-sub{font-size:0.8rem;color:var(--muted);margin-bottom:10px}
-.bfu-btn-row .btn{box-shadow:0 2px 8px rgba(31,92,70,0.12);pointer-events:none}
-.bfu-preview-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:12px;margin-top:4px}
+/* 첨부 사진 썸네일 그리드 (모든 게시판 공통) */
+.bfu-preview-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:12px;margin-top:10px}
 .bfu-thumb-item{position:relative;background:#ffffff;border:1.5px solid #d2ebd8;border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
 .bfu-thumb-item img{width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #edf6f1}
 .bfu-thumb-item .thumb-name{font-size:0.75rem;color:var(--forest-d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;font-weight:600}
