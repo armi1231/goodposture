@@ -6,11 +6,19 @@
    · 창업 근거 섹션 (비교표 · 수익구조 · 기술 지표)
    ========================================================= */
 
-/* ---------- 40대 동양인 남녀 실사 조깅 비디오 (joggers.mp4) ---------- */
+/* ---------- AI 측정 실사 해부학 비디오 (posture_scan.mp4) ---------- */
+.hero-scan-video{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;object-fit:cover;object-position:center 38%;
+  box-shadow:0 50px 90px -30px rgba(6,35,40,.6), inset 0 0 0 1px rgba(127,233,255,.2);
+  opacity:1;transform:scale(1);transition:opacity 0.8s cubic-bezier(0.2,0.8,0.25,1), transform 0.8s cubic-bezier(0.2,0.8,0.25,1);
+  pointer-events:none;z-index:2}
+.hero-stage[data-phase=run] .hero-scan-video{opacity:0 !important;transform:scale(0.96) !important;pointer-events:none !important}
+@media (max-width:960px){.hero-scan-video{inset:0;width:100%;height:100%;border-radius:26px}}
+
+/* ---------- 40대 동양인 남녀 실사 조깅 비디오 (joggers_v6.mp4) ---------- */
 .hero-video{position:absolute;inset:2% 3% 0;width:94%;height:98%;border-radius:34px;object-fit:cover;object-position:center 30%;
   box-shadow:0 50px 90px -30px rgba(6,35,40,.6), inset 0 0 0 1px rgba(255,255,255,.2);
   opacity:0;transform:scale(0.96);transition:opacity 0.9s cubic-bezier(0.2,0.8,0.25,1), transform 0.9s cubic-bezier(0.2,0.8,0.25,1);
-  pointer-events:none;z-index:2}
+  pointer-events:none;z-index:3}
 .hero-stage[data-phase=run] .hero-video{opacity:1 !important;transform:scale(1) !important;pointer-events:auto !important;z-index:5 !important}
 .hero-stage[data-phase=run] .hero-canvas{opacity:0 !important;visibility:hidden !important;transition:opacity 0.4s ease}
 .hero-stage[data-phase=run] .scan-frame{opacity:0 !important}

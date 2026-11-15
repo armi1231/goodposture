@@ -1408,13 +1408,14 @@
         const vSrc = (set().heroJoggerVideo || '').trim();
         const targetSrc = (vSrc && !vSrc.includes('joggers.mp4') && !vSrc.includes('joggers_v6.mp4'))
           ? vSrc
-          : 'assets/hero/joggers_v6.mp4?v=20261115_07';
+          : 'assets/hero/joggers_v6.mp4?v=20261115_09';
         if (vid && vid.getAttribute('src') !== targetSrc) {
           vid.setAttribute('src', targetSrc);
           vid.load();
         }
         hero = window.initHero({
-          stage: $('#heroStage'), canvasWrap: $('#heroCanvas'), videoEl: vid,
+          stage: $('#heroStage'), canvasWrap: $('#heroCanvas'),
+          scanVideoEl: $('#heroScanVideo'), videoEl: vid,
           typeEl: $('#heroTyping'), runCaption: $('#runCaption'),
           soundBtn: $('#heroSoundBtn'), natureAudio: $('#natureAudio'),
           hud: { score: $('#hudScore'), bar: $('#hudBar'), neck: $('#hudNeck'), shoulder: $('#hudShoulder'), pelvis: $('#hudPelvis'), knee: $('#hudKnee'), caption: null }
