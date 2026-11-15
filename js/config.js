@@ -53,7 +53,7 @@ window.SITE_CONFIG = {
 
   // 클라우드 데이터 저장소 (Supabase 연동)
   supabaseUrl: 'https://jurwrizrcfzhzvfpgkot.supabase.co',
-  supabaseAnonKey: '',
+  supabaseAnonKey: 'sb_publishable_DlVWQXL7L0adgtjsZZryiQ_Ufs2_8jH',
 
   // 첫 관리자 계정 (최초 실행 시 1회 생성 → 로그인 후 마이페이지에서 비밀번호를 꼭 바꾸세요)
   admin: { loginId: 'admin', password: 'slimminggo1231!' }

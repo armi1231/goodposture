@@ -54,7 +54,7 @@
   function getSupabaseConfig() {
     const C = window.SITE_CONFIG || {};
     let url = C.supabaseUrl || 'https://jurwrizrcfzhzvfpgkot.supabase.co';
-    let key = C.supabaseAnonKey || '';
+    let key = C.supabaseAnonKey || 'sb_publishable_DlVWQXL7L0adgtjsZZryiQ_Ufs2_8jH';
     try {
       const saved = localStorage.getItem('bjs_supabase');
       if (saved) {
@@ -86,7 +86,7 @@
     try {
       const { data, error } = await sb.from('app_data').select('data').eq('key', KEY).maybeSingle();
       if (error) {
-        console.warn('[Supabase] Load error:', error);
+        if (error.code !== 'PGRST205') console.warn('[Supabase] Load warning:', error.message || error);
         return null;
       }
       return data && data.data ? data.data : null;
@@ -106,7 +106,7 @@
         updated_at: new Date().toISOString()
       });
       if (error) {
-        console.warn('[Supabase] Upsert error:', error);
+        if (error.code !== 'PGRST205') console.warn('[Supabase] Upsert warning:', error.message || error);
         return false;
       }
       return true;
@@ -390,7 +390,7 @@
         d.version = 5;
       }
       if (!s.supabaseUrl) s.supabaseUrl = C.supabaseUrl || 'https://jurwrizrcfzhzvfpgkot.supabase.co';
-      if (s.supabaseAnonKey === undefined) s.supabaseAnonKey = C.supabaseAnonKey || '';
+      if (!s.supabaseAnonKey) s.supabaseAnonKey = C.supabaseAnonKey || 'sb_publishable_DlVWQXL7L0adgtjsZZryiQ_Ufs2_8jH';
     },
 
     /* 세션 */
