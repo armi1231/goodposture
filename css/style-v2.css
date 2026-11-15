@@ -503,18 +503,22 @@
 .idcard-warn{display:flex;align-items:flex-start;gap:12px;background:#fff8e6;border:1px solid #fed888;border-radius:12px;padding:12px 16px;margin-bottom:14px;color:#8a5900;font-size:0.88rem;line-height:1.55}
 .idcard-warn-icon{font-size:1.4rem;line-height:1;flex-shrink:0}
 .idcard-warn b{color:#b34700}
-.idcard-upload-box{background:#ffffff;border:2px dashed #b8dfcb;border-radius:14px;padding:24px 18px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
-.idcard-upload-box:hover{border-color:var(--forest);background:#f2faf6}
-.idcard-upload-box input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.idcard-upload-icon{font-size:2.2rem;color:var(--forest);margin-bottom:8px}
-.idcard-upload-prompt{font-size:0.94rem;font-weight:800;color:var(--forest-d);margin-bottom:4px}
-.idcard-upload-sub{font-size:0.82rem;color:var(--muted)}
-.idcard-preview-wrap{display:flex;align-items:center;gap:16px;margin-top:14px;padding:12px;background:#ffffff;border:1px solid #d4ebd9;border-radius:12px}
-.idcard-thumb{width:110px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #c0e3cd;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.idcard-upload-box{background:#ffffff;border:2px dashed #9fd9ba;border-radius:14px;padding:26px 18px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;display:block}
+.idcard-upload-box:hover,.idcard-upload-box.dragover{border-color:var(--forest);background:#f0faf4;box-shadow:0 4px 14px rgba(31,92,70,0.08)}
+.idcard-upload-box input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:5}
+.idcard-upload-icon{font-size:2.4rem;color:var(--forest);margin-bottom:8px;pointer-events:none}
+.idcard-upload-prompt{font-size:0.98rem;font-weight:800;color:var(--forest-d);margin-bottom:6px;pointer-events:none}
+.idcard-upload-sub{font-size:0.83rem;color:var(--muted);pointer-events:none}
+.idcard-upload-btn-row{margin-top:12px;pointer-events:none}
+.idcard-upload-btn-row .btn{pointer-events:none;box-shadow:0 3px 10px rgba(31,92,70,0.18)}
+.idcard-preview-wrap{display:flex;align-items:center;gap:16px;margin-top:14px;padding:14px;background:#ffffff;border:1.5px solid #a3dfc0;border-radius:14px;box-shadow:0 4px 14px rgba(31,92,70,0.08)}
+.idcard-thumb{width:120px;height:78px;object-fit:cover;border-radius:8px;border:1px solid #b5e4c8;box-shadow:0 2px 8px rgba(0,0,0,0.1);cursor:pointer;transition:transform 0.2s}
+.idcard-thumb:hover{transform:scale(1.03)}
 .idcard-preview-info{flex:1}
-.idcard-preview-info b{font-size:0.92rem;color:var(--forest-d);display:block}
-.idcard-preview-info span{font-size:0.8rem;color:var(--leaf);display:inline-block;font-weight:700}
-.idcard-remove-btn{background:#fff0f0;color:#c0392b;border:1px solid #f9c2c2;border-radius:8px;padding:6px 12px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s}
+.idcard-preview-info b{font-size:0.96rem;color:var(--forest-d);display:block;margin-bottom:2px}
+.idcard-preview-info span{font-size:0.82rem;color:var(--leaf);display:inline-block;font-weight:700}
+.idcard-prev-actions{display:flex;flex-direction:column;gap:6px}
+.idcard-remove-btn{background:#fff0f0;color:#c0392b;border:1px solid #f9c2c2;border-radius:8px;padding:7px 12px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s;text-align:center}
 .idcard-remove-btn:hover{background:#c0392b;color:#ffffff}
 
 .rental-items-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}

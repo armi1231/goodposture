@@ -71,16 +71,26 @@
     return new Promise((res, rej) => {
       const fr = new FileReader();
       fr.onload = () => {
+        const raw = fr.result;
         const img = new Image();
         img.onload = () => {
-          const s = Math.min(1, max / Math.max(img.width, img.height));
-          const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
-          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-          res(c.toDataURL('image/jpeg', q));
+          try {
+            const s = Math.min(1, max / Math.max(img.width, img.height));
+            const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            res(c.toDataURL('image/jpeg', q));
+          } catch (e) {
+            res(raw);
+          }
         };
-        img.onerror = rej; img.src = fr.result;
+        img.onerror = () => {
+          if (typeof raw === 'string') res(raw);
+          else rej(new Error('이미지를 불러오지 못했습니다.'));
+        };
+        img.src = raw;
       };
-      fr.onerror = rej; fr.readAsDataURL(file);
+      fr.onerror = () => rej(new Error('파일을 읽지 못했습니다.'));
+      fr.readAsDataURL(file);
     });
   }
   async function readImages(input, limit = 5) {
@@ -1369,24 +1379,31 @@
             <div class="idcard-warn">
               <span class="idcard-warn-icon">⚠️</span>
               <div>
-                <b>[개인정보 보호 필수] 주민등록번호 뒷자리 6자리는 반드시 가려주세요!</b><br>
-                생년월일과 뒷자리 첫째 자리(성별 구분)까지만 보이게 하시고, <b>나머지 뒷자리 6자리는 포스트잇, 스티커, 사진 편집 등으로 반드시 가린 후</b> 업로드해 주세요.<br>
+                <b>[개인정보 보호 안내] 주민등록번호 뒷자리 6자리는 가려주세요</b><br>
+                생년월일과 뒷자리 첫째 자리(성별 구분)까지만 보이게 하시고, <b>나머지 뒷자리 6자리는 포스트잇, 스티커, 모자이크, 사진 편집 등으로 가린 후</b> 업로드해 주세요.<br>
                 <small>예시: 900101 - 1****** (앞면 사진만 첨부 / 비밀글로 관리자만 안전하게 확인합니다)</small>
               </div>
             </div>
-            <div class="idcard-upload-box" id="idCardBox">
-              <input type="file" id="idCardInput" accept="image/*">
-              <div class="idcard-upload-icon">📷</div>
-              <div class="idcard-upload-prompt">마스킹된 신분증 앞면 사진 업로드 (클릭 또는 파일 선택)</div>
-              <div class="idcard-upload-sub">JPG, PNG, GIF 이미지 파일 지원 (자동 최적화 저장)</div>
-            </div>
-            <div id="idCardPreviewWrap" style="display:none;" class="idcard-preview-wrap">
-              <img id="idCardThumb" class="idcard-thumb" src="" alt="신분증 미리보기">
-              <div class="idcard-preview-info">
-                <b>신분증 사진 첨부 완료</b>
-                <span>주민번호 뒷자리 마스킹 확인 완료</span>
+            <label for="idCardInput" class="idcard-upload-box" id="idCardBox">
+              <input type="file" id="idCardInput" accept="image/*, .jpg, .jpeg, .png, .gif, .webp, .bmp, .heic, .HEIC">
+              <div class="idcard-upload-icon">📁</div>
+              <div class="idcard-upload-prompt"><b>여기를 클릭하여 신분증 사진을 선택</b>하거나 파일을 끌어다 놓으세요</div>
+              <div class="idcard-upload-sub">JPG, PNG, GIF, WebP 이미지 파일 지원 (스마트폰 촬영 사진 · PC 캡처 모두 가능)</div>
+              <div class="idcard-upload-btn-row">
+                <span class="btn btn-primary btn-sm">💻 내 PC에서 파일 찾기</span>
               </div>
-              <button type="button" id="idCardRemoveBtn" class="idcard-remove-btn">사진 변경/삭제</button>
+            </label>
+            <div id="idCardPreviewWrap" style="display:none;" class="idcard-preview-wrap">
+              <img id="idCardThumb" class="idcard-thumb" src="" alt="신분증 미리보기" title="클릭 시 크게 보기">
+              <div class="idcard-preview-info">
+                <b>신분증 사진 첨부 완료 ✓</b>
+                <span id="idCardFileName" style="display:block;font-size:0.83rem;color:var(--forest-d);margin:2px 0;"></span>
+                <span>주민번호 뒷자리 마스킹/모자이크 확인 완료</span>
+              </div>
+              <div class="idcard-prev-actions">
+                <button type="button" id="idCardZoomBtn" class="btn btn-line btn-sm">🔍 크게 보기</button>
+                <button type="button" id="idCardRemoveBtn" class="idcard-remove-btn">사진 변경 / 삭제</button>
+              </div>
             </div>
           </div>
 
@@ -1508,18 +1525,71 @@
       const idThumb = $('#idCardThumb', el);
       const idRemove = $('#idCardRemoveBtn', el);
 
-      idInput.addEventListener('change', async e => {
-        const file = e.target.files[0];
+      async function handleFile(file) {
         if (!file) return;
+        if (!file.type.startsWith('image/') && !file.name.match(/\.(jpe?g|png|gif|webp|bmp|heic)$/i)) {
+          return toast('이미지 파일(JPG, PNG, GIF, WebP 등)만 첨부할 수 있습니다.');
+        }
+        toast('신분증 사진을 불러오는 중입니다...');
         try {
           idCardDataUrl = await fileToDataURL(file, 1400, 0.82);
           idThumb.src = idCardDataUrl;
           idBox.style.display = 'none';
           idPrevWrap.style.display = 'flex';
+          const fn = $('#idCardFileName', el);
+          if (fn) fn.textContent = `${file.name} (${Math.round(file.size / 1024)} KB)`;
+          toast('신분증 사진이 정상적으로 첨부되었습니다!');
         } catch (err) {
-          toast('이미지를 처리하지 못했습니다.');
+          console.error('File load error:', err);
+          toast('이미지를 처리하지 못했습니다. 다른 이미지 형식으로 시도해 주세요.');
+        }
+      }
+
+      idInput.addEventListener('change', e => {
+        if (e.target.files && e.target.files[0]) {
+          handleFile(e.target.files[0]);
         }
       });
+
+      // Drag & Drop support
+      ['dragenter', 'dragover'].forEach(name => {
+        idBox.addEventListener(name, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          idBox.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(name => {
+        idBox.addEventListener(name, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          idBox.classList.remove('dragover');
+        });
+      });
+      idBox.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files[0]) {
+          handleFile(dt.files[0]);
+        }
+      });
+
+      // Clipboard paste support (e.g. Win+Shift+S)
+      const onPaste = e => {
+        const items = (e.clipboardData || window.clipboardData)?.items;
+        if (!items) return;
+        for (const item of items) {
+          if (item.type.indexOf('image') !== -1) {
+            const file = item.getAsFile();
+            if (file) {
+              handleFile(file);
+              toast('클립보드에서 신분증 이미지를 첨부했습니다.');
+              break;
+            }
+          }
+        }
+      };
+      window.addEventListener('paste', onPaste);
+
       idRemove.addEventListener('click', () => {
         idCardDataUrl = '';
         idInput.value = '';
@@ -1527,6 +1597,17 @@
         idPrevWrap.style.display = 'none';
         idBox.style.display = 'block';
       });
+
+      const showZoom = () => {
+        if (!idCardDataUrl) return;
+        modal(`<h3>신분증 사진 (앞면) 미리보기</h3>
+          <div style="text-align:center;padding:10px 0;">
+            <img src="${idCardDataUrl}" style="max-width:100%;max-height:80vh;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)" alt="신분증 확대보기">
+            <p style="margin-top:10px;font-size:0.86rem;color:var(--forest)">✓ 주민등록번호 뒷자리 6자리가 잘 가려졌는지 확인해 주세요.</p>
+          </div>`);
+      };
+      $('#idCardZoomBtn', el)?.addEventListener('click', showZoom);
+      idThumb.addEventListener('click', showZoom);
 
       // Delivery type toggle
       const optCourier = $('#dtOptionCourier', el);
@@ -1714,7 +1795,14 @@
       form.addEventListener('submit', async e => {
         e.preventDefault();
         const f = formData(form), u = me();
-        if (!idCardDataUrl) return toast('주민번호 뒷자리를 마스킹한 신분증 사진(앞면)을 첨부해 주세요.');
+        if (!idCardDataUrl) {
+          toast('신분증 사진(앞면) 파일이 아직 첨부되지 않았습니다. [내 PC에서 파일 찾기]를 눌러 사진을 첨부해 주세요.');
+          idBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          idBox.style.borderColor = '#e74c3c';
+          idBox.style.background = '#fff5f5';
+          setTimeout(() => { idBox.style.borderColor = ''; idBox.style.background = ''; }, 3000);
+          return;
+        }
         if (!rentalItems.length) return toast('렌탈 품목을 최소 1개 이상 선택해 주세요.');
 
         if (f.deliveryType === 'courier') {
