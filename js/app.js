@@ -696,7 +696,15 @@
     const singles = singleProducts(), bundles = bundleProducts();
     return `${pageHead('렌탈신청', '바른 자세를 빌려드립니다', '원하는 상품을 고르고 온라인으로 바로 렌탈 계약을 진행하세요. 각 상품의 QR을 스마트폰으로 찍으면 착한렌탈 접속 화면으로 바로 이동합니다.')}
     <section class="sec"><div class="wrap">
-      ${isAdmin() ? `<div class="admin-strip">관리자: <a href="#/admin/rental">렌탈 상품 추가 · 수정 · 삭제 →</a></div>` : ''}
+      ${isAdmin() ? `<div class="admin-strip">관리자: <a href="#/admin/rental">렌탈 상품 추가 · 수정 · 삭제 →</a> <span style="margin:0 6px">|</span> <a href="#/admin/rentalApplies">렌탈접수 관리 현황 →</a></div>` : ''}
+      <div class="rental-notice-banner">
+        <div class="rnb-icon">📋</div>
+        <div class="rnb-body">
+          <h4>S폼 전자계약서 서명을 완료하셨나요?</h4>
+          <p>비에스온에서 신용체크 및 카카오톡 S폼 전자계약 서명을 마치셨다면, <b>렌탈접수 게시판</b>에 신분증 사진(앞면)과 계약 제품 규격(컬러/사이즈)을 등록해 주세요. 확인 즉시 본사 및 관리자 승인 후 택배 발송 또는 가까운 매장 방문 수령으로 안전하게 전달해 드립니다.</p>
+        </div>
+        <a class="btn" href="#/rentalApply/write">렌탈 계약 접수하기 →</a>
+      </div>
       ${s.rentalUrl ? `<div class="rental-hero card"><div><h3>온라인 렌탈 계약 바로가기</h3><p class="muted">상품 선택부터 전자계약까지 한 번에 진행할 수 있어요.</p>
         <a class="btn btn-primary btn-lg" href="${esc(s.rentalUrl)}" target="_blank" rel="noopener">렌탈 계약하기</a> ${refChip()}</div><div class="qr">${qrSvg(s.rentalUrl, 5)}</div></div>` : ''}
 
@@ -990,7 +998,7 @@
   function viewMypage() {
     const u = me();
     const p1 = partProgress(u, 1), p2 = partProgress(u, 2);
-    const myPosts = ['apply', 'consult', 'guestbook'].flatMap(b => S.data.posts[b].filter(p => p.authorId === u.id).map(p => ({ ...p, board: b })));
+    const myPosts = ['rentalApply', 'apply', 'consult', 'guestbook'].flatMap(b => (S.data.posts[b] || []).filter(p => p.authorId === u.id).map(p => ({ ...p, board: b })));
     return `${pageHead('마이페이지', `${esc(u.name)}님의 바른자세 여정`)}
     <section class="sec"><div class="wrap my-grid">
       <aside class="my-side">
@@ -1153,15 +1161,84 @@
   }
 
   /* =======================================================
-     게시판 (창업접수 · 상담문의 · 방명록)
+     게시판 (렌탈접수 · 창업접수 · 상담문의 · 방명록)
      ======================================================= */
   const BOARDS = {
-    apply: { title: '창업접수 게시판', short: '창업접수', desc: '창업 신청서 접수 및 교육비 입금 완료를 남겨 주세요. 관리자 확인 후 새움 등급으로 등업되고 온라인 강의가 열립니다. 작성한 글은 본인과 관리자만 볼 수 있습니다.',
-      memberOnly: true, privateAll: true, layout: 'list' },
-    consult: { title: '상담문의', short: '상담', desc: '렌탈상담 · 창업상담 · 기타상담을 남겨 주세요. 비밀글은 작성자와 관리자만 볼 수 있습니다.',
-      categories: ['렌탈상담', '창업상담', '기타상담'], allowSecret: true, guestWrite: true, layout: 'list' },
-    guestbook: { title: '방명록', short: '방명록', desc: '바른자세 이야기, 체험 후기, 응원의 한마디를 자유롭게 남겨 주세요.', guestWrite: true, layout: 'feed' }
+    rentalApply: {
+      title: '렌탈접수 게시판',
+      short: '렌탈접수',
+      desc: '비에스온 렌탈신청 및 카카오톡 S폼 전자계약서 서명 완료 후 신분증 사진(앞면)과 계약 제품 규격을 등록해 주세요. 관리자 승인 확인 후 제품이 안전하게 발송됩니다. 작성한 글은 본인과 관리자만 볼 수 있습니다.',
+      memberOnly: true,
+      privateAll: true,
+      layout: 'list'
+    },
+    apply: {
+      title: '창업접수 게시판',
+      short: '창업접수',
+      desc: '창업 신청서 접수 및 교육비 입금 완료를 남겨 주세요. 관리자 확인 후 새움 등급으로 등업되고 온라인 강의가 열립니다. 작성한 글은 본인과 관리자만 볼 수 있습니다.',
+      memberOnly: true,
+      privateAll: true,
+      layout: 'list'
+    },
+    consult: {
+      title: '상담문의',
+      short: '상담',
+      desc: '렌탈상담 · 창업상담 · 기타상담을 남겨 주세요. 비밀글은 작성자와 관리자만 볼 수 있습니다.',
+      categories: ['렌탈상담', '창업상담', '기타상담'],
+      allowSecret: true,
+      guestWrite: true,
+      layout: 'list'
+    },
+    guestbook: {
+      title: '방명록',
+      short: '방명록',
+      desc: '바른자세 이야기, 체험 후기, 응원의 한마디를 자유롭게 남겨 주세요.',
+      guestWrite: true,
+      layout: 'feed'
+    }
   };
+
+  const RENTAL_CATALOG = {
+    R1090: {
+      code: 'R1090',
+      name: '입는 바른자세 R1090 (남녀공용)',
+      price: 37800,
+      colors: ['스킨', '블랙'],
+      sizes: ['22', '33', '44', '55', '66', '77', '88', '99']
+    },
+    BB484: {
+      code: 'BB484',
+      name: '입는 바른자세 BB484 (여성전용)',
+      price: 19900,
+      colors: ['스킨', '블랙'],
+      underbusts: ['70', '75', '80', '85', '90', '95', '100'],
+      sizeMap: {
+        '70': ['C', 'D', 'E'],
+        '75': ['B', 'C', 'D', 'E'],
+        '80': ['B', 'C', 'D', 'E'],
+        '85': ['B', 'C', 'D', 'E'],
+        '90': ['B', 'C', 'D'],
+        '95': ['B', 'C', 'D'],
+        '100': ['B', 'C']
+      }
+    },
+    SM880: {
+      code: 'SM880',
+      name: '입는 바른자세 SM880 (체형교정)',
+      price: 37800,
+      colors: ['블랙', '스킨'],
+      sizes: ['2XS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+    }
+  };
+
+  function rentalApplyGuide() {
+    return `<div class="rental-apply-guide">
+      <div class="rag-step"><span class="rag-num">1</span><div class="rag-text"><b>비에스온 렌탈신청</b><small>온라인 신용체크 및 렌탈가능 여부 확인</small></div></div>
+      <div class="rag-step"><span class="rag-num">2</span><div class="rag-text"><b>S폼 전자계약 서명</b><small>카카오톡으로 수신된 전자계약서 서명 완료</small></div></div>
+      <div class="rag-step"><span class="rag-num">3</span><div class="rag-text"><b>신분증 & 규격 접수</b><small>주민번호 뒷자리 마스킹 후 규격·수량 체크</small></div></div>
+      <div class="rag-step"><span class="rag-num">4</span><div class="rag-text"><b>관리자 승인 & 수령</b><small>확인 즉시 택배발송 또는 매장 직접 방문수령</small></div></div>
+    </div>`;
+  }
   const unlocked = new Set(); // 비회원 비밀번호로 연 글
 
   function canRead(b, p) {
@@ -1197,6 +1274,27 @@
           <div class="feed-body"><h4>${esc(p.title)}</h4><p>${esc((p.body || '').slice(0, 90))}</p>
           <div class="meta"><span>${esc(p.author)}</span><time>${fmtDate(p.date)}</time></div></div>
         </a>`).join('')}</div>`;
+    else if (b === 'rentalApply') body = `<div class="board-table"><div class="bt-head"><span>번호</span><span>상태</span><span>계약일자</span><span>렌탈 품목 / 규격 요약</span><span>수령방식</span><span>월 렌탈료</span><span>신청자</span><span>접수일</span></div>
+        ${slice.map((p, i) => {
+          const locked = !canRead(b, p);
+          const isDone = p.status === 'approved';
+          const itemsSummary = (p.extra && p.extra.items && p.extra.items.length)
+            ? p.extra.items.map(it => `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ')
+            : (p.title || '렌탈 계약 내역');
+          const totalFee = (p.extra && p.extra.totalPrice) || 0;
+          const deliveryTxt = (p.extra && p.extra.deliveryType === 'pickup')
+            ? `🏬 매장수령 (${(p.extra.pickup && p.extra.pickup.storeName) || '매장'})`
+            : `📦 택배발송`;
+          return `<a class="bt-row ${locked ? 'locked' : ''}" href="#/${b}/view/${p.id}">
+            <span class="bt-no">${total - (page - 1) * per - i}</span>
+            <span class="bt-cat"><i class="cat ${isDone ? 'c-rental-done' : 'c-rental-wait'}">${isDone ? '승인완료' : '승인대기'}</i></span>
+            <span class="bt-date">${esc((p.extra && p.extra.contractDate) || fmtDate(p.date))}</span>
+            <span class="bt-title">${p.secret ? '🔒 ' : ''}${locked ? '비밀글입니다' : esc(itemsSummary)}${p.extra && p.extra.tracking ? ' <em class="replied">발송완료</em>' : ''}</span>
+            <span class="bt-delivery" style="font-size:0.84rem;color:var(--forest)">${esc(deliveryTxt)}</span>
+            <span class="bt-fee" style="font-size:0.9rem;font-weight:800;color:var(--forest-d)">${totalFee ? won(totalFee) : '-'}</span>
+            <span class="bt-author">${esc(maskName(p.author, locked))}</span>
+            <span class="bt-date">${fmtDate(p.date)}</span>
+          </a>`; }).join('')}</div>`;
     else body = `<div class="board-table"><div class="bt-head"><span>번호</span>${B.categories || B.privateAll ? '<span>구분</span>' : ''}<span>제목</span><span>글쓴이</span><span>날짜</span></div>
         ${slice.map((p, i) => {
           const locked = !canRead(b, p);
@@ -1212,6 +1310,7 @@
     return `${pageHead('커뮤니티', B.title, B.desc)}
     <section class="sec"><div class="wrap">
       <div class="board-tabs">${Object.keys(BOARDS).map(k => `<a href="#/${k}" class="${k === b ? 'on' : ''}">${BOARDS[k].title}</a>`).join('')}</div>
+      ${b === 'rentalApply' ? rentalApplyGuide() : ''}
       ${b === 'apply' ? applyGuide() : ''}
       ${b === 'consult' ? guideCard() : guideCard('line')}
       <div class="board-bar">
@@ -1242,6 +1341,134 @@
   function viewBoardWrite(b, query) {
     const B = BOARDS[b], u = me();
     if (B.memberOnly && !u) return needLogin(B.title);
+    if (b === 'rentalApply') {
+      const todayStr = new Date().toISOString().slice(0, 10);
+      const userPhone = u ? (u.phone || '') : '';
+      const userAddr = u ? (u.address || '') : '';
+      const userAddr2 = u ? (u.address2 || '') : '';
+      const userZip = u ? (u.zip || '') : '';
+      const stores = S.data.stores || [];
+      return `${pageHead('커뮤니티', '렌탈접수 게시판 글쓰기', '카카오톡 S폼 전자계약서 서명 완료 후 신분증 사진(앞면)과 계약 제품 규격을 등록해 주세요.')}
+      <section class="sec"><div class="wrap narrow">
+        ${rentalApplyGuide()}
+        <form class="card form" id="rentalPostForm">
+          <input type="hidden" name="secret" value="1">
+          
+          <div class="rental-section-title"><i>📄</i> 1. 전자계약 기본 정보</div>
+          <div class="grid2">
+            <label>신청자 성함<input name="author" required maxlength="20" value="${esc(u ? u.name : '')}" readonly></label>
+            <label>신청자 연락처<input name="applicantPhone" required maxlength="20" value="${esc(userPhone)}" placeholder="010-0000-0000"></label>
+          </div>
+          <div class="grid2">
+            <label>렌탈 전자계약 체결일자<input name="contractDate" type="date" required value="${todayStr}"></label>
+            <label>계약 체결 상태<input value="비에스온 S폼 전자계약서 서명 완료" readonly style="background:#f6fbf8;font-weight:700;color:var(--forest)"></label>
+          </div>
+
+          <div class="rental-section-title"><i>🪪</i> 2. 신분증 사진 (앞면) 첨부</div>
+          <div class="idcard-card">
+            <div class="idcard-warn">
+              <span class="idcard-warn-icon">⚠️</span>
+              <div>
+                <b>[개인정보 보호 필수] 주민등록번호 뒷자리 6자리는 반드시 가려주세요!</b><br>
+                생년월일과 뒷자리 첫째 자리(성별 구분)까지만 보이게 하시고, <b>나머지 뒷자리 6자리는 포스트잇, 스티커, 사진 편집 등으로 반드시 가린 후</b> 업로드해 주세요.<br>
+                <small>예시: 900101 - 1****** (앞면 사진만 첨부 / 비밀글로 관리자만 안전하게 확인합니다)</small>
+              </div>
+            </div>
+            <div class="idcard-upload-box" id="idCardBox">
+              <input type="file" id="idCardInput" accept="image/*">
+              <div class="idcard-upload-icon">📷</div>
+              <div class="idcard-upload-prompt">마스킹된 신분증 앞면 사진 업로드 (클릭 또는 파일 선택)</div>
+              <div class="idcard-upload-sub">JPG, PNG, GIF 이미지 파일 지원 (자동 최적화 저장)</div>
+            </div>
+            <div id="idCardPreviewWrap" style="display:none;" class="idcard-preview-wrap">
+              <img id="idCardThumb" class="idcard-thumb" src="" alt="신분증 미리보기">
+              <div class="idcard-preview-info">
+                <b>신분증 사진 첨부 완료</b>
+                <span>주민번호 뒷자리 마스킹 확인 완료</span>
+              </div>
+              <button type="button" id="idCardRemoveBtn" class="idcard-remove-btn">사진 변경/삭제</button>
+            </div>
+          </div>
+
+          <div class="rental-section-title"><i>👗</i> 3. 렌탈 계약 제품 규격 · 컬러 · 사이즈 선택</div>
+          <p class="muted" style="margin-top:-6px;margin-bottom:12px;font-size:0.86rem">전자계약서에 서명하신 품목과 동일하게 선택해 주세요. 여러 제품을 계약하셨다면 [+ 렌탈 품목 추가하기]를 눌러 모두 추가할 수 있습니다.</p>
+          
+          <div class="rental-items-wrap" id="rentalItemsWrap"></div>
+          <button type="button" class="rental-add-btn" id="addRentalItemBtn">+ 렌탈 품목 추가하기</button>
+
+          <div class="rental-total-card">
+            <div class="rtc-info">
+              <h4>총 렌탈 품목 <span id="totalItemCount">1종</span></h4>
+              <p>※ 카카오톡 S폼 전자계약서에 서명하신 월 렌탈 금액과 동일한지 확인해 주세요.</p>
+            </div>
+            <div class="rtc-price">
+              <span class="rtc-label">총 월 렌탈료 합계</span>
+              <span class="rtc-val" id="totalPriceDisplay">월 37,800원</span>
+            </div>
+          </div>
+
+          <div class="rental-section-title"><i>🚚</i> 4. 제품 수령 방식 선택</div>
+          <div class="delivery-type-selector">
+            <label class="dt-option active" id="dtOptionCourier">
+              <input type="radio" name="deliveryType" value="courier" checked>
+              <div class="dt-option-text">
+                <b>📦 택배 발송 (무료 배송)</b>
+                <p>기재해 주신 배송지 주소로 택배를 안전하게 발송해 드립니다.</p>
+              </div>
+            </label>
+            <label class="dt-option" id="dtOptionPickup">
+              <input type="radio" name="deliveryType" value="pickup">
+              <div class="dt-option-text">
+                <b>🏬 매장 방문 직접 수령</b>
+                <p>가까운 카페 드 슬리밍고 매장을 방문하여 피팅 및 직접 수령합니다.</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- 택배 발송 폼 -->
+          <div class="delivery-box" id="courierBox">
+            <div class="grid2">
+              <label>받는 분 성함<input name="deliveryReceiver" value="${esc(u ? u.name : '')}" placeholder="성함"></label>
+              <label>받는 분 연락처<input name="deliveryPhone" value="${esc(userPhone)}" placeholder="010-0000-0000"></label>
+            </div>
+            <label>배송지 주소</label>
+            <div class="addr-search-row" style="margin-bottom:8px">
+              <input name="deliveryZip" value="${esc(userZip)}" placeholder="우편번호" readonly style="max-width:130px">
+              <button type="button" class="btn btn-line btn-sm" id="rentalAddrBtn">우편번호 찾기</button>
+            </div>
+            <input name="deliveryAddress" value="${esc(userAddr)}" placeholder="기본주소" readonly style="margin-bottom:8px">
+            <input name="deliveryAddress2" value="${esc(userAddr2)}" placeholder="상세주소 및 동/호수 입력">
+            <label style="margin-top:10px">배송 요청사항<input name="deliveryMemo" placeholder="예: 부재 시 문 앞에 놓아주세요"></label>
+          </div>
+
+          <!-- 매장 방문 수령 폼 -->
+          <div class="delivery-box" id="pickupBox" style="display:none;">
+            <label>방문 수령 매장 선택
+              <select name="pickupStoreId">
+                ${stores.map(st => `<option value="${st.id}">${esc(st.name)} (${esc(st.region || '매장')}) - ${esc(st.address || '매장안내 참고')}</option>`).join('')}
+              </select>
+            </label>
+            <div class="grid2" style="margin-top:10px">
+              <label>수령 희망자 성함<input name="pickupReceiver" value="${esc(u ? u.name : '')}"></label>
+              <label>수령자 연락처<input name="pickupPhone" value="${esc(userPhone)}"></label>
+            </div>
+            <label>방문 예정일 / 요청사항<input name="pickupMemo" placeholder="예: 11월 20일 오후 방문 예정입니다."></label>
+          </div>
+
+          <div class="rental-section-title"><i>📝</i> 5. 기타 요청사항 / 메모 (선택)</div>
+          <label>추가 문의 및 전달사항<textarea name="body" rows="3" placeholder="본사 렌탈 관리자에게 전달할 내용이 있다면 자유롭게 적어 주세요."></textarea></label>
+
+          <div style="background:#eef7f2;border:1px solid #c7e8d5;border-radius:12px;padding:14px 18px;margin:16px 0;font-size:0.88rem;color:var(--forest-d)">
+            🔒 <b>비밀글 자동 적용</b>: 등록된 계약 정보 및 신분증 사진은 작성자 본인과 관리자만 안전하게 확인할 수 있습니다.
+          </div>
+
+          <div class="form-actions">
+            <a class="btn btn-line" href="#/rentalApply">취소</a>
+            <button class="btn btn-primary btn-lg" id="submitRentalApplyBtn">렌탈 접수 완료하기</button>
+          </div>
+        </form>
+      </div></section>`;
+    }
     const cat = query.cat || (B.categories ? B.categories[0] : '');
     const title = query.title || '';
     return `${pageHead('커뮤니티', B.title + ' 글쓰기')}
@@ -1271,6 +1498,295 @@
     </div></section>`;
   }
   function mountBoardWrite(el, b) {
+    if (b === 'rentalApply') {
+      const form = $('#rentalPostForm', el);
+      if (!form) return;
+      let idCardDataUrl = '';
+      const idBox = $('#idCardBox', el);
+      const idInput = $('#idCardInput', el);
+      const idPrevWrap = $('#idCardPreviewWrap', el);
+      const idThumb = $('#idCardThumb', el);
+      const idRemove = $('#idCardRemoveBtn', el);
+
+      idInput.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          idCardDataUrl = await fileToDataURL(file, 1400, 0.82);
+          idThumb.src = idCardDataUrl;
+          idBox.style.display = 'none';
+          idPrevWrap.style.display = 'flex';
+        } catch (err) {
+          toast('이미지를 처리하지 못했습니다.');
+        }
+      });
+      idRemove.addEventListener('click', () => {
+        idCardDataUrl = '';
+        idInput.value = '';
+        idThumb.src = '';
+        idPrevWrap.style.display = 'none';
+        idBox.style.display = 'block';
+      });
+
+      // Delivery type toggle
+      const optCourier = $('#dtOptionCourier', el);
+      const optPickup = $('#dtOptionPickup', el);
+      const courierBox = $('#courierBox', el);
+      const pickupBox = $('#pickupBox', el);
+      $$('input[name=deliveryType]', el).forEach(r => {
+        r.addEventListener('change', () => {
+          if (r.value === 'courier') {
+            optCourier.classList.add('active');
+            optPickup.classList.remove('active');
+            courierBox.style.display = 'block';
+            pickupBox.style.display = 'none';
+          } else {
+            optPickup.classList.add('active');
+            optCourier.classList.remove('active');
+            courierBox.style.display = 'none';
+            pickupBox.style.display = 'block';
+          }
+        });
+      });
+
+      // Address search
+      const addrBtn = $('#rentalAddrBtn', el);
+      if (addrBtn) {
+        addrBtn.addEventListener('click', () => {
+          if (!window.daum || !daum.Postcode) { toast('주소 검색 서비스를 불러오는 중입니다. 잠시 후 다시 시도하거나 직접 입력해 주세요.'); return; }
+          new daum.Postcode({
+            oncomplete: d => {
+              $('[name=deliveryZip]', el).value = d.zonecode;
+              $('[name=deliveryAddress]', el).value = d.roadAddress || d.jibunAddress;
+              $('[name=deliveryAddress2]', el).focus();
+            }
+          }).open();
+        });
+      }
+
+      // Rental items state
+      let rentalItems = [
+        { code: 'R1090', color: '스킨', size: '55', underbust: '75', cup: 'B', qty: 1 }
+      ];
+
+      function renderItems() {
+        const wrap = $('#rentalItemsWrap', el);
+        wrap.innerHTML = rentalItems.map((item, idx) => {
+          const cat = RENTAL_CATALOG[item.code];
+          const unitPrice = cat.price;
+          const subtotal = unitPrice * item.qty;
+          const isBB = item.code === 'BB484';
+
+          return `<div class="rental-item-card" data-idx="${idx}">
+            <div class="ric-head">
+              <div class="ric-title">
+                <span class="ric-badge">품목 #${idx + 1}</span>
+                <b>${esc(cat.name)}</b>
+              </div>
+              ${rentalItems.length > 1 ? `<button type="button" class="ric-remove" data-del-item="${idx}">✕ 삭제</button>` : ''}
+            </div>
+            <div class="ric-grid">
+              <label>제품 선택
+                <select class="item-code" data-idx="${idx}">
+                  <option value="R1090" ${item.code === 'R1090' ? 'selected' : ''}>R1090 (남녀공용 - 월 37,800원)</option>
+                  <option value="BB484" ${item.code === 'BB484' ? 'selected' : ''}>BB484 (여성전용 - 월 19,900원)</option>
+                  <option value="SM880" ${item.code === 'SM880' ? 'selected' : ''}>SM880 (체형교정 - 월 37,800원)</option>
+                </select>
+              </label>
+              <label>컬러
+                <select class="item-color" data-idx="${idx}">
+                  ${cat.colors.map(c => {
+                    const disabled = (isBB && item.underbust === '100' && c === '스킨');
+                    return `<option value="${c}" ${item.color === c ? 'selected' : ''} ${disabled ? 'disabled' : ''}>${c}${disabled ? ' (100사이즈 불가)' : ''}</option>`;
+                  }).join('')}
+                </select>
+              </label>
+              <label>사이즈 선택
+                ${isBB ? `
+                  <div class="ric-bb-split">
+                    <select class="item-underbust" data-idx="${idx}">
+                      ${cat.underbusts.map(ub => `<option value="${ub}" ${item.underbust === ub ? 'selected' : ''}>${ub}</option>`).join('')}
+                    </select>
+                    <select class="item-cup" data-idx="${idx}">
+                      ${(cat.sizeMap[item.underbust] || ['B', 'C']).map(cp => `<option value="${cp}" ${item.cup === cp ? 'selected' : ''}>${cp}컵</option>`).join('')}
+                    </select>
+                  </div>` : `
+                  <select class="item-size" data-idx="${idx}">
+                    ${cat.sizes.map(sz => `<option value="${sz}" ${item.size === sz ? 'selected' : ''}>${sz}</option>`).join('')}
+                  </select>`}
+              </label>
+              <label>수량
+                <select class="item-qty" data-idx="${idx}">
+                  ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<option value="${n}" ${item.qty === n ? 'selected' : ''}>${n}개</option>`).join('')}
+                </select>
+              </label>
+              <div class="ric-subtotal">
+                <small>월 렌탈료 소계</small>
+                <span>${won(subtotal)}</span>
+              </div>
+            </div>
+            ${isBB && item.underbust === '100' ? `<span class="ric-hint">※ BB484 100 사이즈는 블랙 컬러만 제공됩니다.</span>` : ''}
+          </div>`;
+        }).join('');
+
+        // Recalculate totals
+        const totalCount = rentalItems.reduce((acc, it) => acc + (+it.qty || 1), 0);
+        const totalPrice = rentalItems.reduce((acc, it) => acc + (RENTAL_CATALOG[it.code].price * (+it.qty || 1)), 0);
+        $('#totalItemCount', el).textContent = `${rentalItems.length}종 (${totalCount}개)`;
+        $('#totalPriceDisplay', el).textContent = `월 ${won(totalPrice)}`;
+
+        // Attach item events
+        $$('.item-code', wrap).forEach(sel => sel.addEventListener('change', e => {
+          const i = +e.target.dataset.idx;
+          const newCode = e.target.value;
+          const newCat = RENTAL_CATALOG[newCode];
+          rentalItems[i].code = newCode;
+          rentalItems[i].color = newCat.colors[0];
+          if (newCode === 'BB484') {
+            rentalItems[i].underbust = '75';
+            rentalItems[i].cup = 'B';
+            rentalItems[i].size = '75(B)';
+          } else {
+            rentalItems[i].size = newCat.sizes[3] || newCat.sizes[0];
+          }
+          renderItems();
+        }));
+
+        $$('.item-color', wrap).forEach(sel => sel.addEventListener('change', e => {
+          const i = +e.target.dataset.idx;
+          rentalItems[i].color = e.target.value;
+        }));
+
+        $$('.item-size', wrap).forEach(sel => sel.addEventListener('change', e => {
+          const i = +e.target.dataset.idx;
+          rentalItems[i].size = e.target.value;
+        }));
+
+        $$('.item-underbust', wrap).forEach(sel => sel.addEventListener('change', e => {
+          const i = +e.target.dataset.idx;
+          const ub = e.target.value;
+          rentalItems[i].underbust = ub;
+          const availableCups = RENTAL_CATALOG.BB484.sizeMap[ub] || ['B', 'C'];
+          if (!availableCups.includes(rentalItems[i].cup)) rentalItems[i].cup = availableCups[0];
+          if (ub === '100') rentalItems[i].color = '블랙';
+          rentalItems[i].size = `${ub}(${rentalItems[i].cup})`;
+          renderItems();
+        }));
+
+        $$('.item-cup', wrap).forEach(sel => sel.addEventListener('change', e => {
+          const i = +e.target.dataset.idx;
+          rentalItems[i].cup = e.target.value;
+          rentalItems[i].size = `${rentalItems[i].underbust}(${rentalItems[i].cup})`;
+        }));
+
+        $$('.item-qty', wrap).forEach(sel => sel.addEventListener('change', e => {
+          const i = +e.target.dataset.idx;
+          rentalItems[i].qty = +e.target.value;
+          renderItems();
+        }));
+
+        $$('[data-del-item]', wrap).forEach(btn => btn.addEventListener('click', e => {
+          const i = +btn.dataset.delItem;
+          rentalItems.splice(i, 1);
+          renderItems();
+        }));
+      }
+
+      renderItems();
+
+      $('#addRentalItemBtn', el).addEventListener('click', () => {
+        rentalItems.push({ code: 'R1090', color: '스킨', size: '55', underbust: '75', cup: 'B', qty: 1 });
+        renderItems();
+      });
+
+      // Submit
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const f = formData(form), u = me();
+        if (!idCardDataUrl) return toast('주민번호 뒷자리를 마스킹한 신분증 사진(앞면)을 첨부해 주세요.');
+        if (!rentalItems.length) return toast('렌탈 품목을 최소 1개 이상 선택해 주세요.');
+
+        if (f.deliveryType === 'courier') {
+          if (!f.deliveryAddress) return toast('택배를 받으실 배송지 주소를 입력해 주세요.');
+          if (!f.deliveryReceiver) return toast('받는 분 성함을 입력해 주세요.');
+          if (!f.deliveryPhone) return toast('받는 분 연락처를 입력해 주세요.');
+        } else {
+          if (!f.pickupStoreId) return toast('방문 수령하실 매장을 선택해 주세요.');
+          if (!f.pickupReceiver) return toast('수령 희망자 성함을 입력해 주세요.');
+          if (!f.pickupPhone) return toast('수령자 연락처를 입력해 주세요.');
+        }
+
+        const itemsData = rentalItems.map(it => {
+          const cat = RENTAL_CATALOG[it.code];
+          const finalSize = it.code === 'BB484' ? `${it.underbust}(${it.cup})` : it.size;
+          return {
+            productCode: it.code,
+            productName: cat.name,
+            color: it.color,
+            size: finalSize,
+            qty: it.qty,
+            unitPrice: cat.price,
+            subtotal: cat.price * it.qty
+          };
+        });
+
+        const totalPrice = itemsData.reduce((s, it) => s + it.subtotal, 0);
+        const itemsSummary = itemsData.map(it => `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ');
+        const pickupStore = S.data.stores.find(st => st.id === f.pickupStoreId) || null;
+
+        const post = {
+          id: S.uid(),
+          title: `[렌탈접수] ${u ? u.name : f.author} · ${itemsSummary} (월 ${won(totalPrice)})`,
+          body: f.body || '',
+          author: u ? u.name : f.author,
+          authorId: u ? u.id : null,
+          guestPw: null,
+          date: S.now(),
+          images: [],
+          category: '',
+          secret: true,
+          status: 'wait',
+          extra: {
+            contractDate: f.contractDate,
+            applicantPhone: f.applicantPhone,
+            idCardImage: idCardDataUrl,
+            items: itemsData,
+            totalPrice: totalPrice,
+            deliveryType: f.deliveryType,
+            delivery: f.deliveryType === 'courier' ? {
+              receiver: f.deliveryReceiver,
+              phone: f.deliveryPhone,
+              zip: f.deliveryZip,
+              address: f.deliveryAddress,
+              address2: f.deliveryAddress2,
+              memo: f.deliveryMemo
+            } : null,
+            pickup: f.deliveryType === 'pickup' ? {
+              storeId: f.pickupStoreId,
+              storeName: pickupStore ? pickupStore.name : '',
+              storeAddress: pickupStore ? pickupStore.address : '',
+              storePhone: pickupStore ? pickupStore.phone : '',
+              receiver: f.pickupReceiver,
+              phone: f.pickupPhone,
+              memo: f.pickupMemo
+            } : null,
+            tracking: null,
+            adminMemo: ''
+          }
+        };
+
+        S.data.posts.rentalApply.push(post);
+        try {
+          await S.save();
+        } catch (err) {
+          S.data.posts.rentalApply.pop();
+          return toast('저장 공간이 부족합니다. 신분증 사진 용량을 줄여서 다시 시도해 주세요.');
+        }
+        toast('렌탈 계약이 성공적으로 접수되었습니다. 관리자 확인 후 승인 처리됩니다.');
+        location.hash = `#/rentalApply/view/${post.id}`;
+      });
+      return;
+    }
     const form = $('#postForm', el); if (!form) return;
     let imgs = [];
     $('#imgInput', el).addEventListener('change', async e => {
@@ -1306,6 +1822,139 @@
         <p><a href="#/${b}">목록으로</a></p></div></div></section>`;
     }
     const author = S.data.users.find(x => x.id === p.authorId);
+
+    if (b === 'rentalApply') {
+      const isDone = p.status === 'approved';
+      const ex = p.extra || {};
+      const items = ex.items || [];
+      const totalPrice = ex.totalPrice || items.reduce((s, it) => s + (it.subtotal || 0), 0);
+      const isCourier = ex.deliveryType === 'courier' || !ex.deliveryType;
+      const del = ex.delivery || {};
+      const pik = ex.pickup || {};
+
+      return `${pageHead('커뮤니티', '렌탈접수 게시판', '렌탈 계약 신청 및 접수 세부 내역입니다.')}
+      <section class="sec"><div class="wrap narrow">
+        <article class="card post">
+          <header class="post-head">
+            <span class="cat ${isDone ? 'c-rental-done' : 'c-rental-wait'}">${isDone ? '승인완료' : '렌탈계약완료 승인대기'}</span>
+            <h2>🔒 ${esc(p.title)}</h2>
+            <div class="meta">
+              <span>신청자 <b>${esc(p.author)}</b>${author && isAdmin() ? ' ' + badge(author.grade) : ''}</span>
+              <time>접수일: ${fmtDate(p.date, true)}</time>
+            </div>
+          </header>
+
+          <div class="rental-section-title"><i>📄</i> 렌탈 전자계약 기본 정보</div>
+          <dl class="kv apply-kv">
+            <dt>렌탈 계약 체결일자</dt><dd><b>${esc(ex.contractDate || fmtDate(p.date))}</b></dd>
+            <dt>신청자 연락처</dt><dd>${esc(ex.applicantPhone || (author && author.phone) || '-')}</dd>
+            <dt>계약서 서명 여부</dt><dd><b class="g">비에스온 S폼 전자계약서 서명 완료 ✓</b></dd>
+            <dt>승인 처리 상태</dt><dd><span class="cat ${isDone ? 'c-rental-done' : 'c-rental-wait'}">${isDone ? '승인완료 (택배 발송 및 출고 진행)' : '렌탈계약완료 승인대기 (관리자 확인 중)'}</span></dd>
+          </dl>
+
+          <div class="rental-section-title"><i>👗</i> 렌탈 신청 제품 규격 및 옵션 내역</div>
+          <table class="rental-spec-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>제품명</th>
+                <th>컬러</th>
+                <th>사이즈</th>
+                <th>수량</th>
+                <th style="text-align:right">월 렌탈료</th>
+                <th style="text-align:right">소계</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map((it, i) => `<tr>
+                <td>${i + 1}</td>
+                <td><b>${esc(it.productName || it.productCode)}</b></td>
+                <td>${esc(it.color)}</td>
+                <td><b style="color:var(--forest-d)">${esc(it.size)}</b></td>
+                <td>${it.qty}개</td>
+                <td style="text-align:right">${won(it.unitPrice)}</td>
+                <td style="text-align:right"><b>${won(it.subtotal)}</b></td>
+              </tr>`).join('') || '<tr><td colspan="7" class="center muted">선택된 품목이 없습니다.</td></tr>'}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="5"><b>총 월 렌탈료 합계</b></td>
+                <td colspan="2" style="text-align:right;color:var(--forest-d);font-size:1.15rem"><b>월 ${won(totalPrice)}</b></td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="rental-section-title"><i>🚚</i> 제품 수령 방식 및 배송 정보</div>
+          ${isCourier ? `
+            <dl class="kv apply-kv">
+              <dt>수령 방식</dt><dd><b>📦 택배 발송 (무료 배송)</b></dd>
+              <dt>받는 분</dt><dd>${esc(del.receiver || p.author)} (${esc(del.phone || ex.applicantPhone || '-')})</dd>
+              <dt>배송 주소</dt><dd>[${esc(del.zip || '-')}] ${esc(del.address || '')} ${esc(del.address2 || '')}</dd>
+              <dt>배송 요청사항</dt><dd>${esc(del.memo || '없음')}</dd>
+              ${ex.tracking ? `<dt>운송장 정보</dt><dd><b class="g">🚚 ${esc(ex.tracking.carrier)} : ${esc(ex.tracking.code)}</b> (발송 완료: ${fmtDate(ex.tracking.date)})</dd>` : '<dt>배송 현황</dt><dd><span class="muted">관리자 승인 후 송장번호가 등록됩니다.</span></dd>'}
+            </dl>` : `
+            <dl class="kv apply-kv">
+              <dt>수령 방식</dt><dd><b>🏬 매장 방문 직접 수령</b></dd>
+              <dt>수령 매장</dt><dd><b>${esc(pik.storeName || '선택 매장')}</b> ${pik.storeAddress ? `<br><small class="muted">${esc(pik.storeAddress)}</small>` : ''}</dd>
+              <dt>수령인 / 연락처</dt><dd>${esc(pik.receiver || p.author)} (${esc(pik.phone || ex.applicantPhone || '-')})</dd>
+              <dt>방문 예정 / 메모</dt><dd>${esc(pik.memo || '없음')}</dd>
+            </dl>`}
+
+          <div class="rental-section-title"><i>🪪</i> 신분증 사진 (앞면) 확인</div>
+          <div class="rental-idcard-display">
+            <div class="rid-head">
+              <b>마스킹된 신분증 사진 (앞면)</b>
+              <small class="muted">주민번호 뒷자리 6자리 마스킹 보호 적용</small>
+            </div>
+            ${ex.idCardImage ? `
+              <div class="rid-img-wrap">
+                <img id="rentalIdCardImg" src="${ex.idCardImage}" alt="신분증 사진">
+              </div>
+              <p style="font-size:0.8rem;color:var(--muted);margin-top:6px">※ 이미지를 클릭하시면 원본 크기로 크게 보실 수 있습니다.</p>` : '<p class="muted">등록된 신분증 사진이 없습니다.</p>'}
+          </div>
+
+          ${p.body ? `<div class="rental-section-title"><i>📝</i> 고객 메모 / 추가 요청사항</div><div class="post-body">${nl2br(p.body)}</div>` : ''}
+
+          ${ex.adminMemo ? `<div class="reply"><p class="reply-h">관리자 메모 / 처리 안내 <time>${fmtDate(ex.adminMemoDate || p.date, true)}</time></p><div>${nl2br(ex.adminMemo)}</div></div>` : ''}
+
+          ${isAdmin() ? `
+            <div class="admin-rental-action">
+              <h4>관리자 · 렌탈 계약 승인 및 배송 관리</h4>
+              <p style="font-size:0.9rem;margin-bottom:14px">신청자: <b>${esc(p.author)}</b> (${author ? esc(author.loginId) : '회원'}) · 렌탈 합계: <b>월 ${won(totalPrice)}</b></p>
+              <div class="btn-row" style="margin-bottom:18px">
+                ${!isDone ? `
+                  <button class="btn btn-primary" id="btnApproveRental">✓ 렌탈 계약 승인완료 처리</button>` : `
+                  <span class="cat c-rental-done" style="font-size:0.95rem;padding:6px 14px">✓ 승인완료 상태</span>
+                  <button class="btn btn-line btn-sm" id="btnCancelApproveRental">승인대기로 변경</button>`}
+              </div>
+              <form class="form" id="rentalTrackingForm">
+                <h5 style="margin:0 0 10px;font-size:0.95rem;color:var(--forest-d)">배송 운송장 및 관리자 처리 메모</h5>
+                <div class="grid2">
+                  <label>택배사
+                    <select name="carrier">
+                      <option value="CJ대한통운" ${(ex.tracking && ex.tracking.carrier === 'CJ대한통운') ? 'selected' : ''}>CJ대한통운</option>
+                      <option value="우체국택배" ${(ex.tracking && ex.tracking.carrier === '우체국택배') ? 'selected' : ''}>우체국택배</option>
+                      <option value="한진택배" ${(ex.tracking && ex.tracking.carrier === '한진택배') ? 'selected' : ''}>한진택배</option>
+                      <option value="롯데택배" ${(ex.tracking && ex.tracking.carrier === '롯데택배') ? 'selected' : ''}>롯데택배</option>
+                      <option value="로젠택배" ${(ex.tracking && ex.tracking.carrier === '로젠택배') ? 'selected' : ''}>로젠택배</option>
+                      <option value="기타/직접전달" ${(ex.tracking && ex.tracking.carrier === '기타/직접전달') ? 'selected' : ''}>기타 / 직접전달</option>
+                    </select>
+                  </label>
+                  <label>운송장번호<input name="trackingCode" value="${esc((ex.tracking && ex.tracking.code) || '')}" placeholder="숫자만 입력"></label>
+                </div>
+                <label>관리자 처리 메모<textarea name="adminMemo" rows="2" placeholder="고객에게 안내할 메모나 관리상 특이사항을 적어 주세요.">${esc(ex.adminMemo || '')}</textarea></label>
+                <button class="btn btn-line btn-sm">운송장 및 메모 저장</button>
+              </form>
+            </div>` : ''}
+
+          <footer class="post-foot">
+            <a class="btn btn-line" href="#/rentalApply">목록으로</a>
+            ${canDelete(p) ? `<button class="btn btn-danger" id="delBtn">삭제</button>` : ''}
+          </footer>
+        </article>
+      </div></section>`;
+    }
+
     return `${pageHead('커뮤니티', B.title)}
     <section class="sec"><div class="wrap narrow">
       <article class="card post">
@@ -1339,6 +1988,63 @@
   }
   function mountBoardPost(el, b, id) {
     const p = S.data.posts[b].find(x => x.id === id); if (!p) return;
+    if (b === 'rentalApply') {
+      const img = $('#rentalIdCardImg', el);
+      if (img) {
+        img.addEventListener('click', () => {
+          modal(`<h3>신분증 사진 (앞면)</h3><div style="text-align:center;padding:10px 0;"><img src="${img.src}" style="max-width:100%;max-height:80vh;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15)" alt="신분증 확대보기"></div>`);
+        });
+      }
+      const del = $('#delBtn', el);
+      if (del) {
+        del.addEventListener('click', async () => {
+          if (!confirmBox('이 렌탈접수 글을 삭제할까요?')) return;
+          S.data.posts.rentalApply = S.data.posts.rentalApply.filter(x => x.id !== id);
+          await S.save();
+          toast('삭제했습니다.');
+          location.hash = '#/rentalApply';
+        });
+      }
+      const btnApprove = $('#btnApproveRental', el);
+      if (btnApprove) {
+        btnApprove.addEventListener('click', async () => {
+          p.status = 'approved';
+          await S.save();
+          toast('렌탈 계약을 승인완료 처리했습니다.');
+          render();
+        });
+      }
+      const btnCancel = $('#btnCancelApproveRental', el);
+      if (btnCancel) {
+        btnCancel.addEventListener('click', async () => {
+          p.status = 'wait';
+          await S.save();
+          toast('승인대기 상태로 변경했습니다.');
+          render();
+        });
+      }
+      const trackForm = $('#rentalTrackingForm', el);
+      if (trackForm) {
+        trackForm.addEventListener('submit', async e => {
+          e.preventDefault();
+          const f = formData(trackForm);
+          if (!p.extra) p.extra = {};
+          if (f.trackingCode) {
+            p.extra.tracking = {
+              carrier: f.carrier,
+              code: f.trackingCode,
+              date: S.now()
+            };
+          }
+          p.extra.adminMemo = f.adminMemo || '';
+          p.extra.adminMemoDate = S.now();
+          await S.save();
+          toast('운송장 및 관리자 메모를 저장했습니다.');
+          render();
+        });
+      }
+      return;
+    }
     const uf = $('#unlockForm', el);
     if (uf) uf.addEventListener('submit', async e => {
       e.preventDefault();
@@ -1364,13 +2070,18 @@
   /* =======================================================
      관리자
      ======================================================= */
-  const ADMIN_TABS = { members: '회원·등급', applies: '창업접수', eduProg: '교육 시청현황', rental: '렌탈상품', materials: '제품자료·영상', lectures: '온라인강의', stores: '매장', settings: '사이트 설정', backup: '백업' };
+  const ADMIN_TABS = { members: '회원·등급', rentalApplies: '렌탈접수', applies: '창업접수', eduProg: '교육 시청현황', rental: '렌탈상품', materials: '제품자료·영상', lectures: '온라인강의', stores: '매장', settings: '사이트 설정', backup: '백업' };
   function viewAdmin(tab) {
     if (!isAdmin()) return needLogin('관리자');
     tab = ADMIN_TABS[tab] ? tab : 'members';
     return `${pageHead('관리자', '사이트 관리')}
     <section class="sec admin"><div class="wrap">
-      <nav class="admin-tabs">${Object.entries(ADMIN_TABS).map(([k, v]) => `<a href="#/admin/${k}" class="${k === tab ? 'on' : ''}">${v}${k === 'applies' ? ` <i>${S.data.posts.apply.filter(p => p.status !== 'approved').length || ''}</i>` : ''}</a>`).join('')}</nav>
+      <nav class="admin-tabs">${Object.entries(ADMIN_TABS).map(([k, v]) => {
+        let count = '';
+        if (k === 'rentalApplies') count = (S.data.posts.rentalApply || []).filter(p => p.status !== 'approved').length || '';
+        else if (k === 'applies') count = (S.data.posts.apply || []).filter(p => p.status !== 'approved').length || '';
+        return `<a href="#/admin/${k}" class="${k === tab ? 'on' : ''}">${v}${count ? ` <i>${count}</i>` : ''}</a>`;
+      }).join('')}</nav>
       <div class="admin-body">${ADMIN_VIEWS[tab]()}</div>
     </div></section>`;
   }
@@ -1388,6 +2099,41 @@
             <td><select data-grade="${u.id}">${GRADES.map(g => `<option value="${g.key}" ${u.grade === g.key ? 'selected' : ''}>${g.name}</option>`).join('')}</select></td>
             <td><button class="btn btn-line btn-sm" data-member="${u.id}">상세</button></td></tr>`; }).join('') || '<tr><td colspan="8" class="center muted">아직 회원이 없습니다.</td></tr>'}</tbody>
         </table></div>`;
+    },
+    rentalApplies() {
+      const ps = (S.data.posts.rentalApply || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+      const waitCount = ps.filter(p => p.status !== 'approved').length;
+      const doneCount = ps.filter(p => p.status === 'approved').length;
+      const totalMonthly = ps.reduce((s, p) => s + ((p.extra && p.extra.totalPrice) || 0), 0);
+      return `<div class="admin-head"><h3>렌탈접수 관리 ${ps.length}건</h3><a class="btn btn-line btn-sm" href="#/rentalApply">게시판으로</a></div>
+        <div class="rental-stat-grid">
+          <div class="rst-card"><span class="rst-label">총 접수 건수</span><span class="rst-val">${ps.length}건</span></div>
+          <div class="rst-card ${waitCount > 0 ? 'highlight' : ''}"><span class="rst-label">승인대기</span><span class="rst-val">${waitCount}건</span></div>
+          <div class="rst-card"><span class="rst-label">승인완료</span><span class="rst-val">${doneCount}건</span></div>
+          <div class="rst-card"><span class="rst-label">월 렌탈료 총액</span><span class="rst-val">${won(totalMonthly)}</span></div>
+        </div>
+        <div class="table-wrap"><table class="table admin-table"><thead><tr><th>상태</th><th>계약일자</th><th>신청자</th><th>렌탈 품목 / 규격 요약</th><th>월 렌탈료</th><th>수령방식</th><th>접수일</th><th></th></tr></thead>
+        <tbody>${ps.map(p => {
+          const a = S.data.users.find(u => u.id === p.authorId);
+          const isDone = p.status === 'approved';
+          const itemsSummary = (p.extra && p.extra.items && p.extra.items.length)
+            ? p.extra.items.map(it => `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ')
+            : (p.title || '렌탈 계약 신청');
+          const totalFee = (p.extra && p.extra.totalPrice) || 0;
+          const deliveryTxt = (p.extra && p.extra.deliveryType === 'pickup')
+            ? `🏬 매장수령 (${(p.extra.pickup && p.extra.pickup.storeName) || '매장'})`
+            : `📦 택배발송`;
+          return `<tr>
+            <td><span class="cat ${isDone ? 'c-rental-done' : 'c-rental-wait'}">${isDone ? '승인완료' : '승인대기'}</span></td>
+            <td>${esc((p.extra && p.extra.contractDate) || fmtDate(p.date))}</td>
+            <td><b>${esc(p.author)}</b><br><small class="muted">${a ? esc(a.loginId) : ''} · ${esc((p.extra && p.extra.applicantPhone) || (a && a.phone) || '')}</small></td>
+            <td>${esc(itemsSummary)}</td>
+            <td><b>${totalFee ? won(totalFee) : '-'}</b></td>
+            <td>${esc(deliveryTxt)}</td>
+            <td>${fmtDate(p.date)}</td>
+            <td><a class="btn btn-line btn-sm" href="#/rentalApply/view/${p.id}">보기·승인</a></td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="8" class="center muted">접수된 렌탈 내역이 없습니다.</td></tr>'}</tbody></table></div>`;
     },
     applies() {
       const ps = S.data.posts.apply.slice().sort((a, b) => b.date.localeCompare(a.date));

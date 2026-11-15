@@ -478,3 +478,110 @@
 /* 상품 카드 내 착용법 영상 버튼 */
 .product-actions-grid{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
 .product-actions-grid .btn{flex:1;text-align:center;white-space:nowrap;padding:9px 12px;font-size:0.88rem}
+
+/* =========================================================
+   렌탈접수 게시판 및 렌탈 계약 관리 시스템
+   ========================================================= */
+.rental-notice-banner{background:linear-gradient(135deg,#0e483b 0%,#1a5c4d 60%,#288069 100%);color:#ffffff;border-radius:20px;padding:24px 28px;margin:16px 0 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 10px 30px rgba(14,72,59,0.18)}
+.rental-notice-banner .rnb-icon{font-size:2.8rem;line-height:1;flex-shrink:0}
+.rental-notice-banner .rnb-body{flex:1}
+.rental-notice-banner .rnb-body h4{font-size:1.25rem;font-weight:800;margin:0 0 8px;color:#ffffff;letter-spacing:-0.01em}
+.rental-notice-banner .rnb-body p{margin:0;font-size:0.92rem;line-height:1.6;color:#d5f3e4}
+.rental-notice-banner .btn{flex-shrink:0;background:#ffffff;color:var(--forest-d);font-weight:800;border:none;box-shadow:0 4px 14px rgba(0,0,0,0.15);padding:12px 24px}
+.rental-notice-banner .btn:hover{background:#f1faf4;color:var(--forest)}
+
+.rental-apply-guide{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;background:#f7fbf9;border:1.5px solid #cae8d8;border-radius:18px;padding:20px;margin-bottom:26px}
+.rag-step{display:flex;align-items:flex-start;gap:12px}
+.rag-num{width:30px;height:30px;border-radius:50%;background:var(--forest);color:#ffffff;font-size:0.92rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 8px rgba(31,92,70,0.22)}
+.rag-text b{display:block;font-size:0.93rem;color:var(--forest-d);margin-bottom:4px;font-weight:800}
+.rag-text small{display:block;font-size:0.8rem;color:var(--muted);line-height:1.45}
+
+.rental-section-title{font-size:1.12rem;font-weight:800;color:var(--forest-d);margin:24px 0 12px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #e2efe8;padding-bottom:8px}
+.rental-section-title i{font-size:1.2rem}
+
+.idcard-card{background:#fffef7;border:1.5px dashed #e4b95b;border-radius:16px;padding:20px;margin-bottom:20px}
+.idcard-warn{display:flex;align-items:flex-start;gap:12px;background:#fff8e6;border:1px solid #fed888;border-radius:12px;padding:12px 16px;margin-bottom:14px;color:#8a5900;font-size:0.88rem;line-height:1.55}
+.idcard-warn-icon{font-size:1.4rem;line-height:1;flex-shrink:0}
+.idcard-warn b{color:#b34700}
+.idcard-upload-box{background:#ffffff;border:2px dashed #b8dfcb;border-radius:14px;padding:24px 18px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+.idcard-upload-box:hover{border-color:var(--forest);background:#f2faf6}
+.idcard-upload-box input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.idcard-upload-icon{font-size:2.2rem;color:var(--forest);margin-bottom:8px}
+.idcard-upload-prompt{font-size:0.94rem;font-weight:800;color:var(--forest-d);margin-bottom:4px}
+.idcard-upload-sub{font-size:0.82rem;color:var(--muted)}
+.idcard-preview-wrap{display:flex;align-items:center;gap:16px;margin-top:14px;padding:12px;background:#ffffff;border:1px solid #d4ebd9;border-radius:12px}
+.idcard-thumb{width:110px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #c0e3cd;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.idcard-preview-info{flex:1}
+.idcard-preview-info b{font-size:0.92rem;color:var(--forest-d);display:block}
+.idcard-preview-info span{font-size:0.8rem;color:var(--leaf);display:inline-block;font-weight:700}
+.idcard-remove-btn{background:#fff0f0;color:#c0392b;border:1px solid #f9c2c2;border-radius:8px;padding:6px 12px;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.2s}
+.idcard-remove-btn:hover{background:#c0392b;color:#ffffff}
+
+.rental-items-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
+.rental-item-card{background:#ffffff;border:1.5px solid #d2ebd8;border-radius:16px;padding:18px 20px;position:relative;box-shadow:0 4px 14px rgba(31,92,70,0.05);transition:border-color 0.2s}
+.rental-item-card:hover{border-color:var(--leaf)}
+.ric-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #edf6f1}
+.ric-title{font-size:0.98rem;font-weight:800;color:var(--forest-d);display:flex;align-items:center;gap:8px}
+.ric-badge{background:#e7f7ef;color:var(--forest);font-size:0.78rem;font-weight:800;padding:2px 8px;border-radius:6px}
+.ric-remove{background:none;border:none;color:#b04336;font-size:0.82rem;font-weight:700;cursor:pointer;padding:4px 8px;border-radius:6px}
+.ric-remove:hover{background:#fbeeee}
+.ric-grid{display:grid;grid-template-columns:2fr 1fr 1.6fr 1fr 1.4fr;gap:10px;align-items:end}
+.ric-subtotal{background:#f6fbf8;border:1px solid #d0ecda;border-radius:10px;padding:9px 12px;font-weight:800;color:var(--forest-d);text-align:right;font-size:0.95rem;display:flex;flex-direction:column;justify-content:center}
+.ric-subtotal small{font-size:0.75rem;color:var(--muted);font-weight:600}
+.ric-bb-split{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ric-hint{font-size:0.78rem;color:var(--leaf);margin-top:6px;font-weight:700;display:block}
+
+.rental-add-btn{width:100%;background:#f1faf4;border:2px dashed #9fd9ba;color:var(--forest-d);font-weight:800;padding:12px 18px;border-radius:12px;cursor:pointer;font-size:0.95rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.rental-add-btn:hover{background:#e1f4ea;border-color:var(--forest);color:var(--forest)}
+
+.rental-total-card{background:linear-gradient(145deg,#f0fbf5 0%,#ffffff 100%);border:2px solid #a3dfc0;border-radius:18px;padding:20px 24px;margin:20px 0;display:flex;align-items:center;justify-content:space-between;gap:20px;box-shadow:0 6px 20px rgba(31,92,70,0.08);flex-wrap:wrap}
+.rtc-info h4{margin:0 0 4px;font-size:1.06rem;color:var(--forest-d);font-weight:800}
+.rtc-info p{margin:0;font-size:0.84rem;color:var(--muted)}
+.rtc-price{text-align:right}
+.rtc-label{font-size:0.85rem;color:var(--forest);font-weight:700;display:block}
+.rtc-val{font-size:1.85rem;font-weight:900;color:var(--forest-d);letter-spacing:-0.02em}
+
+.delivery-type-selector{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.dt-option{border:2px solid #daede1;border-radius:14px;padding:16px 18px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;background:#ffffff;transition:all 0.2s}
+.dt-option input[type="radio"]{margin-top:3px;accent-color:var(--forest)}
+.dt-option:has(input:checked),.dt-option.active{border-color:var(--forest);background:#f2faf5;box-shadow:0 4px 14px rgba(31,92,70,0.1)}
+.dt-option-text b{display:block;font-size:0.98rem;color:var(--forest-d);font-weight:800;margin-bottom:3px}
+.dt-option-text p{margin:0;font-size:0.83rem;color:var(--muted);line-height:1.45}
+
+.delivery-box{background:#f9fcfb;border:1.5px solid #d4ecdc;border-radius:16px;padding:20px;margin-bottom:18px}
+.addr-search-row{display:flex;gap:8px;align-items:center}
+.addr-search-row input{flex:1}
+
+.cat.c-rental-wait{background:#fff4de;color:#b26a00;border:1px solid #ffd488}
+.cat.c-rental-done{background:#e2f7eb;color:var(--forest-d);border:1px solid #9fdfb8}
+
+/* 게시글 렌탈 상세 보기 */
+.rental-spec-table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:0.9rem}
+.rental-spec-table th{background:#eef7f2;color:var(--forest-d);font-weight:800;padding:10px 12px;border:1px solid #d8ede0;text-align:left}
+.rental-spec-table td{padding:10px 12px;border:1px solid #d8ede0;color:var(--ink)}
+.rental-spec-table tfoot td{background:#f6fbf8;font-weight:900;color:var(--forest-d);font-size:1.02rem}
+
+.rental-idcard-display{margin:16px 0;background:#fdfcf6;border:1.5px solid #efdbab;border-radius:16px;padding:16px 20px}
+.rid-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rid-head b{font-size:0.95rem;color:#7a5812}
+.rid-img-wrap{display:inline-block;border-radius:10px;overflow:hidden;border:1px solid #ddcca2;box-shadow:0 3px 12px rgba(0,0,0,0.1);max-width:360px}
+.rid-img-wrap img{display:block;width:100%;height:auto;cursor:pointer}
+
+.admin-rental-action{background:linear-gradient(145deg,#f4fbf7 0%,#ffffff 100%);border:2px solid #a4e0c1;border-radius:18px;padding:20px 22px;margin:20px 0}
+.admin-rental-action h4{margin:0 0 10px;font-size:1.1rem;color:var(--forest-d);font-weight:800}
+
+/* 관리자 렌탈접수 탭 통계 카드 */
+.rental-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.rst-card{background:#ffffff;border:1.5px solid #d5ebde;border-radius:14px;padding:16px 18px;box-shadow:0 3px 10px rgba(31,92,70,0.05)}
+.rst-card.highlight{border-color:#fed47e;background:#fffdf6}
+.rst-label{font-size:0.83rem;font-weight:700;color:var(--muted);display:block;margin-bottom:6px}
+.rst-val{font-size:1.6rem;font-weight:900;color:var(--forest-d);line-height:1}
+.rst-card.highlight .rst-val{color:#c47300}
+
+@media(max-width:768px){
+  .rental-apply-guide{grid-template-columns:1fr;gap:12px}
+  .rental-notice-banner{flex-direction:column;align-items:flex-start}
+  .ric-grid{grid-template-columns:1fr;gap:8px}
+  .delivery-type-selector{grid-template-columns:1fr}
+  .rental-stat-grid{grid-template-columns:repeat(2,1fr)}
+}

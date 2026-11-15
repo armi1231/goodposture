@@ -161,7 +161,7 @@
 
   function mergePosts(localPosts = {}, remotePosts = {}) {
     const out = {};
-    ['guestbook', 'consult', 'apply'].forEach(b => {
+    ['guestbook', 'consult', 'apply', 'rentalApply'].forEach(b => {
       const lList = (localPosts && localPosts[b]) || [];
       const rList = (remotePosts && remotePosts[b]) || [];
       const map = new Map();
@@ -446,7 +446,7 @@
         { id: uid(), name: '카페 드 슬리밍고 울산남구점', region: '울산', naverUrl: 'https://naver.me/5mIoKouD', address: '', phone: '', img: '' },
         { id: uid(), name: '카페 드 슬리밍고 부산W스퀘어점', region: '부산', naverUrl: 'https://naver.me/5R4Pz7TL', address: '부산광역시 남구 분포로 145 W스퀘어 2053호', phone: '', img: '' }
       ],
-      posts: { guestbook: [], consult: [], apply: [] }
+      posts: { guestbook: [], consult: [], apply: [], rentalApply: [] }
     };
   }
 
@@ -485,6 +485,11 @@
     /* 이전 버전 데이터 보정 */
     migrate() {
       const d = this.data, C = window.SITE_CONFIG, s = d.settings;
+      if (!d.posts) d.posts = {};
+      if (!d.posts.guestbook) d.posts.guestbook = [];
+      if (!d.posts.consult) d.posts.consult = [];
+      if (!d.posts.apply) d.posts.apply = [];
+      if (!d.posts.rentalApply) d.posts.rentalApply = [];
       if ((d.version || 1) < 2) {
         if (!s.contactPhone) s.contactPhone = C.contactPhone;
         if (!s.kakaoId) s.kakaoId = C.kakaoId;
