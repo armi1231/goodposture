@@ -219,6 +219,11 @@
         });
         d.version = 3;
       }
+      /* v4 — 메인 조깅 실사 영상 캐시 무효화 및 신규 영상(joggers_v6.mp4) 자동 갱신 */
+      if ((d.version || 1) < 4) {
+        s.heroJoggerVideo = 'assets/hero/joggers_v6.mp4?v=20261115_07';
+        d.version = 4;
+      }
     },
 
     /* 세션 */

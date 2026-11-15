@@ -1187,7 +1187,7 @@
         <div class="grid2">${f('appIos', '플레이 슬리밍고 App Store 링크')}${f('appAndroid', '플레이 슬리밍고 Google Play 링크')}</div>
         <div class="grid2">${f('recommenderName', '기본 추천인 이름')}${f('recommenderNo', '기본 추천인 번호')}</div>
         <div class="grid3">${f('guideTitle', '운영자 호칭', '착한 창업 가이드')}${f('guideName', '운영자 이름')}${f('kakaoId', '카카오톡 ID')}</div>
-        <div class="grid2">${f('contactPhone', '상담 전화번호')}${f('heroJoggerVideo', '메인 조깅 장면 실사 영상(mp4 경로, 선택)', 'assets/hero/joggers.mp4')}</div>
+        <div class="grid2">${f('contactPhone', '상담 전화번호')}${f('heroJoggerVideo', '메인 조깅 장면 실사 영상(mp4 경로, 선택)', 'assets/hero/joggers_v6.mp4')}</div>
         <button class="btn btn-primary">저장</button>
       </form>`;
     },
@@ -1405,7 +1405,14 @@
     if (isHome) {
       if (!hero && window.THREE && window.initHero) {
         const vid = $('#heroVideo');
-        if (set().heroJoggerVideo) vid.setAttribute('src', set().heroJoggerVideo);
+        const vSrc = (set().heroJoggerVideo || '').trim();
+        const targetSrc = (vSrc && !vSrc.includes('joggers.mp4') && !vSrc.includes('joggers_v6.mp4'))
+          ? vSrc
+          : 'assets/hero/joggers_v6.mp4?v=20261115_07';
+        if (vid && vid.getAttribute('src') !== targetSrc) {
+          vid.setAttribute('src', targetSrc);
+          vid.load();
+        }
         hero = window.initHero({
           stage: $('#heroStage'), canvasWrap: $('#heroCanvas'), videoEl: vid,
           typeEl: $('#heroTyping'), runCaption: $('#runCaption'),
