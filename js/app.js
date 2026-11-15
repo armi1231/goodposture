@@ -317,7 +317,7 @@
     const s = set();
     return `<section class="sec app-band"><div class="wrap app-inner">
       <div class="app-mockup reveal" aria-hidden="true">
-        <img src="assets/app/play_slimminggo_mockup.png" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱" loading="lazy">
+        <img src="assets/app/play_slimminggo_mockup.png?v=20261115_15" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱" loading="lazy">
       </div>
       <div class="app-copy reveal">
         <p class="eyebrow">플레이 슬리밍고 2.1 앱</p>
@@ -719,7 +719,7 @@
     return `${pageHead('플레이 슬리밍고 2.1', '자세를 읽고, 습관을 바꾸는 AI', '슬리밍고그룹이 개발한 AI 체형 측정 전문 앱으로, 사진 한 장으로 자세점수와 부위별 문제점을 즉시 확인합니다.')}
     <section class="sec"><div class="wrap app-detail">
       <div class="app-hero-mockup reveal" aria-hidden="true">
-        <img src="assets/app/play_slimminggo_mockup.png" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱 화면" loading="lazy">
+        <img src="assets/app/play_slimminggo_mockup.png?v=20261115_15" alt="슬리밍고그룹 플레이 슬리밍고 2.1 앱 화면" loading="lazy">
       </div>
       <div class="app-detail-content reveal">
         <div class="app-features">
