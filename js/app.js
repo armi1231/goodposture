@@ -1072,7 +1072,9 @@
       e.preventDefault();
       const u = me(), f = formData(e.target);
       Object.assign(u, { birth: f.birth, phone: f.phone, gender: f.gender, zip: f.zip, address: f.address, address2: f.address2 });
-      await S.save(); toast('회원정보를 저장했습니다.');
+      await S.save();
+      toast('회원정보를 저장했습니다.');
+      render();
     });
     $('#pwForm', el).addEventListener('submit', async e => {
       e.preventDefault();
@@ -2500,7 +2502,13 @@
         <form class="form" id="refForm"><div class="grid2"><label>추천인 이름<input name="refName" value="${esc(u.refName)}"></label><label>추천인 번호<input name="refNo" value="${esc(u.refNo)}"></label></div>
         <div class="btn-row"><button class="btn btn-primary">추천인 저장</button><button type="button" class="btn btn-danger" id="delMember">회원 삭제</button></div></form>`);
       $('#refForm', m.el).addEventListener('submit', async e => { e.preventDefault(); Object.assign(u, formData(e.target)); m.close(); await save('저장했습니다.'); });
-      $('#delMember', m.el).addEventListener('click', async () => { if (!confirmBox(`${u.name}님을 삭제할까요?`)) return; S.data.users = S.data.users.filter(x => x !== u); m.close(); await save('삭제했습니다.'); });
+      $('#delMember', m.el).addEventListener('click', async () => {
+        if (!confirmBox(`${u.name}님을 삭제할까요?`)) return;
+        m.close();
+        await S.deleteUser(u.id);
+        toast('삭제했습니다.');
+        render();
+      });
     }));
 
     // 렌탈 상품
@@ -2511,7 +2519,9 @@
     }));
     $$('[data-del-product]', el).forEach(b => b.addEventListener('click', async () => {
       if (!confirmBox('이 렌탈 상품을 삭제할까요?')) return;
-      S.data.rentalProducts = S.data.rentalProducts.filter(p => p.id !== b.dataset.delProduct); await save('삭제했습니다.');
+      await S.deleteProduct(b.dataset.delProduct);
+      toast('삭제했습니다.');
+      render();
     }));
     $$('[data-edit-product]', el).forEach(b => b.addEventListener('click', () => {
       const p = S.data.rentalProducts.find(x => x.id === b.dataset.editProduct) || { code: '', name: '', color: '', price: '', desc: '', img: '', contractUrl: '', visible: true };
@@ -2541,7 +2551,10 @@
 
     // 자료·영상
     $$('[data-del-mat]', el).forEach(b => b.addEventListener('click', async () => {
-      if (!confirmBox('삭제할까요?')) return; S.data.materials = S.data.materials.filter(x => x.id !== b.dataset.delMat); await save('삭제했습니다.');
+      if (!confirmBox('삭제할까요?')) return;
+      await S.deleteMaterial(b.dataset.delMat);
+      toast('삭제했습니다.');
+      render();
     }));
     $$('[data-edit-mat]', el).forEach(b => b.addEventListener('click', () => {
       const type = b.dataset.type;
@@ -2571,7 +2584,10 @@
 
     // 강의
     $$('[data-del-lec]', el).forEach(b => b.addEventListener('click', async () => {
-      if (!confirmBox('강의를 삭제할까요?')) return; S.data.lectures = S.data.lectures.filter(x => x.id !== b.dataset.delLec); await save('삭제했습니다.');
+      if (!confirmBox('강의를 삭제할까요?')) return;
+      await S.deleteLecture(b.dataset.delLec);
+      toast('삭제했습니다.');
+      render();
     }));
     $$('[data-edit-lec]', el).forEach(b => b.addEventListener('click', () => {
       const l = S.data.lectures.find(x => x.id === b.dataset.editLec) || { part: 1, order: 99, title: '', minutes: 60, url: '', desc: '' };
@@ -2596,7 +2612,10 @@
 
     // 매장
     $$('[data-del-store]', el).forEach(b => b.addEventListener('click', async () => {
-      if (!confirmBox('매장을 삭제할까요?')) return; S.data.stores = S.data.stores.filter(x => x.id !== b.dataset.delStore); await save('삭제했습니다.');
+      if (!confirmBox('매장을 삭제할까요?')) return;
+      await S.deleteStore(b.dataset.delStore);
+      toast('삭제했습니다.');
+      render();
     }));
     $$('[data-edit-store]', el).forEach(b => b.addEventListener('click', () => {
       const s = S.data.stores.find(x => x.id === b.dataset.editStore) || { name: '카페 드 슬리밍고 ', region: '', naverUrl: '', address: '', phone: '', img: '' };

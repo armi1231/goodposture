@@ -131,32 +131,54 @@
     return out;
   }
 
-  function mergeUsers(localUsers = [], remoteUsers = []) {
-    const map = new Map();
+  function mergeUsers(localUsers = [], remoteUsers = [], delUserSet = new Set()) {
+    const byId = new Map();
+    const byLoginId = new Map();
+
     (remoteUsers || []).forEach(u => {
-      if (u && (u.id || u.loginId)) {
-        map.set(u.loginId || u.id, Object.assign({}, u));
-      }
+      if (!u) return;
+      if (u.id && delUserSet.has(u.id)) return;
+      const copy = Object.assign({}, u);
+      if (u.id) byId.set(u.id, copy);
+      if (u.loginId) byLoginId.set(u.loginId.trim().toLowerCase(), copy);
     });
+
     (localUsers || []).forEach(u => {
-      if (!u || (!u.id && !u.loginId)) return;
-      const key = u.loginId || u.id;
-      if (map.has(key)) {
-        const rem = map.get(key);
+      if (!u) return;
+      if (u.id && delUserSet.has(u.id)) return;
+      const cleanLogin = u.loginId ? u.loginId.trim().toLowerCase() : '';
+      const rem = (u.id && byId.get(u.id)) || (cleanLogin && byLoginId.get(cleanLogin));
+
+      if (rem) {
         const mergedProg = mergeProgress(u.progress, rem.progress);
-        const gOrder = ['seed', 'ieum', 'saeum', 'pium', 'dream'];
-        const localGIdx = gOrder.indexOf(u.grade);
-        const remoteGIdx = gOrder.indexOf(rem.grade);
-        const bestGrade = localGIdx > remoteGIdx ? u.grade : (rem.grade || u.grade);
-        map.set(key, Object.assign({}, rem, u, {
-          grade: bestGrade || rem.grade || u.grade,
+        // 로컬 사용자 수정본(비밀번호, 연락처, 주소, 등급, 추천인 등)이 원격 데이터를 100% 덮어쓰도록 처리
+        const merged = Object.assign({}, rem, u, {
           progress: mergedProg
-        }));
+        });
+        if (merged.id) byId.set(merged.id, merged);
+        if (merged.loginId) byLoginId.set(merged.loginId.trim().toLowerCase(), merged);
       } else {
-        map.set(key, Object.assign({}, u));
+        const copy = Object.assign({}, u);
+        if (copy.id) byId.set(copy.id, copy);
+        if (copy.loginId) byLoginId.set(copy.loginId.trim().toLowerCase(), copy);
       }
     });
-    return Array.from(map.values());
+
+    const result = [];
+    const seen = new Set();
+    byId.forEach(u => {
+      if (u && u.id && !seen.has(u.id)) {
+        seen.add(u.id);
+        result.push(u);
+      }
+    });
+    byLoginId.forEach(u => {
+      if (u && (!u.id || !seen.has(u.id))) {
+        if (u.id) seen.add(u.id);
+        result.push(u);
+      }
+    });
+    return result;
   }
 
   function mergePosts(localPosts = {}, remotePosts = {}, delSet = new Set()) {
@@ -166,7 +188,7 @@
       const rList = (remotePosts && remotePosts[b]) || [];
       const map = new Map();
       rList.forEach(p => {
-        if (p && p.id && !delSet.has(p.id)) map.set(p.id, p);
+        if (p && p.id && !delSet.has(p.id)) map.set(p.id, Object.assign({}, p));
       });
       lList.forEach(p => {
         if (!p || !p.id || delSet.has(p.id)) return;
@@ -177,7 +199,7 @@
           (p.comments || []).forEach(c => cMap.set(c.id, c));
           map.set(p.id, Object.assign({}, rPost, p, { comments: Array.from(cMap.values()) }));
         } else {
-          map.set(p.id, p);
+          map.set(p.id, Object.assign({}, p));
         }
       });
       out[b] = Array.from(map.values()).sort((x, y) => new Date(y.createdAt || y.date || 0) - new Date(x.createdAt || x.date || 0));
@@ -185,23 +207,61 @@
     return out;
   }
 
+  /* 엔티티 목록 병합 (매장, 상품, 강의, 설명자료 등): 로컬 수정본 우선 + 원격 신규 항목 보존 */
+  function mergeEntityList(localList = [], remoteList = [], delSet = new Set()) {
+    const map = new Map();
+    (remoteList || []).forEach(it => {
+      if (it && it.id && !delSet.has(it.id)) {
+        map.set(it.id, Object.assign({}, it));
+      }
+    });
+    (localList || []).forEach(it => {
+      if (it && it.id && !delSet.has(it.id)) {
+        const rem = map.get(it.id);
+        // 로컬에서 수정한 주소, 전화번호, 사진, 가격 등이 원격을 100% 덮어쓰도록 처리
+        map.set(it.id, Object.assign({}, rem || {}, it));
+      }
+    });
+    return Array.from(map.values());
+  }
+
   function mergeData(local, remote) {
     if (!remote) return local;
     if (!local) return remote;
-    const delSet = new Set((local && local.deletedPostIds) || []);
-    ((remote && remote.deletedPostIds) || []).forEach(id => delSet.add(id));
-    const mergedDeleted = Array.from(delSet);
+
+    const delPostSet = new Set((local && local.deletedPostIds) || []);
+    ((remote && remote.deletedPostIds) || []).forEach(id => delPostSet.add(id));
+
+    const delStoreSet = new Set((local && local.deletedStoreIds) || []);
+    ((remote && remote.deletedStoreIds) || []).forEach(id => delStoreSet.add(id));
+
+    const delUserSet = new Set((local && local.deletedUserIds) || []);
+    ((remote && remote.deletedUserIds) || []).forEach(id => delUserSet.add(id));
+
+    const delProdSet = new Set((local && local.deletedProductIds) || []);
+    ((remote && remote.deletedProductIds) || []).forEach(id => delProdSet.add(id));
+
+    const delMatSet = new Set((local && local.deletedMaterialIds) || []);
+    ((remote && remote.deletedMaterialIds) || []).forEach(id => delMatSet.add(id));
+
+    const delLecSet = new Set((local && local.deletedLectureIds) || []);
+    ((remote && remote.deletedLectureIds) || []).forEach(id => delLecSet.add(id));
 
     return Object.assign({}, remote, local, {
       version: Math.max(local.version || 1, remote.version || 1),
       settings: Object.assign({}, remote.settings || {}, local.settings || {}),
-      users: mergeUsers(local.users, remote.users),
-      deletedPostIds: mergedDeleted,
-      posts: mergePosts(local.posts, remote.posts, delSet),
-      rentalProducts: (remote.rentalProducts && remote.rentalProducts.length) ? remote.rentalProducts : local.rentalProducts,
-      lectures: (remote.lectures && remote.lectures.length) ? remote.lectures : local.lectures,
-      materials: (remote.materials && remote.materials.length) ? remote.materials : local.materials,
-      stores: (remote.stores && remote.stores.length) ? remote.stores : local.stores
+      users: mergeUsers(local.users, remote.users, delUserSet),
+      deletedPostIds: Array.from(delPostSet),
+      deletedStoreIds: Array.from(delStoreSet),
+      deletedUserIds: Array.from(delUserSet),
+      deletedProductIds: Array.from(delProdSet),
+      deletedMaterialIds: Array.from(delMatSet),
+      deletedLectureIds: Array.from(delLecSet),
+      posts: mergePosts(local.posts, remote.posts, delPostSet),
+      rentalProducts: mergeEntityList(local.rentalProducts, remote.rentalProducts, delProdSet),
+      lectures: mergeEntityList(local.lectures, remote.lectures, delLecSet),
+      materials: mergeEntityList(local.materials, remote.materials, delMatSet),
+      stores: mergeEntityList(local.stores, remote.stores, delStoreSet)
     });
   }
 
@@ -501,6 +561,61 @@
       return this.save();
     },
 
+    deleteStore(id) {
+      if (!this.data || !this.data.stores) return Promise.resolve(false);
+      this.data.stores = this.data.stores.filter(x => x && x.id !== id);
+      if (!this.data.deletedStoreIds) this.data.deletedStoreIds = [];
+      if (!this.data.deletedStoreIds.includes(id)) {
+        this.data.deletedStoreIds.push(id);
+        if (this.data.deletedStoreIds.length > 200) this.data.deletedStoreIds.shift();
+      }
+      return this.save();
+    },
+
+    deleteUser(id) {
+      if (!this.data || !this.data.users) return Promise.resolve(false);
+      this.data.users = this.data.users.filter(x => x && x.id !== id);
+      if (!this.data.deletedUserIds) this.data.deletedUserIds = [];
+      if (!this.data.deletedUserIds.includes(id)) {
+        this.data.deletedUserIds.push(id);
+        if (this.data.deletedUserIds.length > 200) this.data.deletedUserIds.shift();
+      }
+      return this.save();
+    },
+
+    deleteProduct(id) {
+      if (!this.data || !this.data.rentalProducts) return Promise.resolve(false);
+      this.data.rentalProducts = this.data.rentalProducts.filter(x => x && x.id !== id);
+      if (!this.data.deletedProductIds) this.data.deletedProductIds = [];
+      if (!this.data.deletedProductIds.includes(id)) {
+        this.data.deletedProductIds.push(id);
+        if (this.data.deletedProductIds.length > 200) this.data.deletedProductIds.shift();
+      }
+      return this.save();
+    },
+
+    deleteMaterial(id) {
+      if (!this.data || !this.data.materials) return Promise.resolve(false);
+      this.data.materials = this.data.materials.filter(x => x && x.id !== id);
+      if (!this.data.deletedMaterialIds) this.data.deletedMaterialIds = [];
+      if (!this.data.deletedMaterialIds.includes(id)) {
+        this.data.deletedMaterialIds.push(id);
+        if (this.data.deletedMaterialIds.length > 200) this.data.deletedMaterialIds.shift();
+      }
+      return this.save();
+    },
+
+    deleteLecture(id) {
+      if (!this.data || !this.data.lectures) return Promise.resolve(false);
+      this.data.lectures = this.data.lectures.filter(x => x && x.id !== id);
+      if (!this.data.deletedLectureIds) this.data.deletedLectureIds = [];
+      if (!this.data.deletedLectureIds.includes(id)) {
+        this.data.deletedLectureIds.push(id);
+        if (this.data.deletedLectureIds.length > 200) this.data.deletedLectureIds.shift();
+      }
+      return this.save();
+    },
+
     /* 이전 버전 데이터 보정 */
     migrate() {
       const d = this.data, C = window.SITE_CONFIG, s = d.settings;
@@ -510,6 +625,11 @@
       if (!d.posts.apply) d.posts.apply = [];
       if (!d.posts.rentalApply) d.posts.rentalApply = [];
       if (!d.deletedPostIds) d.deletedPostIds = [];
+      if (!d.deletedStoreIds) d.deletedStoreIds = [];
+      if (!d.deletedUserIds) d.deletedUserIds = [];
+      if (!d.deletedProductIds) d.deletedProductIds = [];
+      if (!d.deletedMaterialIds) d.deletedMaterialIds = [];
+      if (!d.deletedLectureIds) d.deletedLectureIds = [];
       if ((d.version || 1) < 2) {
         if (!s.contactPhone) s.contactPhone = C.contactPhone;
         if (!s.kakaoId) s.kakaoId = C.kakaoId;
