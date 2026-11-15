@@ -51,6 +51,8 @@
 
   /* ---------- Supabase 클라우드 저장소 연동 ---------- */
   let _sbClient = null;
+  let _rtChannel = null;
+
   function getSupabaseConfig() {
     const C = window.SITE_CONFIG || {};
     let url = C.supabaseUrl || 'https://jurwrizrcfzhzvfpgkot.supabase.co';
@@ -80,6 +82,122 @@
     return null;
   }
 
+  function startRealtime() {
+    const sb = getSupabase();
+    if (!sb || _rtChannel) return;
+    try {
+      _rtChannel = sb.channel('public:app_data:sync')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'app_data' }, payload => {
+          if (payload && payload.new && payload.new.key === KEY && payload.new.data) {
+            console.log('[Supabase Realtime] 타 기기 실시간 변경 감지, 동기화 진행');
+            if (Store.data) {
+              Store.data = mergeData(Store.data, payload.new.data);
+              Store.migrate();
+              persistLocal(Store.data).catch(() => {});
+              if (typeof window !== 'undefined' && window.dispatchEvent) {
+                window.dispatchEvent(new CustomEvent('bjs_sync'));
+              }
+            }
+          }
+        })
+        .subscribe(status => {
+          if (status === 'SUBSCRIBED') {
+            console.log('[Supabase Realtime] 클라우드 실시간 동기화 채널 연결 완료');
+          }
+        });
+    } catch (e) {
+      console.warn('[Supabase Realtime] Subscribe failed:', e);
+    }
+  }
+
+  /* ---------- 다중 기기(PC·모바일) 진행현황 양방향 무손실 병합 ---------- */
+  function mergeProgress(localProg = {}, remoteProg = {}) {
+    const out = Object.assign({}, remoteProg);
+    const allKeys = new Set([...Object.keys(localProg || {}), ...Object.keys(remoteProg || {})]);
+    allKeys.forEach(k => {
+      const loc = (localProg && localProg[k]) || {};
+      const rem = (remoteProg && remoteProg[k]) || {};
+      const isDone = !!(loc.done || loc.quizAt || rem.done || rem.quizAt);
+      const maxPct = isDone ? 100 : Math.max(loc.pct || 0, rem.pct || 0);
+      out[k] = {
+        pct: Math.min(100, Math.round(maxPct * 10) / 10),
+        done: isDone,
+        quizAt: loc.quizAt || rem.quizAt || (isDone ? (loc.updatedAt || rem.updatedAt || now()) : ''),
+        watched: Math.max(loc.watched || 0, rem.watched || 0),
+        duration: Math.max(loc.duration || 0, rem.duration || 0),
+        updatedAt: [loc.updatedAt, rem.updatedAt].filter(Boolean).sort().reverse()[0] || now()
+      };
+    });
+    return out;
+  }
+
+  function mergeUsers(localUsers = [], remoteUsers = []) {
+    const map = new Map();
+    (remoteUsers || []).forEach(u => {
+      if (u && (u.id || u.loginId)) {
+        map.set(u.loginId || u.id, Object.assign({}, u));
+      }
+    });
+    (localUsers || []).forEach(u => {
+      if (!u || (!u.id && !u.loginId)) return;
+      const key = u.loginId || u.id;
+      if (map.has(key)) {
+        const rem = map.get(key);
+        const mergedProg = mergeProgress(u.progress, rem.progress);
+        const gOrder = ['seed', 'ieum', 'saeum', 'pium', 'dream'];
+        const localGIdx = gOrder.indexOf(u.grade);
+        const remoteGIdx = gOrder.indexOf(rem.grade);
+        const bestGrade = localGIdx > remoteGIdx ? u.grade : (rem.grade || u.grade);
+        map.set(key, Object.assign({}, rem, u, {
+          grade: bestGrade || rem.grade || u.grade,
+          progress: mergedProg
+        }));
+      } else {
+        map.set(key, Object.assign({}, u));
+      }
+    });
+    return Array.from(map.values());
+  }
+
+  function mergePosts(localPosts = {}, remotePosts = {}) {
+    const out = {};
+    ['guestbook', 'consult', 'apply'].forEach(b => {
+      const lList = (localPosts && localPosts[b]) || [];
+      const rList = (remotePosts && remotePosts[b]) || [];
+      const map = new Map();
+      rList.forEach(p => { if (p && p.id) map.set(p.id, p); });
+      lList.forEach(p => {
+        if (!p || !p.id) return;
+        if (map.has(p.id)) {
+          const rPost = map.get(p.id);
+          const cMap = new Map();
+          (rPost.comments || []).forEach(c => cMap.set(c.id, c));
+          (p.comments || []).forEach(c => cMap.set(c.id, c));
+          map.set(p.id, Object.assign({}, rPost, p, { comments: Array.from(cMap.values()) }));
+        } else {
+          map.set(p.id, p);
+        }
+      });
+      out[b] = Array.from(map.values()).sort((x, y) => new Date(y.createdAt || 0) - new Date(x.createdAt || 0));
+    });
+    return out;
+  }
+
+  function mergeData(local, remote) {
+    if (!remote) return local;
+    if (!local) return remote;
+    return Object.assign({}, remote, local, {
+      version: Math.max(local.version || 1, remote.version || 1),
+      settings: Object.assign({}, remote.settings || {}, local.settings || {}),
+      users: mergeUsers(local.users, remote.users),
+      posts: mergePosts(local.posts, remote.posts),
+      rentalProducts: (remote.rentalProducts && remote.rentalProducts.length) ? remote.rentalProducts : local.rentalProducts,
+      lectures: (remote.lectures && remote.lectures.length) ? remote.lectures : local.lectures,
+      materials: (remote.materials && remote.materials.length) ? remote.materials : local.materials,
+      stores: (remote.stores && remote.stores.length) ? remote.stores : local.stores
+    });
+  }
+
   async function loadFromSupabase() {
     const sb = getSupabase();
     if (!sb) return null;
@@ -100,14 +218,30 @@
     const sb = getSupabase();
     if (!sb) return false;
     try {
+      // 1. 원격 최신 데이터를 먼저 조회하여 타 기기의 진행현황을 손실 없이 병합
+      let toSave = data;
+      try {
+        const { data: remoteRow, error: fetchErr } = await sb.from('app_data').select('data').eq('key', KEY).maybeSingle();
+        if (!fetchErr && remoteRow && remoteRow.data) {
+          toSave = mergeData(data, remoteRow.data);
+        }
+      } catch (e) {}
+
+      // 2. 병합된 최신 데이터 클라우드 업서트
       const { error } = await sb.from('app_data').upsert({
         key: KEY,
-        data: data,
+        data: toSave,
         updated_at: new Date().toISOString()
       });
       if (error) {
         if (error.code !== 'PGRST205') console.warn('[Supabase] Upsert warning:', error.message || error);
         return false;
+      }
+
+      // 3. 현재 브라우저 메모리 및 IndexedDB도 병합 결과와 동기화
+      if (Store.data && toSave) {
+        Store.data = mergeData(Store.data, toSave);
+        persistLocal(Store.data).catch(() => {});
       }
       return true;
     } catch (e) {
@@ -119,7 +253,11 @@
   /* 하이브리드 로드 & 저장: Supabase 원격 우선 + IndexedDB 로컬 캐시/오프라인 지원 */
   async function load() {
     try {
+      const local = await loadLocal();
       const remote = await loadFromSupabase();
+      if (remote && local) {
+        return mergeData(local, remote);
+      }
       if (remote) {
         persistLocal(remote).catch(() => {});
         return remote;
@@ -318,8 +456,17 @@
     uid, now, hash,
 
     async init() {
-      this.data = await load();
-      if (!this.data) this.data = seed();
+      const local = await loadLocal();
+      const remote = await loadFromSupabase();
+      if (remote && local) {
+        this.data = mergeData(local, remote);
+      } else if (remote) {
+        this.data = remote;
+      } else if (local) {
+        this.data = local;
+      } else {
+        this.data = seed();
+      }
       this.migrate();
       // 관리자 계정이 없으면 생성
       if (!this.data.users.some(u => u.isAdmin)) {
@@ -329,7 +476,9 @@
           gender: '', refName: '', refNo: '', joinedAt: now(), grade: 'dream', isAdmin: true, progress: {}
         });
       }
-      await this.save();
+      await persistLocal(this.data);
+      // 클라우드 실시간 동기화 채널 가동
+      startRealtime();
     },
     save() { return persist(this.data); },
 
@@ -484,7 +633,10 @@
     setSession(id) { id ? localStorage.setItem(SESSION_KEY, id) : localStorage.removeItem(SESSION_KEY); },
 
     async login(loginId, pw) {
-      const u = this.data.users.find(x => x.loginId === loginId.trim());
+      // 로그인 시 반드시 클라우드 최신 진행현황 및 회원정보 먼저 동기화
+      await this.syncSupabase();
+      const cleanId = (loginId || '').trim();
+      const u = this.data.users.find(x => x.loginId === cleanId);
       if (!u || u.pw !== await hash(pw)) return null;
       this.setSession(u.id);
       return u;
@@ -559,8 +711,15 @@
     async syncSupabase() {
       const remote = await loadFromSupabase();
       if (remote) {
-        this.data = remote;
-        await persistLocal(remote);
+        const prevProg = JSON.stringify((this.currentUser() || {}).progress || {});
+        this.data = mergeData(this.data, remote);
+        this.migrate();
+        await persistLocal(this.data);
+        const newProg = JSON.stringify((this.currentUser() || {}).progress || {});
+        const changed = prevProg !== newProg;
+        if (changed && typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('bjs_sync'));
+        }
         return true;
       }
       return false;

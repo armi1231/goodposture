@@ -38,15 +38,20 @@
 
   function save(pct, force) {
     if (!ctx || !lec) return;
-    if (!force && Date.now() - lastSave < 4000) return;
+    if (!force && Date.now() - lastSave < 3000) return;
     lastSave = Date.now();
     const u = ctx.user;
     u.progress = u.progress || {};
     const prev = u.progress[lec.id] || {};
+    const newPct = Math.round(pct * 10) / 10;
+    const isAlreadyDone = !!(prev.done || prev.quizAt || (prev.pct >= 100));
+    const effectivePct = isAlreadyDone ? 100 : Math.max(prev.pct || 0, newPct);
     u.progress[lec.id] = Object.assign({}, prev, {
-      pct: Math.round(pct * 10) / 10,
-      watched: watched.size,
-      duration: Math.round(dur || 0),
+      pct: effectivePct,
+      watched: Math.max(prev.watched || 0, watched.size),
+      duration: Math.max(prev.duration || 0, Math.round(dur || 0)),
+      done: isAlreadyDone || (effectivePct >= 100),
+      quizAt: prev.quizAt || '',
       updatedAt: (window.Store && window.Store.now) ? window.Store.now() : new Date().toISOString()
     });
     if (ctx.S && ctx.S.save) ctx.S.save();
@@ -160,8 +165,11 @@
     u.progress = u.progress || {};
     const prev = u.progress[lec.id] || {};
     u.progress[lec.id] = Object.assign({}, prev, {
-      pct: Math.max(100, prev.pct || 0), watched: watched.size, duration: Math.round(dur || 0),
-      done: true, quizAt: (window.Store && window.Store.now) ? window.Store.now() : new Date().toISOString(),
+      pct: 100,
+      watched: Math.max(prev.watched || 0, watched.size, Math.round(dur || 0)),
+      duration: Math.max(prev.duration || 0, Math.round(dur || 0)),
+      done: true,
+      quizAt: prev.quizAt || ((window.Store && window.Store.now) ? window.Store.now() : new Date().toISOString()),
       updatedAt: (window.Store && window.Store.now) ? window.Store.now() : new Date().toISOString()
     });
     if (ctx.S && ctx.S.save) ctx.S.save();

@@ -1661,6 +1661,14 @@
      라우터
      ======================================================= */
   let hero = null;
+  let _lastSilentSync = 0;
+  function silentSync() {
+    if (Date.now() - _lastSilentSync < 4000) return;
+    _lastSilentSync = Date.now();
+    if (S && S.syncSupabase) {
+      S.syncSupabase().catch(() => {});
+    }
+  }
   function parseHash() {
     const raw = location.hash.replace(/^#\/?/, '').split('#')[0];
     const [path, qs] = raw.split('?');
@@ -1675,6 +1683,10 @@
     const [a, b, c] = parts;
     const view = $('#view');
     let html = '', mount = null;
+
+    if (a === 'mypage' || a === 'edu' || a === 'admin') {
+      silentSync();
+    }
 
     if (!a) { html = viewHome(); }
     else if (a === 'startup') html = viewStartup();
@@ -1772,6 +1784,29 @@
     });
     $('.gnb-drop-btn').addEventListener('click', e => e.currentTarget.parentElement.classList.toggle('open'));
     window.addEventListener('hashchange', render);
+
+    // 타 기기(PC·모바일) 실시간 진행현황 동기화 이벤트 수신
+    window.addEventListener('bjs_sync', () => {
+      syncGlobal();
+      render();
+    });
+
+    // 화면 복귀 / 포커스 시 클라우드 자동 동기화 (모바일 백그라운드 복귀 대응)
+    let lastFocusSync = 0;
+    const triggerSync = () => {
+      if (Date.now() - lastFocusSync < 3000) return;
+      lastFocusSync = Date.now();
+      if (S && S.syncSupabase) {
+        S.syncSupabase().then(() => {
+          syncGlobal();
+          render();
+        }).catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') triggerSync();
+    });
+    window.addEventListener('focus', triggerSync);
     document.addEventListener('click', async e => {
       const b = e.target.closest('[data-copy]'); if (!b) return;
       const id = b.dataset.copy;
