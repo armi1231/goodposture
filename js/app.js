@@ -1226,7 +1226,7 @@
       code: 'SM880',
       name: '입는 바른자세 SM880 (체형교정)',
       price: 37800,
-      colors: ['블랙', '스킨'],
+      colors: ['단일'],
       sizes: ['2XS', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
     }
   };
@@ -1279,7 +1279,7 @@
           const locked = !canRead(b, p);
           const isDone = p.status === 'approved';
           const itemsSummary = (p.extra && p.extra.items && p.extra.items.length)
-            ? p.extra.items.map(it => `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ')
+            ? p.extra.items.map(it => (it.productCode === 'SM880' || it.color === '단일') ? `${it.productCode} (${it.size}) × ${it.qty}` : `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ')
             : (p.title || '렌탈 계약 내역');
           const totalFee = (p.extra && p.extra.totalPrice) || 0;
           const deliveryTxt = (p.extra && p.extra.deliveryType === 'pickup')
@@ -1576,6 +1576,7 @@
           const unitPrice = cat.price;
           const subtotal = unitPrice * item.qty;
           const isBB = item.code === 'BB484';
+          const isSM = item.code === 'SM880';
 
           return `<div class="rental-item-card" data-idx="${idx}">
             <div class="ric-head">
@@ -1594,12 +1595,18 @@
                 </select>
               </label>
               <label>컬러
-                <select class="item-color" data-idx="${idx}">
-                  ${cat.colors.map(c => {
-                    const disabled = (isBB && item.underbust === '100' && c === '스킨');
-                    return `<option value="${c}" ${item.color === c ? 'selected' : ''} ${disabled ? 'disabled' : ''}>${c}${disabled ? ' (100사이즈 불가)' : ''}</option>`;
-                  }).join('')}
-                </select>
+                ${isSM ? `
+                  <select class="item-color" data-idx="${idx}" disabled style="background:#f6fbf8;font-weight:700;color:var(--forest)">
+                    <option value="단일">단일 (선택없음)</option>
+                  </select>
+                ` : `
+                  <select class="item-color" data-idx="${idx}">
+                    ${cat.colors.map(c => {
+                      const disabled = (isBB && item.underbust === '100' && c === '스킨');
+                      return `<option value="${c}" ${item.color === c ? 'selected' : ''} ${disabled ? 'disabled' : ''}>${c}${disabled ? ' (100사이즈 불가)' : ''}</option>`;
+                    }).join('')}
+                  </select>
+                `}
               </label>
               <label>사이즈 선택
                 ${isBB ? `
@@ -1626,6 +1633,7 @@
               </div>
             </div>
             ${isBB && item.underbust === '100' ? `<span class="ric-hint">※ BB484 100 사이즈는 블랙 컬러만 제공됩니다.</span>` : ''}
+            ${isSM ? `<span class="ric-hint">※ SM880은 컬러 선택 없이 단일 제품으로 사이즈만 선택하시면 됩니다.</span>` : ''}
           </div>`;
         }).join('');
 
@@ -1646,6 +1654,9 @@
             rentalItems[i].underbust = '75';
             rentalItems[i].cup = 'B';
             rentalItems[i].size = '75(B)';
+          } else if (newCode === 'SM880') {
+            rentalItems[i].color = '단일';
+            rentalItems[i].size = newCat.sizes[3] || 'M';
           } else {
             rentalItems[i].size = newCat.sizes[3] || newCat.sizes[0];
           }
@@ -1719,10 +1730,11 @@
         const itemsData = rentalItems.map(it => {
           const cat = RENTAL_CATALOG[it.code];
           const finalSize = it.code === 'BB484' ? `${it.underbust}(${it.cup})` : it.size;
+          const finalColor = it.code === 'SM880' ? '단일' : it.color;
           return {
             productCode: it.code,
             productName: cat.name,
-            color: it.color,
+            color: finalColor,
             size: finalSize,
             qty: it.qty,
             unitPrice: cat.price,
@@ -1731,7 +1743,7 @@
         });
 
         const totalPrice = itemsData.reduce((s, it) => s + it.subtotal, 0);
-        const itemsSummary = itemsData.map(it => `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ');
+        const itemsSummary = itemsData.map(it => (it.productCode === 'SM880' || it.color === '단일') ? `${it.productCode} (${it.size}) × ${it.qty}` : `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ');
         const pickupStore = S.data.stores.find(st => st.id === f.pickupStoreId) || null;
 
         const post = {
@@ -1869,7 +1881,7 @@
               ${items.map((it, i) => `<tr>
                 <td>${i + 1}</td>
                 <td><b>${esc(it.productName || it.productCode)}</b></td>
-                <td>${esc(it.color)}</td>
+                <td>${it.productCode === 'SM880' || it.color === '단일' ? '<span class="muted">단일</span>' : esc(it.color)}</td>
                 <td><b style="color:var(--forest-d)">${esc(it.size)}</b></td>
                 <td>${it.qty}개</td>
                 <td style="text-align:right">${won(it.unitPrice)}</td>
@@ -2117,7 +2129,7 @@
           const a = S.data.users.find(u => u.id === p.authorId);
           const isDone = p.status === 'approved';
           const itemsSummary = (p.extra && p.extra.items && p.extra.items.length)
-            ? p.extra.items.map(it => `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ')
+            ? p.extra.items.map(it => (it.productCode === 'SM880' || it.color === '단일') ? `${it.productCode} (${it.size}) × ${it.qty}` : `${it.productCode} (${it.color}/${it.size}) × ${it.qty}`).join(', ')
             : (p.title || '렌탈 계약 신청');
           const totalFee = (p.extra && p.extra.totalPrice) || 0;
           const deliveryTxt = (p.extra && p.extra.deliveryType === 'pickup')
