@@ -86,6 +86,30 @@
     document.addEventListener('keydown', onKey);
     return { el: $('.modal-box', root), close };
   }
+  function showRentalLoginModal(productName = '') {
+    modal(`
+      <div class="rental-login-modal">
+        <div class="rlm-icon">🔒</div>
+        <h3>회원가입 후 이용 가능한 서비스입니다</h3>
+        <p class="rlm-lead">${productName ? `<b>[${esc(productName)}]</b> ` : ''}온라인 렌탈 계약 및 바로 접속 QR코드는 <b>회원가입 후 로그인</b>하셔야 이용하실 수 있습니다.</p>
+        
+        <div class="rlm-guide-box">
+          <h4>📋 바른자세 착한 렌탈 등급 및 이용 절차</h4>
+          <ul>
+            <li><b>1. 회원가입 (이음 등급)</b>: 가입 즉시 '이음' 등급이 부여되며, 모든 특허 렌탈 상품 계약 신청이 가능합니다.</li>
+            <li><b>2. 온라인 렌탈 계약 체결</b>: 로그인 후 [온라인 렌탈계약] 버튼이나 QR코드를 통해 비에스온 전자계약을 진행합니다.</li>
+            <li><b>3. 렌탈 접수 및 등업 (누림 등급)</b>: 계약 후 렌탈접수 게시판에 접수글을 등록하시면, 본사 관리자 확인 후 <b>'누림' 등급</b>(렌탈 완료 회원)으로 등업 및 제품이 출고됩니다.</li>
+          </ul>
+        </div>
+
+        <div class="rlm-actions">
+          <a class="btn btn-primary btn-lg" href="#/signup" data-close>✨ 간편 회원가입 (1분 소요)</a>
+          <a class="btn btn-line btn-lg" href="#/login" data-close>기존 회원 로그인</a>
+        </div>
+        <p class="rlm-sub muted">※ 제품 사진, 디자인, 사양, 월 렌탈료는 비회원 상태에서도 자유롭게 확인하실 수 있습니다.</p>
+      </div>
+    `);
+  }
   function qrSvg(text, cell = 4) {
     if (!window.qrcode || !text) return '';
     try {
@@ -206,6 +230,7 @@
   function productCard(p, mode) {
     const link = p.contractUrl || set().rentalUrl;
     const imgs = (p.kind === 'bundle' ? [p.img, p.img2] : [p.img]).filter(Boolean);
+    const isLogined = !!me();
     return `
       <article class="product-card ${p.kind === 'bundle' ? 'bundle' : ''}">
         <div class="product-img ${imgs.length > 1 ? 'duo' : ''}">${imgs.map((src, i) => `<img src="${esc(src)}" alt="${esc(p.name)}" loading="lazy"${p.kind === 'bundle' ? ` style="--i:${i}"` : ''}>`).join('')}</div>
@@ -215,10 +240,14 @@
           <p class="product-desc">${esc(p.desc)}</p>
           <p class="product-price"><small>월</small> ${won(p.price)}</p>
           ${mode === 'rental' ? `
-            <div class="product-actions">${refChip('sm')}
-              ${link ? `<a class="btn btn-primary" href="${esc(link)}" target="_blank" rel="noopener">온라인 렌탈계약</a>
-                        <button class="btn btn-line" data-qr="${esc(link)}" data-name="${esc(p.name)}">QR 보기</button>`
-                     : `<a class="btn btn-primary" href="#/consult/write?cat=렌탈상담&title=${encodeURIComponent(p.name + ' 렌탈 신청')}">렌탈 신청하기</a>`}
+            <div class="product-actions">
+              ${link ? (isLogined ? `
+                <a class="btn btn-primary" href="${esc(link)}" target="_blank" rel="noopener">온라인 렌탈계약</a>
+                <button class="btn btn-line" data-qr="${esc(link)}" data-name="${esc(p.name)}">QR 보기</button>
+              ` : `
+                <button class="btn btn-primary" data-rental-need-login="${esc(p.name)}">온라인 렌탈계약</button>
+                <button class="btn btn-line" data-rental-need-login="${esc(p.name)}">QR 보기</button>
+              `) : `<a class="btn btn-primary" href="#/consult/write?cat=렌탈상담&title=${encodeURIComponent(p.name + ' 렌탈 신청')}">렌탈 신청하기</a>`}
             </div>` : `
             <div class="product-actions-grid">
               ${['R1090', 'SM880', 'BB484'].includes(p.code) ? `<button class="btn btn-line btn-sm" data-play-code="${esc(p.code)}">▶ 착용법 영상</button>` : ''}
@@ -232,13 +261,21 @@
   function qrTile(p) {
     const link = p.contractUrl || set().rentalUrl;
     if (!link) return '';
-    return `<article class="qr-tile reveal">
-      <div class="qt-qr">${qrSvg(link, 4)}</div>
+    const isLogined = !!me();
+    return `<article class="qr-tile reveal ${!isLogined ? 'qr-locked' : ''}">
+      <div class="qt-qr ${!isLogined ? 'qr-blurred-wrap' : ''}">
+        ${qrSvg(link, 4)}
+        ${!isLogined ? `<div class="qr-lock-overlay" data-rental-need-login="${esc(p.name)}"><span class="qlo-icon">🔒</span><span class="qlo-txt">회원전용</span></div>` : ''}
+      </div>
       <div class="qt-body">
         <p class="product-code">${p.kind === 'bundle' ? '2개 구성' : '단품'} · ${esc(p.code || '')}</p>
         <h4>${esc(p.name)}</h4>
         <p class="qt-price"><small>월</small> ${won(p.price)}</p>
-        <a class="btn btn-line btn-sm" href="${esc(link)}" target="_blank" rel="noopener">QR 링크 열기</a>
+        ${isLogined ? `
+          <a class="btn btn-line btn-sm" href="${esc(link)}" target="_blank" rel="noopener">QR 링크 열기</a>
+        ` : `
+          <button class="btn btn-line btn-sm" data-rental-need-login="${esc(p.name)}">QR 링크 열기</button>
+        `}
       </div>
     </article>`;
   }
@@ -775,21 +812,54 @@
      렌탈신청
      ======================================================= */
   function viewRental() {
-    const s = set();
+    const s = set(), u = me();
     const singles = singleProducts(), bundles = bundleProducts();
+    const isLogined = !!u;
     return `${pageHead('렌탈신청', '바른 자세를 빌려드립니다', '원하는 상품을 고르고 온라인으로 바로 렌탈 계약을 진행하세요. 각 상품의 QR을 스마트폰으로 찍으면 착한렌탈 접속 화면으로 바로 이동합니다.')}
     <section class="sec"><div class="wrap">
       ${isAdmin() ? `<div class="admin-strip">관리자: <a href="#/admin/rental">렌탈 상품 추가 · 수정 · 삭제 →</a> <span style="margin:0 6px">|</span> <a href="#/admin/rentalApplies">렌탈접수 관리 현황 →</a></div>` : ''}
+
+      <div class="rental-policy-banner ${isLogined ? 'member' : 'guest'}">
+        <div class="rpb-badge">${isLogined ? '회원 이용 안내' : '회원가입 필수 안내'}</div>
+        <div class="rpb-content">
+          <h4>💡 바른자세 착한 렌탈은 <b>회원가입(이음 등급) 후 계약 신청</b>이 가능합니다</h4>
+          <p>
+            • 제품 정보 및 사양은 비회원 상태에서도 자유롭게 확인하실 수 있습니다.<br>
+            • 온라인 전자계약 및 QR 접속은 <b>회원가입 즉시 부여되는 '이음' 등급</b>부터 이용 가능합니다.<br>
+            • 전자계약 완료 후 렌탈접수 게시판에 등록하시면, 본사 관리자 확인 후 <b>'누림' 등급</b>(렌탈 완료 회원)으로 자동 등업 처리됩니다.
+          </p>
+        </div>
+        ${!isLogined ? `
+          <div class="rpb-action">
+            <a class="btn btn-primary btn-sm" href="#/signup">간편 회원가입 →</a>
+            <a class="btn btn-line btn-sm" href="#/login">로그인</a>
+          </div>
+        ` : `
+          <div class="rpb-action">
+            <span class="user-grade-status"><b>${esc(u.name)}</b>님 (${gName(u.grade)}) · 렌탈 계약 진행 가능 ✓</span>
+          </div>
+        `}
+      </div>
+
       <div class="rental-notice-banner">
         <div class="rnb-icon">📋</div>
         <div class="rnb-body">
           <h4>S폼 전자계약서 서명을 완료하셨나요?</h4>
-          <p>비에스온에서 신용체크 및 카카오톡 S폼 전자계약 서명을 마치셨다면, <b>렌탈접수 게시판</b>에 신분증 사진(앞면)과 계약 제품 규격(컬러/사이즈)을 등록해 주세요. 확인 즉시 본사 및 관리자 승인 후 택배 발송 또는 가까운 매장 방문 수령으로 안전하게 전달해 드립니다.</p>
+          <p>비에스온에서 신용체크 및 카카오톡 S폼 전자계약 서명을 마치셨다면, <b>렌탈접수 게시판</b>에 신분증 사진(앞면)과 계약 제품 규격(컬러/사이즈)을 등록해 주세요. 확인 즉시 본사 및 관리자 승인 후 <b>'누림' 등급 등업</b> 및 택배 발송 또는 가까운 매장 방문 수령으로 안전하게 전달해 드립니다.</p>
         </div>
         <a class="btn" href="#/rentalApply/write">렌탈 계약 접수하기 →</a>
       </div>
       ${s.rentalUrl ? `<div class="rental-hero card"><div><h3>온라인 렌탈 계약 바로가기</h3><p class="muted">상품 선택부터 전자계약까지 한 번에 진행할 수 있어요.</p>
-        <a class="btn btn-primary btn-lg" href="${esc(s.rentalUrl)}" target="_blank" rel="noopener">렌탈 계약하기</a> ${refChip()}</div><div class="qr">${qrSvg(s.rentalUrl, 5)}</div></div>` : ''}
+        ${isLogined ? `
+          <a class="btn btn-primary btn-lg" href="${esc(s.rentalUrl)}" target="_blank" rel="noopener">렌탈 계약하기</a>
+        ` : `
+          <button class="btn btn-primary btn-lg" data-rental-need-login="온라인 렌탈 계약">렌탈 계약하기</button>
+        `}
+        </div>
+        <div class="qr ${!isLogined ? 'qr-hero-locked' : ''}">
+          ${qrSvg(s.rentalUrl, 5)}
+          ${!isLogined ? `<div class="qr-lock-overlay" data-rental-need-login="온라인 렌탈 계약"><span class="qlo-icon">🔒</span><span class="qlo-txt">회원전용</span></div>` : ''}
+        </div></div>` : ''}
 
       <div class="rental-block">
         <div class="rb-head"><div><p class="eyebrow">단품</p><h2>5가지 단품 렌탈</h2></div><span class="rb-tag">바로 접속 QR 포함</span></div>
@@ -805,7 +875,7 @@
       <div class="qr-board">
         <div class="qb-head">
           <div><p class="eyebrow">QR 바로 접속</p><h2>상품별 착한렌탈 접속 QR</h2>
-          <p class="muted">스마트폰 카메라로 QR을 찍으면 해당 상품의 렌탈 신청 화면이 바로 열립니다. PC에서는 QR 링크 열기를 눌러 주세요.</p></div>
+          <p class="muted">${isLogined ? '스마트폰 카메라로 QR을 찍으면 해당 상품의 렌탈 신청 화면이 바로 열립니다. PC에서는 QR 링크 열기를 눌러 주세요.' : '회원가입 후 로그인하시면 상품별 QR 스캔 및 바로 접속 링크를 이용하실 수 있습니다.'}</p></div>
           <span class="qb-chip">${singles.length}개 단품 + ${bundles.length}개 세트</span>
         </div>
         <div class="qr-grid">${[...singles, ...bundles].map(qrTile).join('')}</div>
@@ -820,6 +890,11 @@
     </div></section>`;
   }
   function mountRental(el) {
+    $$('[data-rental-need-login]', el).forEach(b => b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showRentalLoginModal(b.dataset.rentalNeedLogin || '');
+    }));
     $$('[data-qr]', el).forEach(b => b.addEventListener('click', () => {
       modal(`<div class="qr-modal"><h3>${esc(b.dataset.name)}</h3><p class="muted">스마트폰 카메라로 찍으면 렌탈 계약 페이지로 이동합니다.</p><div class="qr big">${qrSvg(b.dataset.qr, 8)}</div><a class="btn btn-primary" href="${esc(b.dataset.qr)}" target="_blank" rel="noopener">링크로 열기</a></div>`);
     }));
@@ -1045,7 +1120,7 @@
     });
   }
   function viewSignup() {
-    return `${pageHead('회원가입', '인연을 잇는 첫걸음, 이음', '가입하면 이음 등급으로 시작합니다. 창업 신청 후 접수글을 남기면 새움 등급으로 등업됩니다.')}
+    return `${pageHead('회원가입', '인연을 잇는 첫걸음, 이음', '가입 즉시 이음 등급이 부여되며 온라인 렌탈 계약 신청이 가능합니다. 렌탈 계약 완료 시 누림 등급으로, 창업 신청 및 교육 접수 시 새움 등급으로 등업됩니다.')}
     <section class="sec"><div class="wrap auth wide">
       <form class="card form" id="signupForm">
         ${profileFields(null, true)}
@@ -2222,11 +2297,16 @@
           ${isAdmin() ? `
             <div class="admin-rental-action">
               <h4>관리자 · 렌탈 계약 승인 및 배송 관리</h4>
-              <p style="font-size:0.9rem;margin-bottom:14px">신청자: <b>${esc(p.author)}</b> (${author ? esc(author.loginId) : '회원'}) · 렌탈 합계: <b>월 ${won(totalPrice)}</b></p>
+              <p style="font-size:0.9rem;margin-bottom:14px">신청자: <b>${esc(p.author)}</b> (${author ? `${esc(author.loginId)} · 현재 등급: ${badge(author.grade)}` : '회원'}) · 렌탈 합계: <b>월 ${won(totalPrice)}</b></p>
+              ${!isDone && author && author.grade === 'ieum' ? `
+                <div style="background:#eef7f2;border:1px solid #c7e8d5;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:0.86rem;color:var(--forest-d)">
+                  💡 <b>누림 등급 등업 안내</b>: 현재 신청자는 '이음' 등급입니다. 승인 처리 시 <b>'누림' 등급</b>(렌탈 완료 회원)으로 자동 등업됩니다.
+                </div>
+              ` : ''}
               <div class="btn-row" style="margin-bottom:18px">
                 ${!isDone ? `
-                  <button class="btn btn-primary" id="btnApproveRental">✓ 렌탈 계약 승인완료 처리</button>` : `
-                  <span class="cat c-rental-done" style="font-size:0.95rem;padding:6px 14px">✓ 승인완료 상태</span>
+                  <button class="btn btn-primary" id="btnApproveRental">✓ 렌탈 계약 승인완료 ${author && author.grade === 'ieum' ? '(누림 등업)' : ''}</button>` : `
+                  <span class="cat c-rental-done" style="font-size:0.95rem;padding:6px 14px">✓ 승인완료 상태 (${author ? badge(author.grade) : ''})</span>
                   <button class="btn btn-line btn-sm" id="btnCancelApproveRental">승인대기로 변경</button>`}
               </div>
               <form class="form" id="rentalTrackingForm">
@@ -2310,8 +2390,14 @@
       if (btnApprove) {
         btnApprove.addEventListener('click', async () => {
           p.status = 'approved';
+          const author = S.data.users.find(x => x.id === p.authorId);
+          let gradeMsg = '';
+          if (author && author.grade === 'ieum') {
+            author.grade = 'nurim';
+            gradeMsg = ` 및 ${author.name}님을 '누림' 등급으로 등업`;
+          }
           await S.save();
-          toast('렌탈 계약을 승인완료 처리했습니다.');
+          toast(`렌탈 계약을 승인완료 처리${gradeMsg}했습니다.`);
           render();
         });
       }
