@@ -151,9 +151,13 @@
 
       if (rem) {
         const mergedProg = mergeProgress(u.progress, rem.progress);
+        const latestLogin = [u.lastLoginAt, rem.lastLoginAt].filter(Boolean).sort().reverse()[0] || '';
+        const latestActive = [u.lastActiveAt, rem.lastActiveAt].filter(Boolean).sort().reverse()[0] || '';
         // 로컬 사용자 수정본(비밀번호, 연락처, 주소, 등급, 추천인 등)이 원격 데이터를 100% 덮어쓰도록 처리
         const merged = Object.assign({}, rem, u, {
-          progress: mergedProg
+          progress: mergedProg,
+          lastLoginAt: latestLogin || u.lastLoginAt || rem.lastLoginAt || '',
+          lastActiveAt: latestActive || u.lastActiveAt || rem.lastActiveAt || ''
         });
         if (merged.id) byId.set(merged.id, merged);
         if (merged.loginId) byLoginId.set(merged.loginId.trim().toLowerCase(), merged);
@@ -865,6 +869,10 @@
       const cleanId = (loginId || '').trim();
       const u = this.data.users.find(x => x.loginId === cleanId);
       if (!u || u.pw !== await hash(pw)) return null;
+      const curTime = now();
+      u.lastLoginAt = curTime;
+      u.lastActiveAt = curTime;
+      await this.save();
       this.setSession(u.id);
       return u;
     },
@@ -872,8 +880,9 @@
 
     async signup(info) {
       if (this.data.users.some(u => u.loginId === info.loginId)) throw new Error('이미 사용 중인 아이디입니다.');
+      const curTime = now();
       const u = Object.assign({
-        id: uid(), joinedAt: now(), grade: 'ieum', isAdmin: false, progress: {}
+        id: uid(), joinedAt: curTime, lastLoginAt: curTime, lastActiveAt: curTime, grade: 'ieum', isAdmin: false, progress: {}
       }, info, { pw: await hash(info.pw) });
       this.data.users.push(u);
       await this.save();

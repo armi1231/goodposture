@@ -42,6 +42,33 @@
   const lecDone = (u, l) => { const w = watchOf(u, l); return !!(w && (w.done || w.quizAt)); };
   const lecPct = (u, l) => { const w = watchOf(u, l); return w && w.pct ? Math.min(100, Math.round(w.pct)) : 0; };
   const quizUrlOf = l => l.quizUrl || set().quizUrl || '';
+  const userActivity = u => {
+    if (!u) return { login: '', active: '', dateStr: '-' };
+    const candidates = [];
+    if (u.lastActiveAt) candidates.push(u.lastActiveAt);
+    if (u.lastLoginAt) candidates.push(u.lastLoginAt);
+    if (u.progress) {
+      Object.values(u.progress).forEach(p => {
+        if (p && p.updatedAt) candidates.push(p.updatedAt);
+        if (p && p.quizAt) candidates.push(p.quizAt);
+      });
+    }
+    if (S.data && S.data.posts) {
+      ['rentalApply', 'apply', 'consult', 'guestbook'].forEach(b => {
+        (S.data.posts[b] || []).forEach(p => {
+          if (p && p.authorId === u.id && p.date) candidates.push(p.date);
+        });
+      });
+    }
+    if (u.joinedAt) candidates.push(u.joinedAt);
+    const valid = candidates.filter(Boolean).sort().reverse();
+    const latest = valid[0] || u.lastLoginAt || u.joinedAt || '';
+    return {
+      login: u.lastLoginAt || '',
+      active: latest,
+      dateStr: latest ? fmtDate(latest, true) : '-'
+    };
+  };
 
   /* ---------- UI 유틸 ---------- */
   let toastTimer;
@@ -2382,17 +2409,28 @@
           <input class="search" id="memberSearch" style="flex:1;min-width:240px;margin:0" placeholder="이름 · 아이디 · 연락처 · 추천인 검색">
         </div>
         <div class="table-wrap"><table class="table admin-table" id="memberTable">
-          <thead><tr><th>이름</th><th>아이디</th><th>연락처</th><th>가입일</th><th>추천인</th><th>1부 이수</th><th>등급</th><th></th></tr></thead>
+          <thead><tr><th>이름</th><th>아이디</th><th>연락처</th><th>가입일</th><th>추천인</th><th>1부 이수</th><th>등급</th><th style="min-width:140px">최근 로그인 / 활동</th><th></th></tr></thead>
           <tbody>${users.map(u => {
             const p1 = partProgress(u, 1);
+            const act = userActivity(u);
             const qStr = (u.name + ' ' + u.loginId + ' ' + (u.phone || '') + ' ' + (u.refName || '') + ' ' + (u.refNo || '')).toLowerCase();
             return `<tr data-q="${esc(qStr)}" data-grade-val="${esc(u.grade || 'ieum')}">
-              <td><b>${esc(u.name)}</b></td><td>${esc(u.loginId)}</td><td>${esc(u.phone)}</td><td>${fmtDate(u.joinedAt)}</td>
-              <td>${esc(u.refName)} ${esc(u.refNo)}</td><td>${p1.all ? '<b class="ok">✓ 완료</b>' : `${p1.done}/${p1.total}`}</td>
+              <td><b>${esc(u.name)}</b></td><td>${esc(u.loginId)}</td><td>${esc(u.phone || '-')}</td><td>${fmtDate(u.joinedAt)}</td>
+              <td>${esc(u.refName || '-')} ${esc(u.refNo || '')}</td><td>${p1.all ? '<b class="ok">✓ 완료</b>' : `${p1.done}/${p1.total}`}</td>
               <td><select data-grade="${u.id}">${GRADES.map(g => `<option value="${g.key}" ${u.grade === g.key ? 'selected' : ''}>${g.name}</option>`).join('')}</select></td>
+              <td>
+                <div style="font-size:0.83rem;line-height:1.35">
+                  ${u.lastLoginAt ? `
+                    <span style="color:var(--forest);font-weight:700">로그인</span> ${fmtDate(u.lastLoginAt, true)}
+                    ${act.active && act.active > u.lastLoginAt ? `<br><small class="muted" title="최근 학습/활동">활동 ${fmtDate(act.active, true)}</small>` : ''}
+                  ` : `
+                    <span style="color:var(--muted);font-weight:600">활동</span> ${act.dateStr}
+                  `}
+                </div>
+              </td>
               <td><button class="btn btn-line btn-sm" data-member="${u.id}">상세</button></td></tr>`;
-          }).join('') || '<tr><td colspan="8" class="center muted">아직 회원이 없습니다.</td></tr>'}
-          <tr id="memberEmptyRow" hidden><td colspan="8" class="center muted" style="padding:28px">검색 및 등급 필터 조건에 일치하는 회원이 없습니다.</td></tr>
+          }).join('') || '<tr><td colspan="9" class="center muted">아직 회원이 없습니다.</td></tr>'}
+          <tr id="memberEmptyRow" hidden><td colspan="9" class="center muted" style="padding:28px">검색 및 등급 필터 조건에 일치하는 회원이 없습니다.</td></tr>
           </tbody>
         </table></div>`;
     },
@@ -2488,8 +2526,8 @@
           <td><div class="ap-cell"><div class="ap-bar"><i style="width:${pc}%"></i></div><b>${pc}%</b></div></td>
           <td>${watchedMin}분${w.duration ? ` / ${Math.round(w.duration / 60)}분` : ''}</td>
           <td>${done ? '<b class="ok">✓ 이수 완료</b>' : pc > 0 ? '<span class="warn">진행 중</span>' : '<span class="muted">미시작</span>'}</td>
-          <td>${w.quizAt ? fmtDate(w.quizAt, true) : '-'}</td>
-          <td>${w.updatedAt ? fmtDate(w.updatedAt, true) : '-'}</td></tr>`;
+          <td>${w.quizAt ? `<b class="ok" title="100% 시청 및 퀴즈 제출 완료">${fmtDate(w.quizAt, true)}</b>` : '<span class="muted">미완료</span>'}</td>
+          <td>${w.updatedAt ? `<span title="마지막 영상 시청 일시">${fmtDate(w.updatedAt, true)}</span>` : '<span class="muted">시청기록 없음</span>'}</td></tr>`;
       }).join('') || '<tr><td colspan="8" class="center muted">아직 새움 등급 이상의 교육 수강 대상 회원이 없습니다.</td></tr>';
       const doneN = users.filter(u => lecDone(u, l1)).length;
       const avg = users.length ? Math.round(users.reduce((a, u) => a + lecPct(u, l1), 0) / users.length) : 0;
@@ -2499,10 +2537,15 @@
             <span class="grade-badge g-saeum">평균 ${avg}%</span>
             <span class="grade-badge g-pium">이수 ${doneN}/${users.length}명</span>
           </div></div>
-        <p class="muted">※ 온라인 교육은 <b>새움 등급(창업 신청 및 교육비 입금 완료) 이상</b>부터 열리므로, 본 교육 시청현황에는 <b>새움 · 피움 · 이룸 · 드림</b> 등급 회원만 집계되어 표시됩니다.</p>
+        <div style="background:#f6faf8;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:0.86rem;color:var(--forest-d);line-height:1.6;border-left:3px solid var(--forest)">
+          <b>📌 항목 안내</b><br>
+          • <b>수강 완료일시 (퀴즈제출)</b>: 영상을 100% 시청하고 퀴즈를 제출하여 <b>1강 수강완료하기</b> 버튼을 최종 누른 일시입니다.<br>
+          • <b>최근 영상 시청일시</b>: 회원이 마지막으로 교육 영상을 재생하여 실제로 시청·학습한 일시입니다.<br>
+          <small style="color:var(--muted)">※ 온라인 교육은 <b>새움 등급(창업 신청 및 교육비 입금 완료) 이상</b>부터 열리므로, 본 교육 시청현황에는 <b>새움 · 피움 · 이룸 · 드림</b> 등급 회원만 집계되어 표시됩니다.</small>
+        </div>
         <div class="card" style="margin-bottom:16px"><h4>${esc(l1.title)}</h4><p class="muted">${esc(l1.url || '영상 링크 없음')} · ${l1.minutes}분</p></div>
         <div class="table-wrap"><table class="table admin-table">
-          <thead><tr><th>회원</th><th>등급</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>이수</th><th>퀴즈 제출</th><th>최근 활동</th></tr></thead>
+          <thead><tr><th>회원</th><th>등급</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>이수</th><th>수강 완료일시 (퀴즈제출)</th><th>최근 영상 시청일시</th></tr></thead>
           <tbody>${rows}</tbody></table></div>`;
     },
     settings() {
@@ -2588,11 +2631,15 @@
     $$('[data-member]', el).forEach(b => b.addEventListener('click', () => {
       const u = S.data.users.find(x => x.id === b.dataset.member);
       const p1 = partProgress(u, 1), p2 = partProgress(u, 2);
+      const act = userActivity(u);
       const m = modal(`<h3>${esc(u.name)} ${badge(u.grade)}</h3>
-        <dl class="kv"><dt>아이디</dt><dd>${esc(u.loginId)}</dd><dt>생년월일</dt><dd>${esc(u.birth)}</dd><dt>성별</dt><dd>${esc(u.gender)}</dd>
-        <dt>연락처</dt><dd>${esc(u.phone)}</dd><dt>주소</dt><dd>${esc([u.zip, u.address, u.address2].filter(Boolean).join(' '))}</dd>
-        <dt>가입일</dt><dd>${fmtDate(u.joinedAt, true)}</dd><dt>교육</dt><dd>1부 ${p1.done}/${p1.total} · 2부 ${p2.done}/${p2.total}</dd>
-        <dt>1강 시청률</dt><dd>${(() => { const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0]; if (!l1) return '-'; const w = watchOf(u, l1); return `${lecPct(u, l1)}% ${lecDone(u, l1) ? '· 퀴즈 제출 완료 ' + fmtDate(w.quizAt, true) : '· 미완료'}`; })()}</dd></dl>
+        <dl class="kv"><dt>아이디</dt><dd>${esc(u.loginId)}</dd><dt>생년월일</dt><dd>${esc(u.birth || '-')}</dd><dt>성별</dt><dd>${esc(u.gender || '-')}</dd>
+        <dt>연락처</dt><dd>${esc(u.phone || '-')}</dd><dt>주소</dt><dd>${esc([u.zip, u.address, u.address2].filter(Boolean).join(' ') || '-')}</dd>
+        <dt>가입일</dt><dd>${fmtDate(u.joinedAt, true)}</dd>
+        <dt>최근 로그인</dt><dd>${u.lastLoginAt ? `<b class="g">${fmtDate(u.lastLoginAt, true)}</b>` : '<span class="muted">로그인 기록 없음</span>'}</dd>
+        <dt>최근 활동일시</dt><dd>${act.active ? fmtDate(act.active, true) : '-'}</dd>
+        <dt>교육 이수</dt><dd>1부 ${p1.done}/${p1.total} · 2부 ${p2.done}/${p2.total}</dd>
+        <dt>1강 시청률</dt><dd>${(() => { const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0]; if (!l1) return '-'; const w = watchOf(u, l1); return `${lecPct(u, l1)}% ${lecDone(u, l1) ? '· 수강 완료 ' + fmtDate(w.quizAt, true) : '· 미완료'}`; })()}</dd></dl>
         <form class="form" id="refForm"><div class="grid2"><label>추천인 이름<input name="refName" value="${esc(u.refName)}"></label><label>추천인 번호<input name="refNo" value="${esc(u.refNo)}"></label></div>
         <div class="btn-row"><button class="btn btn-primary">추천인 저장</button><button type="button" class="btn btn-danger" id="delMember">회원 삭제</button></div></form>`);
       $('#refForm', m.el).addEventListener('submit', async e => { e.preventDefault(); Object.assign(u, formData(e.target)); m.close(); await save('저장했습니다.'); });
