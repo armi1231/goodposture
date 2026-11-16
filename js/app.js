@@ -1825,10 +1825,11 @@
         const f = formData(form), u = me();
         if (!idCardDataUrl) {
           toast('신분증 사진(앞면) 파일이 아직 첨부되지 않았습니다. [내 PC에서 파일 찾기]를 눌러 사진을 첨부해 주세요.');
-          idBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          idBox.style.borderColor = '#e74c3c';
-          idBox.style.background = '#fff5f5';
-          setTimeout(() => { idBox.style.borderColor = ''; idBox.style.background = ''; }, 3000);
+          const targetBox = idBlock || form;
+          targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetBox.style.borderColor = '#e74c3c';
+          targetBox.style.background = '#fff5f5';
+          setTimeout(() => { if (targetBox) { targetBox.style.borderColor = ''; targetBox.style.background = ''; } }, 3000);
           return;
         }
         if (!rentalItems.length) return toast('렌탈 품목을 최소 1개 이상 선택해 주세요.');
