@@ -218,8 +218,13 @@
     (localList || []).forEach(it => {
       if (it && it.id && !delSet.has(it.id)) {
         const rem = map.get(it.id);
-        // 로컬에서 수정한 주소, 전화번호, 사진, 가격 등이 원격을 100% 덮어쓰도록 처리
-        map.set(it.id, Object.assign({}, rem || {}, it));
+        const merged = Object.assign({}, rem || {}, it);
+        if (rem) {
+          if (!merged.address && rem.address) merged.address = rem.address;
+          if (!merged.phone && rem.phone) merged.phone = rem.phone;
+          if (!merged.img && rem.img) merged.img = rem.img;
+        }
+        map.set(it.id, merged);
       }
     });
     return Array.from(map.values());
@@ -505,13 +510,13 @@
           desc: '제품 인수 후 사용 점검 · 고객 관리 기록과 홍보자료 활용 · 첫 30일 실천 로드맵' }
       ],
       stores: [
-        { id: uid(), name: '카페 드 슬리밍고 검단신도시점', region: '인천', naverUrl: 'https://naver.me/5eUNl5fj', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 합정역점', region: '서울', naverUrl: 'https://naver.me/xDJ2TZG7', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 동탄파라곤점', region: '경기', naverUrl: 'https://naver.me/xucy9APl', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 강남점', region: '서울', naverUrl: 'https://naver.me/xJixXHhV', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 제주중앙점', region: '제주', naverUrl: 'https://naver.me/xk1Pw0WA', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 울산남구점', region: '울산', naverUrl: 'https://naver.me/5mIoKouD', address: '', phone: '', img: '' },
-        { id: uid(), name: '카페 드 슬리밍고 부산W스퀘어점', region: '부산', naverUrl: 'https://naver.me/5R4Pz7TL', address: '부산광역시 남구 분포로 145 W스퀘어 2053호', phone: '', img: '' }
+        { id: uid(), name: '카페 드 슬리밍고 검단신도시점', region: '인천', naverUrl: 'https://naver.me/5eUNl5fj', address: '인천광역시 서구 이음5로 62 정인프라자 201호', phone: '0507-1469-0333', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 합정역점', region: '서울', naverUrl: 'https://naver.me/xDJ2TZG7', address: '서울특별시 마포구 월드컵로3길 14 딜라이트스퀘어2차 302호', phone: '0507-1480-3348', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 동탄파라곤점', region: '경기', naverUrl: 'https://naver.me/xucy9APl', address: '경기도 화성시 동탄반석로 172 동탄파라곤 102동 217호', phone: '0507-1390-3325', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 강남점', region: '서울', naverUrl: 'https://naver.me/xJixXHhV', address: '서울특별시 강남구 테헤란로 406 지하상가 107호', phone: '0507-1327-6989', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 제주중앙점', region: '제주', naverUrl: 'https://naver.me/xk1Pw0WA', address: '제주특별자치도 제주시 과원로 36 3층', phone: '0507-1319-3394', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 울산남구점', region: '울산', naverUrl: 'https://naver.me/5mIoKouD', address: '울산광역시 남구 돋질로 120 2층', phone: '0507-1365-7503', img: '' },
+        { id: uid(), name: '카페 드 슬리밍고 부산W스퀘어점', region: '부산', naverUrl: 'https://naver.me/5R4Pz7TL', address: '부산광역시 남구 분포로 145 W스퀘어 2층 2053호', phone: '0507-1327-3987', img: '' }
       ],
       posts: { guestbook: [], consult: [], apply: [], rentalApply: [] },
       deletedPostIds: []
@@ -544,7 +549,7 @@
           gender: '', refName: '', refNo: '', joinedAt: now(), grade: 'dream', isAdmin: true, progress: {}
         });
       }
-      await persistLocal(this.data);
+      await persist(this.data);
       // 클라우드 실시간 동기화 채널 가동
       startRealtime();
     },
@@ -704,18 +709,95 @@
       }
       if (!s.supabaseUrl) s.supabaseUrl = C.supabaseUrl || 'https://jurwrizrcfzhzvfpgkot.supabase.co';
       if (!s.supabaseAnonKey) s.supabaseAnonKey = C.supabaseAnonKey || 'sb_publishable_DlVWQXL7L0adgtjsZZryiQ_Ufs2_8jH';
-      const hasBusan = (d.stores || []).some(st => st.name && st.name.includes('부산W스퀘어'));
-      if (!hasBusan) {
-        if (!d.stores) d.stores = [];
-        d.stores.push({
-          id: uid(),
+      /* v7 — 전국 7개 공식 매장(카페 드 슬리밍고) 도로명주소 및 전화번호 네이버 플레이스 정밀 동기화 */
+      const officialStores = [
+        {
+          key: '검단신도시',
+          name: '카페 드 슬리밍고 검단신도시점',
+          region: '인천',
+          naverUrl: 'https://naver.me/5eUNl5fj',
+          address: '인천광역시 서구 이음5로 62 정인프라자 201호',
+          phone: '0507-1469-0333'
+        },
+        {
+          key: '합정역',
+          name: '카페 드 슬리밍고 합정역점',
+          region: '서울',
+          naverUrl: 'https://naver.me/xDJ2TZG7',
+          address: '서울특별시 마포구 월드컵로3길 14 딜라이트스퀘어2차 302호',
+          phone: '0507-1480-3348'
+        },
+        {
+          key: '동탄파라곤',
+          name: '카페 드 슬리밍고 동탄파라곤점',
+          region: '경기',
+          naverUrl: 'https://naver.me/xucy9APl',
+          address: '경기도 화성시 동탄반석로 172 동탄파라곤 102동 217호',
+          phone: '0507-1390-3325'
+        },
+        {
+          key: '강남',
+          name: '카페 드 슬리밍고 강남점',
+          region: '서울',
+          naverUrl: 'https://naver.me/xJixXHhV',
+          address: '서울특별시 강남구 테헤란로 406 지하상가 107호',
+          phone: '0507-1327-6989'
+        },
+        {
+          key: '제주중앙',
+          name: '카페 드 슬리밍고 제주중앙점',
+          region: '제주',
+          naverUrl: 'https://naver.me/xk1Pw0WA',
+          address: '제주특별자치도 제주시 과원로 36 3층',
+          phone: '0507-1319-3394'
+        },
+        {
+          key: '울산남구',
+          name: '카페 드 슬리밍고 울산남구점',
+          region: '울산',
+          naverUrl: 'https://naver.me/5mIoKouD',
+          address: '울산광역시 남구 돋질로 120 2층',
+          phone: '0507-1365-7503'
+        },
+        {
+          key: '부산W스퀘어',
           name: '카페 드 슬리밍고 부산W스퀘어점',
           region: '부산',
           naverUrl: 'https://naver.me/5R4Pz7TL',
-          address: '부산광역시 남구 분포로 145 W스퀘어 2053호',
-          phone: '',
-          img: ''
-        });
+          address: '부산광역시 남구 분포로 145 W스퀘어 2층 2053호',
+          phone: '0507-1327-3987'
+        }
+      ];
+
+      if (!d.stores) d.stores = [];
+      let storesChanged = false;
+      officialStores.forEach(off => {
+        let st = d.stores.find(x => x && x.name && x.name.includes(off.key));
+        if (!st) {
+          st = { id: uid(), name: off.name, region: off.region, naverUrl: off.naverUrl, address: off.address, phone: off.phone, img: '' };
+          d.stores.push(st);
+          storesChanged = true;
+        } else {
+          if (!st.address || st.address === '주소 미입력' || st.address.includes('다산로') || st.address !== off.address) {
+            st.address = off.address;
+            storesChanged = true;
+          }
+          if (!st.phone || st.phone !== off.phone) {
+            st.phone = off.phone;
+            storesChanged = true;
+          }
+          if (!st.region || st.region !== off.region) {
+            st.region = off.region;
+            storesChanged = true;
+          }
+          if (!st.naverUrl || st.naverUrl !== off.naverUrl) {
+            st.naverUrl = off.naverUrl;
+            storesChanged = true;
+          }
+        }
+      });
+      if ((d.version || 1) < 7 || storesChanged) {
+        d.version = 7;
       }
 
       /* v6 — 제품 설명자료 · 제품영상에 R1090, SM880, BB484 착용법 영상 3종 탑재 및 복합 착용 안내 메시지 동기화 */
