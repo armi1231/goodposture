@@ -2519,33 +2519,39 @@
         const w = watchOf(u, l1) || {};
         const pc = Math.round(w.pct || 0), done = lecDone(u, l1);
         const watchedMin = Math.round((w.watched || 0) / 60);
+        // 영상강의 100% 완료 일시 기준
+        const videoDoneTime = w.videoCompletedAt || ((pc >= 100 || done) ? (w.updatedAt || w.quizAt) : '');
+        const quizDoneTime = w.quizAt || (done ? (w.updatedAt || '') : '');
+
         return `<tr>
           <td><b>${esc(u.name)}</b><br><small class="muted">${esc(u.loginId)}</small></td>
           <td>${badge(u.grade)}</td>
           <td>${esc(u.phone || '-')}</td>
           <td><div class="ap-cell"><div class="ap-bar"><i style="width:${pc}%"></i></div><b>${pc}%</b></div></td>
           <td>${watchedMin}분${w.duration ? ` / ${Math.round(w.duration / 60)}분` : ''}</td>
-          <td>${done ? '<b class="ok">✓ 이수 완료</b>' : pc > 0 ? '<span class="warn">진행 중</span>' : '<span class="muted">미시작</span>'}</td>
-          <td>${w.quizAt ? `<b class="ok" title="100% 시청 및 퀴즈 제출 완료">${fmtDate(w.quizAt, true)}</b>` : '<span class="muted">미완료</span>'}</td>
-          <td>${w.updatedAt ? `<span title="마지막 영상 시청 일시">${fmtDate(w.updatedAt, true)}</span>` : '<span class="muted">시청기록 없음</span>'}</td></tr>`;
+          <td>${videoDoneTime ? `<b class="ok" style="color:var(--forest-d)">${fmtDate(videoDoneTime, true)}</b>` : (pc > 0 ? `<span class="warn">시청 중 (${pc}%)</span>` : '<span class="muted">미완료</span>')}</td>
+          <td>${quizDoneTime ? `<b class="ok">${fmtDate(quizDoneTime, true)}</b>` : '<span class="muted">미완료</span>'}</td>
+          <td>${done ? '<b class="ok">✓ 이수 완료</b>' : (videoDoneTime ? '<span class="warn">퀴즈 대기</span>' : '<span class="muted">미이수</span>')}</td></tr>`;
       }).join('') || '<tr><td colspan="8" class="center muted">아직 새움 등급 이상의 교육 수강 대상 회원이 없습니다.</td></tr>';
       const doneN = users.filter(u => lecDone(u, l1)).length;
+      const videoDoneN = users.filter(u => { const w = watchOf(u, l1) || {}; return (w.pct >= 100 || w.videoCompletedAt || w.done); }).length;
       const avg = users.length ? Math.round(users.reduce((a, u) => a + lecPct(u, l1), 0) / users.length) : 0;
       return `<div class="admin-head"><h3>1강 시청 현황 <small style="font-size:0.88rem;color:var(--forest);font-weight:600">(새움 등급 이상 · 총 ${users.length}명)</small></h3>
           <div class="badges">
             <span class="grade-badge g-ieum">수강 대상 ${users.length}명</span>
-            <span class="grade-badge g-saeum">평균 ${avg}%</span>
-            <span class="grade-badge g-pium">이수 ${doneN}/${users.length}명</span>
+            <span class="grade-badge g-saeum">영상 100% 완료 ${videoDoneN}/${users.length}명</span>
+            <span class="grade-badge g-pium">최종 이수 ${doneN}/${users.length}명</span>
           </div></div>
         <div style="background:#f6faf8;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:0.86rem;color:var(--forest-d);line-height:1.6;border-left:3px solid var(--forest)">
-          <b>📌 항목 안내</b><br>
-          • <b>수강 완료일시 (퀴즈제출)</b>: 영상을 100% 시청하고 퀴즈를 제출하여 <b>1강 수강완료하기</b> 버튼을 최종 누른 일시입니다.<br>
-          • <b>최근 영상 시청일시</b>: 회원이 마지막으로 교육 영상을 재생하여 실제로 시청·학습한 일시입니다.<br>
+          <b>📌 교육 시청현황 항목 안내</b><br>
+          • <b>영상시청완료</b>: 영상 강의를 <b>100% 시청 완료한 일시</b>입니다.<br>
+          • <b>1강 수강완료 (퀴즈제출)</b>: 100% 시청 후 퀴즈를 풀고 <b>'1강 수강완료하기'</b>를 최종 완료 제출한 일시입니다.<br>
+          • <b>이수</b>: 영상 100% 완료 및 퀴즈 제출까지 모두 끝마친 최종 수강 완료 상태입니다.<br>
           <small style="color:var(--muted)">※ 온라인 교육은 <b>새움 등급(창업 신청 및 교육비 입금 완료) 이상</b>부터 열리므로, 본 교육 시청현황에는 <b>새움 · 피움 · 이룸 · 드림</b> 등급 회원만 집계되어 표시됩니다.</small>
         </div>
         <div class="card" style="margin-bottom:16px"><h4>${esc(l1.title)}</h4><p class="muted">${esc(l1.url || '영상 링크 없음')} · ${l1.minutes}분</p></div>
         <div class="table-wrap"><table class="table admin-table">
-          <thead><tr><th>회원</th><th>등급</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>이수</th><th>수강 완료일시 (퀴즈제출)</th><th>최근 영상 시청일시</th></tr></thead>
+          <thead><tr><th>회원</th><th>등급</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>영상시청완료</th><th>1강 수강완료 (퀴즈제출)</th><th>이수</th></tr></thead>
           <tbody>${rows}</tbody></table></div>`;
     },
     settings() {
@@ -2639,7 +2645,14 @@
         <dt>최근 로그인</dt><dd>${u.lastLoginAt ? `<b class="g">${fmtDate(u.lastLoginAt, true)}</b>` : '<span class="muted">로그인 기록 없음</span>'}</dd>
         <dt>최근 활동일시</dt><dd>${act.active ? fmtDate(act.active, true) : '-'}</dd>
         <dt>교육 이수</dt><dd>1부 ${p1.done}/${p1.total} · 2부 ${p2.done}/${p2.total}</dd>
-        <dt>1강 시청률</dt><dd>${(() => { const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0]; if (!l1) return '-'; const w = watchOf(u, l1); return `${lecPct(u, l1)}% ${lecDone(u, l1) ? '· 수강 완료 ' + fmtDate(w.quizAt, true) : '· 미완료'}`; })()}</dd></dl>
+        <dt>1강 교육 현황</dt><dd>${(() => {
+          const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0];
+          if (!l1) return '-';
+          const w = watchOf(u, l1) || {};
+          const videoDoneTime = w.videoCompletedAt || ((w.pct >= 100 || w.done) ? (w.updatedAt || w.quizAt) : '');
+          const quizDoneTime = w.quizAt || (w.done ? (w.updatedAt || '') : '');
+          return `${lecPct(u, l1)}% ${videoDoneTime ? '· 영상시청완료 ' + fmtDate(videoDoneTime, true) : '· 영상 미완료'}${quizDoneTime ? ' · 수강(퀴즈)완료 ' + fmtDate(quizDoneTime, true) : ''}`;
+        })()}</dd></dl>
         <form class="form" id="refForm"><div class="grid2"><label>추천인 이름<input name="refName" value="${esc(u.refName)}"></label><label>추천인 번호<input name="refNo" value="${esc(u.refNo)}"></label></div>
         <div class="btn-row"><button class="btn btn-primary">추천인 저장</button><button type="button" class="btn btn-danger" id="delMember">회원 삭제</button></div></form>`);
       $('#refForm', m.el).addEventListener('submit', async e => { e.preventDefault(); Object.assign(u, formData(e.target)); m.close(); await save('저장했습니다.'); });

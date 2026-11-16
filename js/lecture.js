@@ -66,13 +66,16 @@
     const newPct = Math.round(pct * 10) / 10;
     const isAlreadyDone = isDoneProg(prev) || (prev.pct >= 100);
     const effectivePct = isAlreadyDone ? 100 : Math.max(prev.pct || 0, newPct);
+    const nowIso = (window.Store && window.Store.now) ? window.Store.now() : new Date().toISOString();
+    const videoCompletedAt = prev.videoCompletedAt || (effectivePct >= 100 ? nowIso : '');
     u.progress[lec.id] = Object.assign({}, prev, {
       pct: effectivePct,
       watched: Math.max(prev.watched || 0, watched.size),
       duration: Math.max(prev.duration || 0, Math.round(dur || 0)),
       done: isAlreadyDone,
+      videoCompletedAt: videoCompletedAt,
       quizAt: prev.quizAt || '',
-      updatedAt: (window.Store && window.Store.now) ? window.Store.now() : new Date().toISOString()
+      updatedAt: nowIso
     });
     if (ctx.S && ctx.S.save) ctx.S.save();
     if (ctx.onProgress) ctx.onProgress(u.progress[lec.id]);
@@ -252,6 +255,7 @@
       watched: Math.max(prev.watched || 0, watched.size, Math.round(dur || 0)),
       duration: Math.max(prev.duration || 0, Math.round(dur || 0)),
       done: true,
+      videoCompletedAt: prev.videoCompletedAt || nowIso,
       quizAt: prev.quizAt || nowIso,
       updatedAt: nowIso
     });

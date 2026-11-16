@@ -119,9 +119,11 @@
       const rem = (remoteProg && remoteProg[k]) || {};
       const isDone = !!(loc.done || loc.quizAt || rem.done || rem.quizAt);
       const maxPct = isDone ? 100 : Math.max(loc.pct || 0, rem.pct || 0);
+      const videoDone = loc.videoCompletedAt || rem.videoCompletedAt || (maxPct >= 100 ? (loc.updatedAt || rem.updatedAt || loc.quizAt || rem.quizAt || '') : '');
       out[k] = {
         pct: Math.min(100, Math.round(maxPct * 10) / 10),
         done: isDone,
+        videoCompletedAt: videoDone,
         quizAt: loc.quizAt || rem.quizAt || (isDone ? (loc.updatedAt || rem.updatedAt || now()) : ''),
         watched: Math.max(loc.watched || 0, rem.watched || 0),
         duration: Math.max(loc.duration || 0, rem.duration || 0),
