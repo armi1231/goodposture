@@ -91,6 +91,16 @@ body.nav-open .menu-toggle span:nth-child(3){transform:translateY(-6px) rotate(-
 .g-ieum{--g:#79b8e0}.g-nurim{--g:#f2b84b}.g-saeum{--g:#5cc48a}.g-pium{--g:#ef7fa3}.g-irum{--g:#2e8f68}.g-dream{--g:#6b5ce6}
 .grade-badge{background:var(--g)}
 
+.grade-pill{display:inline-flex;align-items:center;gap:4px;font-size:.76rem;font-weight:700;padding:5px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink-m);cursor:pointer;transition:.15s;font-family:inherit;line-height:1}
+.grade-pill:hover{border-color:var(--forest);color:var(--forest)}
+.grade-pill.active{background:var(--forest);color:#fff;border-color:var(--forest)}
+.grade-pill.active.g-ieum{background:#79b8e0;border-color:#79b8e0;color:#fff}
+.grade-pill.active.g-nurim{background:#f2b84b;border-color:#f2b84b;color:#fff}
+.grade-pill.active.g-saeum{background:#5cc48a;border-color:#5cc48a;color:#fff}
+.grade-pill.active.g-pium{background:#ef7fa3;border-color:#ef7fa3;color:#fff}
+.grade-pill.active.g-irum{background:#2e8f68;border-color:#2e8f68;color:#fff}
+.grade-pill.active.g-dream{background:#6b5ce6;border-color:#6b5ce6;color:#fff}
+
 /* ---------- 히어로 ---------- */
 .hero{position:relative;min-height:calc(100vh - var(--hdr) - 32px);min-height:calc(100svh - var(--hdr) - 32px);margin-top:calc(var(--hdr) * -1);padding-top:var(--hdr);overflow:hidden;display:flex;align-items:center;
   background:linear-gradient(180deg,#bfe6ff 0%,#dcf2ff 38%,#effaf0 70%,#e2f4d4 100%)}

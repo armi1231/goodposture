@@ -2364,16 +2364,36 @@
   const ADMIN_VIEWS = {
     members() {
       const users = S.data.users.filter(u => !u.isAdmin).sort((a, b) => b.joinedAt.localeCompare(a.joinedAt));
-      const counts = GRADES.map(g => `<span class="grade-badge g-${g.key}">${g.name} ${users.filter(u => u.grade === g.key).length}</span>`).join('');
-      return `<div class="admin-head"><h3>회원 ${users.length}명</h3><div class="badges">${counts}</div></div>
-        <input class="search" id="memberSearch" placeholder="이름 · 아이디 · 연락처 검색">
+      const gradeCounts = {};
+      GRADES.forEach(g => { gradeCounts[g.key] = users.filter(u => u.grade === g.key).length; });
+
+      return `<div class="admin-head">
+          <h3>회원 ${users.length}명</h3>
+          <div class="badges" id="memberGradePills">
+            <button type="button" class="grade-pill active" data-filter="all">전체 ${users.length}</button>
+            ${GRADES.map(g => `<button type="button" class="grade-pill g-${g.key}" data-filter="${g.key}">${g.name} ${gradeCounts[g.key]}</button>`).join('')}
+          </div>
+        </div>
+        <div class="admin-filter-row" style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+          <select id="memberGradeFilter" style="max-width:180px;font-size:0.9rem;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-weight:700;color:var(--forest-d)">
+            <option value="all">전체 등급 (${users.length}명)</option>
+            ${GRADES.map(g => `<option value="${g.key}">${g.name} (${gradeCounts[g.key]}명)</option>`).join('')}
+          </select>
+          <input class="search" id="memberSearch" style="flex:1;min-width:240px;margin:0" placeholder="이름 · 아이디 · 연락처 · 추천인 검색">
+        </div>
         <div class="table-wrap"><table class="table admin-table" id="memberTable">
           <thead><tr><th>이름</th><th>아이디</th><th>연락처</th><th>가입일</th><th>추천인</th><th>1부 이수</th><th>등급</th><th></th></tr></thead>
-          <tbody>${users.map(u => { const p1 = partProgress(u, 1); return `<tr data-q="${esc((u.name + u.loginId + u.phone).toLowerCase())}">
-            <td><b>${esc(u.name)}</b></td><td>${esc(u.loginId)}</td><td>${esc(u.phone)}</td><td>${fmtDate(u.joinedAt)}</td>
-            <td>${esc(u.refName)} ${esc(u.refNo)}</td><td>${p1.all ? '<b class="ok">✓ 완료</b>' : `${p1.done}/${p1.total}`}</td>
-            <td><select data-grade="${u.id}">${GRADES.map(g => `<option value="${g.key}" ${u.grade === g.key ? 'selected' : ''}>${g.name}</option>`).join('')}</select></td>
-            <td><button class="btn btn-line btn-sm" data-member="${u.id}">상세</button></td></tr>`; }).join('') || '<tr><td colspan="8" class="center muted">아직 회원이 없습니다.</td></tr>'}</tbody>
+          <tbody>${users.map(u => {
+            const p1 = partProgress(u, 1);
+            const qStr = (u.name + ' ' + u.loginId + ' ' + (u.phone || '') + ' ' + (u.refName || '') + ' ' + (u.refNo || '')).toLowerCase();
+            return `<tr data-q="${esc(qStr)}" data-grade-val="${esc(u.grade || 'ieum')}">
+              <td><b>${esc(u.name)}</b></td><td>${esc(u.loginId)}</td><td>${esc(u.phone)}</td><td>${fmtDate(u.joinedAt)}</td>
+              <td>${esc(u.refName)} ${esc(u.refNo)}</td><td>${p1.all ? '<b class="ok">✓ 완료</b>' : `${p1.done}/${p1.total}`}</td>
+              <td><select data-grade="${u.id}">${GRADES.map(g => `<option value="${g.key}" ${u.grade === g.key ? 'selected' : ''}>${g.name}</option>`).join('')}</select></td>
+              <td><button class="btn btn-line btn-sm" data-member="${u.id}">상세</button></td></tr>`;
+          }).join('') || '<tr><td colspan="8" class="center muted">아직 회원이 없습니다.</td></tr>'}
+          <tr id="memberEmptyRow" hidden><td colspan="8" class="center muted" style="padding:28px">검색 및 등급 필터 조건에 일치하는 회원이 없습니다.</td></tr>
+          </tbody>
         </table></div>`;
     },
     rentalApplies() {
@@ -2455,28 +2475,34 @@
     eduProg() {
       const l1 = S.data.lectures.filter(l => l.part === 1).sort((a, b) => a.order - b.order)[0];
       if (!l1) return '<p class="muted">1부 강의가 없습니다. 온라인강의 탭에서 먼저 등록해 주세요.</p>';
-      const users = S.data.users.filter(u => !u.isAdmin);
+      const minGIdx = gIdx('saeum'); // 새움(2) 이상
+      const users = S.data.users.filter(u => !u.isAdmin && gIdx(u.grade) >= minGIdx).sort((a, b) => b.joinedAt.localeCompare(a.joinedAt));
       const rows = users.map(u => {
         const w = watchOf(u, l1) || {};
         const pc = Math.round(w.pct || 0), done = lecDone(u, l1);
         const watchedMin = Math.round((w.watched || 0) / 60);
         return `<tr>
           <td><b>${esc(u.name)}</b><br><small class="muted">${esc(u.loginId)}</small></td>
+          <td>${badge(u.grade)}</td>
           <td>${esc(u.phone || '-')}</td>
           <td><div class="ap-cell"><div class="ap-bar"><i style="width:${pc}%"></i></div><b>${pc}%</b></div></td>
           <td>${watchedMin}분${w.duration ? ` / ${Math.round(w.duration / 60)}분` : ''}</td>
           <td>${done ? '<b class="ok">✓ 이수 완료</b>' : pc > 0 ? '<span class="warn">진행 중</span>' : '<span class="muted">미시작</span>'}</td>
           <td>${w.quizAt ? fmtDate(w.quizAt, true) : '-'}</td>
           <td>${w.updatedAt ? fmtDate(w.updatedAt, true) : '-'}</td></tr>`;
-      }).join('') || '<tr><td colspan="7" class="center muted">아직 회원이 없습니다.</td></tr>';
+      }).join('') || '<tr><td colspan="8" class="center muted">아직 새움 등급 이상의 교육 수강 대상 회원이 없습니다.</td></tr>';
       const doneN = users.filter(u => lecDone(u, l1)).length;
       const avg = users.length ? Math.round(users.reduce((a, u) => a + lecPct(u, l1), 0) / users.length) : 0;
-      return `<div class="admin-head"><h3>1강 시청 현황</h3>
-          <div class="badges"><span class="grade-badge g-ieum">평균 ${avg}%</span><span class="grade-badge g-pium">이수 ${doneN}/${users.length}명</span></div></div>
-        <p class="muted">회원이 실제로 재생한 구간을 초 단위로 집계합니다(구간 이동은 제외). 100% 시청 + 퀴즈 제출 확인에 체크하면 '이수 완료'로 바뀝니다.</p>
+      return `<div class="admin-head"><h3>1강 시청 현황 <small style="font-size:0.88rem;color:var(--forest);font-weight:600">(새움 등급 이상 · 총 ${users.length}명)</small></h3>
+          <div class="badges">
+            <span class="grade-badge g-ieum">수강 대상 ${users.length}명</span>
+            <span class="grade-badge g-saeum">평균 ${avg}%</span>
+            <span class="grade-badge g-pium">이수 ${doneN}/${users.length}명</span>
+          </div></div>
+        <p class="muted">※ 온라인 교육은 <b>새움 등급(창업 신청 및 교육비 입금 완료) 이상</b>부터 열리므로, 본 교육 시청현황에는 <b>새움 · 피움 · 이룸 · 드림</b> 등급 회원만 집계되어 표시됩니다.</p>
         <div class="card" style="margin-bottom:16px"><h4>${esc(l1.title)}</h4><p class="muted">${esc(l1.url || '영상 링크 없음')} · ${l1.minutes}분</p></div>
         <div class="table-wrap"><table class="table admin-table">
-          <thead><tr><th>회원</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>이수</th><th>퀴즈 제출</th><th>최근 활동</th></tr></thead>
+          <thead><tr><th>회원</th><th>등급</th><th>연락처</th><th>시청률</th><th>시청 시간</th><th>이수</th><th>퀴즈 제출</th><th>최근 활동</th></tr></thead>
           <tbody>${rows}</tbody></table></div>`;
     },
     settings() {
@@ -2520,9 +2546,44 @@
 
     // 회원
     const ms = $('#memberSearch', el);
-    if (ms) ms.addEventListener('input', () => { const q = ms.value.toLowerCase(); $$('#memberTable tbody tr', el).forEach(r => r.hidden = q && !(r.dataset.q || '').includes(q)); });
+    const gf = $('#memberGradeFilter', el);
+    const pills = $$('#memberGradePills .grade-pill', el);
+
+    const applyMemberFilter = () => {
+      const q = (ms ? ms.value : '').toLowerCase().trim();
+      const g = (gf ? gf.value : 'all');
+      let visible = 0;
+      $$('#memberTable tbody tr', el).forEach(r => {
+        if (r.id === 'memberEmptyRow') return;
+        const matchQ = !q || (r.dataset.q || '').includes(q);
+        const matchG = (g === 'all') || (r.dataset.gradeVal === g);
+        const show = matchQ && matchG;
+        r.hidden = !show;
+        if (show) visible++;
+      });
+      const emptyRow = $('#memberEmptyRow', el);
+      if (emptyRow) emptyRow.hidden = (visible > 0);
+    };
+
+    if (ms) ms.addEventListener('input', applyMemberFilter);
+    if (gf) gf.addEventListener('change', () => {
+      const g = gf.value;
+      pills.forEach(p => p.classList.toggle('active', p.dataset.filter === g));
+      applyMemberFilter();
+    });
+    pills.forEach(p => p.addEventListener('click', () => {
+      const g = p.dataset.filter;
+      if (gf) gf.value = g;
+      pills.forEach(x => x.classList.toggle('active', x === p));
+      applyMemberFilter();
+    }));
+
     $$('[data-grade]', el).forEach(sel => sel.addEventListener('change', async () => {
-      const u = S.data.users.find(x => x.id === sel.dataset.grade); u.grade = sel.value; await S.save(); toast(`${u.name}님 → ${gName(u.grade)} 등급`);
+      const u = S.data.users.find(x => x.id === sel.dataset.grade);
+      u.grade = sel.value;
+      await S.save();
+      toast(`${u.name}님 → ${gName(u.grade)} 등급으로 변경되었습니다.`);
+      render();
     }));
     $$('[data-member]', el).forEach(b => b.addEventListener('click', () => {
       const u = S.data.users.find(x => x.id === b.dataset.member);
