@@ -697,10 +697,10 @@
         });
         d.version = 3;
       }
-      /* v4 — 메인 조깅 실사 영상 캐시 무효화 및 신규 영상(joggers_v6.mp4) 자동 갱신 */
-      if ((d.version || 1) < 4) {
-        s.heroJoggerVideo = 'assets/hero/joggers_v6.mp4?v=20261115_07';
-        d.version = 4;
+      /* v4/v8 — 메인 조깅 실사 영상 캐시 무효화 및 신규 부부 조깅 영상(joggers_v7.mp4) 자동 갱신 */
+      if (!s.heroJoggerVideo || s.heroJoggerVideo.includes('joggers.mp4') || s.heroJoggerVideo.includes('joggers_v6.mp4')) {
+        s.heroJoggerVideo = 'assets/hero/joggers_v7.mp4?v=20261116_10';
+        d.version = Math.max(d.version || 1, 4);
       }
       /* v5 — 12시간 정규 교육과정 9개 교시(27강) 및 플레이슬리밍고 2.1 커리큘럼 동기화 */
       if ((d.version || 1) < 5) {
