@@ -258,14 +258,20 @@ body.nav-open .menu-toggle span:nth-child(3){transform:translateY(-6px) rotate(-
 .admin-strip a{color:var(--cta-d);text-decoration:underline}
 
 /* ---------- 배수 ---------- */
-.multi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
-.multi{background:#fff;border:1px solid var(--line);border-radius:22px;padding:26px;display:flex;gap:20px;align-items:center;box-shadow:var(--shadow)}
-.multi>b{font-size:3.6rem;font-weight:800;color:var(--forest);letter-spacing:-.05em;line-height:1}
+.multi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.multi{background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px 20px;display:flex;gap:16px;align-items:center;box-shadow:var(--shadow)}
+.multi>b{font-size:3.4rem;font-weight:800;color:var(--forest);letter-spacing:-.05em;line-height:1}
 .multi>b small{font-size:.4em}
-.multi h4{margin:0 0 4px}
-.multi p{font-size:.9rem;color:var(--muted);margin:0 0 8px}
+.multi h4{margin:0 0 4px;font-size:1.02rem}
+.multi p{font-size:.85rem;color:var(--muted);margin:0 0 8px;line-height:1.4}
 .multi.hot{background:linear-gradient(140deg,var(--forest),#227a5c);color:#fff;border:0}
 .multi.hot>b,.multi.hot h4{color:#fff}.multi.hot p{color:#cdeedd}.multi.hot .tag{background:rgba(255,255,255,.15);color:#fff}
+.multi.special{background:linear-gradient(140deg,#fffdf7,#fff6e5);border:1.5px solid #fcd34d}
+.multi.special>b{color:#d97706}
+.multi.special .tag.highlight{background:#fef3c7;color:#92400e;font-weight:800}
+.plan-badge.special{background:#d97706;color:#fff}
+.plan-card.special-bonus{border-color:#fcd34d;background:linear-gradient(180deg,#fff 0%,#fffdf9 100%)}
+.plan-tag.highlight{background:#fef3c7;color:#92400e;border:1px solid #fde68a;font-weight:700}
 
 /* ---------- 등급 여정 ---------- */
 .journey{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;position:relative}
@@ -570,6 +576,7 @@ body.scrolled .float-cta{opacity:1;transform:none;pointer-events:auto}
    ========================================================= */
 @media (max-width:1360px){.gnb>a,.gnb-drop-btn{padding:9px 9px;font-size:.9rem}.header-inner{gap:12px}}
 @media (max-width:1100px){
+  .multi-grid{grid-template-columns:repeat(2,1fr)}
   .product-grid{grid-template-columns:repeat(3,1fr)}
   .journey{grid-template-columns:repeat(3,1fr);row-gap:30px}
   .journey::before{display:none}

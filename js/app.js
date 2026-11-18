@@ -360,6 +360,7 @@
     return `<div class="multi-grid">
       <div class="multi reveal"><b>4<small>배</small></b><div><h4>기본 사업권 (입문 3시간 이수)</h4><p>온라인 입문 3시간(01~09강) 이수 후 사업승인 인정서 발급 즉시 시작 (계약 1년)</p><span class="tag">스타트 · 4배 사업권</span></div></div>
       <div class="multi reveal hot"><b>8<small>배</small></b><div><h4>50만점 달성 시 일일 승급!</h4><p>총 12시간 교육 이수 + 누적 50만점 달성 시 월말 기다리지 않고 즉시 승급</p><span class="tag">성장 업그레이드 · 8배 사업권</span></div></div>
+      <div class="multi reveal special"><b>10<small>배</small></b><div><h4>월 100만점 특별 보너스!</h4><p>월 렌탈 100만점 달성 시 당월 전체 매출에 10배 수익 보장 (추가 배수 지급)</p><span class="tag highlight">최대 수익 · 10배 보너스</span></div></div>
       <div class="multi reveal"><b>응원금</b><div><h4>매월 바르게 응원금</h4><p>50만점 달성 창업자 모두에게 회사 월 총매출 점수의 5% 균등 지원 (월 유지조건 없음 · 최초 1년)</p><span class="tag">공동분배 나눔 혜택</span></div></div>
     </div>`;
   }
@@ -562,10 +563,53 @@
           </div>
         </div>
 
-        <!-- 02. 매월 바르게 응원금 -->
+        <!-- 02. 100만점 보너스 -->
+        <div class="plan-card special-bonus reveal">
+          <div class="plan-head">
+            <span class="plan-badge special">02</span>
+            <h3>100만점 보너스 (월 100만점 달성 시 총 10배 수익 보장)</h3>
+            <span class="plan-tag highlight">월 렌탈 100만점 달성 · 총 10배 수익 · 익월 25일 지급</span>
+          </div>
+          <div class="plan-body">
+            <p>월 렌탈매출 합산이 <b>100만 점(월 렌탈료 100만 원)</b>에 도달하면, 당월 전체 매출에 대해 <b>총 10배(1,000만 원) 수익</b>이 되도록 차액 보너스를 지급합니다.<br>
+            <strong style="color:var(--forest-d)">★ 100만점 달성 시 기본 판매수수료에 추가 보너스가 더해져 총 10배의 압도적인 성과 수익을 완성합니다!</strong></p>
+
+            <div class="plan-box" style="background:#fffcf5;border:1.5px solid #fcd34d">
+              <b style="color:#b45309">🎯 달성 상황별 10배 수익 계산 및 사업권 승급 안내</b>
+              
+              <div style="margin-top:10px;padding:12px 14px;background:#fff;border-radius:10px;border-left:4px solid #f59e0b">
+                <p style="margin:0 0 6px;font-weight:700;color:var(--forest-d)">① 사업 시작 첫 달(4배 스타트)에 바로 100만점을 달성한 경우</p>
+                <p style="margin:0;font-size:0.9rem;line-height:1.6">
+                  • <b>기본 판매수수료</b>: 50만점까지 4배(200만 원) + 초과 50만점 8배(400만 원) = <b>600만 원 지급</b><br>
+                  • <b>100만점 특별 보너스</b>: 50만점에 대해 <b>추가 6배(+300만 원)</b> + 초과 50만점에 대해 <b>추가 2배(+100만 원)</b> = <b>+400만 원 추가 지급!</b><br>
+                  ➔ <b>당월 총 수익: 100만점 × 10배 = 1,000만 원</b> (총 10배 수익 완성)<br>
+                  🚀 <b>익월 사업권 일일 승급</b>: 누적 50만점을 돌파했으므로, <b>다음달부터는 기본 사업권이 정식 '8배'(이룸 등급)로 승급</b>되어 모든 계약 건마다 기본 8배 수수료가 적용됩니다.
+                </p>
+              </div>
+
+              <div style="margin-top:10px;padding:12px 14px;background:#fff;border-radius:10px;border-left:4px solid var(--forest)">
+                <p style="margin:0 0 6px;font-weight:700;color:var(--forest-d)">② 이미 8배 사업권(이룸 등급 이상)에서 월 100만점을 달성한 경우</p>
+                <p style="margin:0;font-size:0.9rem;line-height:1.6">
+                  • <b>기본 판매수수료</b>: 100만점 전체에 대해 기본 8배 = <b>800만 원 지급</b><br>
+                  • <b>100만점 특별 보너스</b>: <b>추가 2배(+200만 원)</b> 보너스 추가 지급!<br>
+                  ➔ <b>당월 총 수익: 100만점 × 10배 = 1,000만 원</b> (총 10배 수익 완성)<br>
+                  💡 8배 사업자가 된 이후에도 <b>매월 매출합산 100만점이 되는 달마다 추가 2배 보너스</b>를 받아 언제든 총 10배 수익을 만드실 수 있습니다.
+                </p>
+              </div>
+            </div>
+
+            <div class="plan-box" style="margin-top:12px">
+              <b>📅 100만점 보너스 정산 및 지급 일정</b>
+              <p style="margin:4px 0">• <b>산정 기준</b>: 매월 1일 ~ 말일까지 체결·승인된 렌탈 전자계약 월 합산 점수</p>
+              <p style="margin:4px 0">• <b>지급일</b>: 100만점이 달성된 해당 매출마감일 기준 <b>익월 25일에 보너스 합산 지급</b></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 03. 매월 바르게 응원금 -->
         <div class="plan-card reveal">
           <div class="plan-head">
-            <span class="plan-badge">02</span>
+            <span class="plan-badge">03</span>
             <h3>매월 바르게 응원금</h3>
             <span class="plan-tag">최초 계약 1년 지원 제도 · 월 유지조건 없음</span>
           </div>
@@ -613,10 +657,10 @@
           </div>
         </div>
 
-        <!-- 03. 창업 소개 수수료 100% -->
+        <!-- 04. 창업 소개 수수료 100% -->
         <div class="plan-card reveal">
           <div class="plan-head">
-            <span class="plan-badge">03</span>
+            <span class="plan-badge">04</span>
             <h3>창업 소개 수수료 100%</h3>
             <span class="plan-tag">1인당 최대 200만원 · 소급 100% 전액 지급</span>
           </div>
@@ -630,10 +674,10 @@
           </div>
         </div>
 
-        <!-- 04. 50만점 달성 축하 2대 특전 -->
+        <!-- 05. 50만점 달성 축하 2대 특전 -->
         <div class="plan-card privilege reveal">
           <div class="plan-head">
-            <span class="plan-badge gold">04</span>
+            <span class="plan-badge gold">05</span>
             <h3>50만점 달성 축하 2개의 특전</h3>
             <span class="plan-tag gold">제주 캠프 0원 · PA 창업 특혜</span>
           </div>
@@ -678,7 +722,7 @@
             <td><span class="pay-tag blue">월 마감 항목</span></td>
             <td>전월 1일 ~ 말일 마감</td>
             <td><b>익월 25일</b></td>
-            <td>창업 소개수수료 100%, 매월 바르게 응원금, 프로모션 수당</td>
+            <td>창업 소개수수료 100%, 100만점 보너스(추가 배수 차액), 매월 바르게 응원금, 프로모션 수당</td>
           </tr>
           <tr>
             <td><span class="pay-tag gold">★ 20% 적립금 전액 반환</span></td>
