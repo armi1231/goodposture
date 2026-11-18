@@ -185,18 +185,18 @@
   }
   function confirmBox(msg) { return window.confirm(msg); }
 
-  /* ---------- 착한 창업 가이드 (운영자 · 상담 · 추천인) ---------- */
+  /* ---------- 착한 창업 가이드 (운영자 · 상담) ---------- */
   const guide = () => { const s = set(); return { title: s.guideTitle || '착한 창업 가이드', name: s.guideName || '이아름', phone: s.contactPhone || '', kakao: s.kakaoId || '' }; };
-  const refChip = (cls = '') => { const s = set(); return `<span class="ref-chip ${cls}">추천인 <b>${esc(s.recommenderName)}</b><i></i>추천번호 <b>${esc(s.recommenderNo)}</b></span>`; };
+  const refChip = () => '';
   function guideCard(mode = 'card') {
     const g = guide();
     const tel = g.phone.replace(/[^0-9]/g, '');
-    if (mode === 'line') return `<p class="guide-line">${refChip()} 상담 <b>${esc(g.title)} ${esc(g.name)}</b>
+    if (mode === 'line') return `<p class="guide-line">상담 및 문의 <b>${esc(g.title)} ${esc(g.name)}</b>
       ${g.phone ? `<a href="tel:${tel}">📞 ${esc(g.phone)}</a>` : ''} ${g.kakao ? `<button type="button" class="kakao-chip" data-copy="${esc(g.kakao)}">카카오톡 ID : ${esc(g.kakao)}</button>` : ''}</p>`;
     return `<div class="guide-card ${mode}">
       <div class="gd-who"><span class="gd-ava">${icon('sprout')}</span>
         <div><small>(주)슬리밍고그룹 바른자세 렌탈 플랫폼</small><b>${esc(g.title)} ${esc(g.name)}</b>
-        <p>렌탈 상담 · 창업 상담 · 추천인 연결을 직접 도와드립니다.</p>${refChip()}</div></div>
+        <p>렌탈 상담 · 창업 상담을 직접 도와드립니다.</p></div></div>
       <div class="gd-contacts">
         ${g.phone ? `<a class="gd-btn tel" href="tel:${tel}"><small>전화 · 문자 상담</small>${esc(g.phone)}</a>` : ''}
         ${g.kakao ? `<button type="button" class="gd-btn kakao" data-copy="${esc(g.kakao)}"><small>카카오톡 ID (눌러서 복사)</small>${esc(g.kakao)}</button>` : ''}
@@ -218,7 +218,6 @@
       <div class="cta-actions">
         <a class="btn btn-cta btn-lg" href="${formLink()}" target="_blank" rel="noopener">창업 신청서 작성하기 →</a>
         <a class="btn btn-white btn-lg" href="#/consult/write?cat=창업상담">창업 상담 남기기</a>
-        <p class="cta-ref">신청서 작성 시 ${refChip('light')}</p>
       </div>
     </div>
     <div class="wrap cta-guide">${guideCard('dark')}</div></section>`;
@@ -300,7 +299,7 @@
           <div class="eq-item eq-result"><b>창업 준비 끝</b><span>누구나 시작</span></div>
         </div>
         <p class="muted">대한민국 특허 상품 '입는 바른자세' 5종을 렌탈로 안내하는 착한 렌탈 창업입니다.</p>
-        <div class="cta-with-ref"><a class="btn btn-cta btn-lg" href="${formLink()}" target="_blank" rel="noopener">지금 창업 신청하기 →</a>${refChip()}</div>
+        <div class="cta-with-ref"><a class="btn btn-cta btn-lg" href="${formLink()}" target="_blank" rel="noopener">지금 창업 신청하기 →</a></div>
       </div>
       <ol class="steps reveal">
         <li><b>01</b><div><h4>창업 신청서 작성</h4><p>구글폼으로 비회원도 바로 신청할 수 있어요.</p></div></li>
@@ -323,7 +322,7 @@
       <p class="lead">대한민국 특허 상품인 입는 바른자세를 직접 체험하고 선택하도록 안내합니다.</p></div>
       <div class="product-grid">${prods.map(p => productCard(p)).join('')}</div>
       <div class="center" style="margin:-10px 0 24px"><a class="btn btn-line" href="#/rental">2개 구성 세트 요금 보기 →</a></div>
-      <div class="center">${refChip()}<br><br><a class="btn btn-primary btn-lg" href="#/rental">렌탈 신청 바로가기</a> <a class="btn btn-line btn-lg" href="#/products">제품 자료 · 영상 보기</a></div>
+      <div class="center"><a class="btn btn-primary btn-lg" href="#/rental">렌탈 신청 바로가기</a> <a class="btn btn-line btn-lg" href="#/products">제품 자료 · 영상 보기</a></div>
     </div></section>
 
     <section class="sec sec-tint"><div class="wrap">
@@ -1661,7 +1660,7 @@
   function applyGuide() {
     const s = set();
     return `<div class="apply-guide card">
-      <div><b>1</b><p>창업 신청서 작성<br><a href="${formLink()}" target="_blank" rel="noopener">구글폼 열기 →</a><br><small>추천인 ${esc(s.recommenderName)} · 추천번호 ${esc(s.recommenderNo)}</small></p></div>
+      <div><b>1</b><p>창업 신청서 작성<br><a href="${formLink()}" target="_blank" rel="noopener">구글폼 열기 →</a><br><small>창업 신청서(구글폼) 작성</small></p></div>
       <div><b>2</b><p>교육비 ${won(s.eduFee)} 입금<br><small>${esc(s.bankInfo)}</small></p></div>
       <div><b>3</b><p>이 게시판에 접수글 작성<br><small>입금자명·입금일 기재</small></p></div>
       <div><b>4</b><p>관리자 확인 후<br><b class="g">새움 등급 · 강의 오픈</b></p></div>
