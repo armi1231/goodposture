@@ -360,7 +360,7 @@
     return `<div class="multi-grid">
       <div class="multi reveal"><b>4<small>배</small></b><div><h4>기본 사업권 (입문 3시간 이수)</h4><p>온라인 입문 3시간(01~09강) 이수 후 사업승인 인정서 발급 즉시 시작 (계약 1년)</p><span class="tag">스타트 · 4배 사업권</span></div></div>
       <div class="multi reveal hot"><b>8<small>배</small></b><div><h4>50만점 달성 시 일일 승급!</h4><p>총 12시간 교육 이수 + 누적 50만점 달성 시 월말 기다리지 않고 즉시 승급</p><span class="tag">성장 업그레이드 · 8배 사업권</span></div></div>
-      <div class="multi reveal"><b>지원금</b><div><h4>매월 바르게 지원금</h4><p>50만점 달성 창업자 모두에게 회사 월 총매출 점수의 5% 균등 지원 (월 유지조건 없음 · 최초 1년)</p><span class="tag">공동분배 나눔 혜택</span></div></div>
+      <div class="multi reveal"><b>응원금</b><div><h4>매월 바르게 응원금</h4><p>50만점 달성 창업자 모두에게 회사 월 총매출 점수의 5% 균등 지원 (월 유지조건 없음 · 최초 1년)</p><span class="tag">공동분배 나눔 혜택</span></div></div>
     </div>`;
   }
 
@@ -562,29 +562,29 @@
           </div>
         </div>
 
-        <!-- 02. 매월 바르게 지원금 -->
+        <!-- 02. 매월 바르게 응원금 -->
         <div class="plan-card reveal">
           <div class="plan-head">
             <span class="plan-badge">02</span>
-            <h3>매월 바르게 지원금</h3>
+            <h3>매월 바르게 응원금</h3>
             <span class="plan-tag">최초 계약 1년 지원 제도 · 월 유지조건 없음</span>
           </div>
           <div class="plan-body">
-            <p>창업 초기 새로운 일을 배우고 고객을 만나는 창업자의 안정적인 시작과 성장을 응원하기 위해, <b>50만점 판매를 달성한 모든 창업자</b>에게 <b>최초 계약 1년 안에서</b> 회사의 성장을 함께 나누는 <b>'매월 바르게 지원금'</b>을 지급합니다.<br>
+            <p>창업 초기 새로운 일을 배우고 고객을 만나는 창업자의 안정적인 시작과 성장을 응원하기 위해, <b>50만점 판매를 달성한 모든 창업자</b>에게 <b>최초 계약 1년 안에서</b> 회사의 성장을 함께 나누는 <b>'매월 바르게 응원금'</b>을 지급합니다.<br>
             <strong style="color:var(--forest)">★ 50만점 달성 후에는 추가 판매 실적을 채워야 하는 별도의 '월 유지조건'이 전혀 없습니다!</strong></p>
 
             <div class="plan-box">
               <b>📊 지급 대상과 지원 재원 & 1인당 배분 공식</b>
               <p style="margin:8px 0;padding:10px 14px;background:#fff;border-radius:8px;border:1px solid #dceee5;font-weight:700;color:var(--forest-d);line-height:1.6">
-                1인당 바르게 지원금 = 회사 월 총매출 점수 × 5% ÷ 해당 월 지급 대상 인원수
+                1인당 바르게 응원금 = 회사 월 총매출 점수 × 5% ÷ 해당 월 지급 대상 인원수
               </p>
               <p><small>※ 지원 재원은 <b>회사 월 총매출 점수의 5%</b>이며, 대상자 1명에게 5% 전액을 지급하는 것이 아니라 해당 월 지급 대상자 수로 똑같이 나누어 균등 지원합니다.</small></p>
               <div style="background:#fff;padding:12px 14px;border-radius:8px;margin-top:8px;border-left:3px solid var(--forest)">
                 <b>💡 계산 예시 (회사 월 총매출 점수 2억점 · 대상자 20명 기준)</b>
                 <p style="margin:4px 0">• 회사 월 총매출 점수: 200,000,000점 (2억점) ➔ 5% 지원 재원: 10,000,000점 (1,000만점)</p>
                 <p style="margin:4px 0">• 균등 배분 계산: 10,000,000점 ÷ 20명 = 1인당 50만점</p>
-                <p style="margin:4px 0">➔ <b>1인당 예시 지원금: 500,000원</b> (부가세 포함 · 세금 공제 전)</p>
-                <p style="margin:4px 0"><small style="color:var(--muted)">* 실제 지원금은 매월 회사 총매출 점수와 해당 월 지급 대상 인원수에 따라 달라집니다.</small></p>
+                <p style="margin:4px 0">➔ <b>1인당 예시 응원금: 500,000원</b> (부가세 포함 · 세금 공제 전)</p>
+                <p style="margin:4px 0"><small style="color:var(--muted)">* 실제 응원금은 매월 회사 총매출 점수와 해당 월 지급 대상 인원수에 따라 달라집니다.</small></p>
               </div>
             </div>
 
@@ -604,10 +604,10 @@
               <div style="background:#fff;padding:12px 14px;border-radius:8px;margin-top:8px">
                 <b>💡 적용 흐름 예시 (달성월 ➔ 매출 적용월 ➔ 지급월)</b>
                 <p style="margin:6px 0;font-size:0.92rem;color:var(--forest-d)">
-                  <b>예: 4월 달성 ➔ 5월 매출부터 적용 ➔ 6월 25일에 첫 지원금 지급!</b>
+                  <b>예: 4월 달성 ➔ 5월 매출부터 적용 ➔ 6월 25일에 첫 응원금 지급!</b>
                 </p>
-                <p style="margin:4px 0"><small style="color:var(--muted)">* 달성한 4월 매출부터 적용되는 것이 아니라, <b>다음달(5월) 매출부터 적용</b>되므로 달성월 기준 <b>그다음달 25일에 첫 지원금</b>을 받게 됩니다.<br>
-                * 마지막 적용 매출은 최초 계약의 <b>11개월차 매출</b>이며, 해당 지원금은 <b>계약 12개월차의 지급일(25일)</b>에 지급됩니다.</small></p>
+                <p style="margin:4px 0"><small style="color:var(--muted)">* 달성한 4월 매출부터 적용되는 것이 아니라, <b>다음달(5월) 매출부터 적용</b>되므로 달성월 기준 <b>그다음달 25일에 첫 응원금</b>을 받게 됩니다.<br>
+                * 마지막 적용 매출은 최초 계약의 <b>11개월차 매출</b>이며, 해당 응원금은 <b>계약 12개월차의 지급일(25일)</b>에 지급됩니다.</small></p>
               </div>
             </div>
           </div>
@@ -678,7 +678,7 @@
             <td><span class="pay-tag blue">월 마감 항목</span></td>
             <td>전월 1일 ~ 말일 마감</td>
             <td><b>익월 25일</b></td>
-            <td>창업 소개수수료 100%, 매월 바르게 지원금, 프로모션 수당</td>
+            <td>창업 소개수수료 100%, 매월 바르게 응원금, 프로모션 수당</td>
           </tr>
           <tr>
             <td><span class="pay-tag gold">★ 20% 적립금 전액 반환</span></td>
