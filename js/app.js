@@ -1078,6 +1078,63 @@
     }
   }
 
+  function getPhoneLast4(p) {
+    if (!p) return '';
+    const digits = String(p).replace(/[^0-9]/g, '');
+    return digits.length >= 4 ? digits.slice(-4) : digits;
+  }
+  function maskPhone(p) {
+    if (!p) return '-';
+    const s = String(p).trim();
+    return s.replace(/(\d{2,3})[-.]?(\d{3,4})[-.]?(\d{4})/, '$1-****-$3');
+  }
+  function findRecommendersByName(searchName) {
+    const q = (searchName || '').trim();
+    if (!q) return [];
+    const s = set();
+    const list = [];
+    const seen = new Set();
+
+    // 1. 본사 창업 가이드 / 기본 운영자
+    const gNameVal = (s.guideName || s.recommenderName || '이아름').trim();
+    const gPhone = s.contactPhone || '010-9283-1231';
+    const gNo = s.recommenderNo || getPhoneLast4(gPhone) || '1231';
+    if (q === gNameVal) {
+      list.push({
+        id: 'guide_default',
+        name: gNameVal,
+        grade: '본사 가이드',
+        phone: gPhone,
+        phoneMasked: maskPhone(gPhone),
+        refNo: gNo,
+        isGuide: true
+      });
+      seen.add(gNameVal + '_' + gNo);
+    }
+
+    // 2. 새움(saeum) 등급 이상 착한창업 회원 (saeum, pium, irum, kkum)
+    (S.data.users || []).forEach(u => {
+      if (u.isAdmin) return;
+      if (gIdx(u.grade) >= gIdx('saeum') && (u.name || '').trim() === q) {
+        const rNo = getPhoneLast4(u.phone);
+        const key = u.name.trim() + '_' + rNo;
+        if (!seen.has(key)) {
+          seen.add(key);
+          list.push({
+            id: u.id,
+            name: u.name.trim(),
+            grade: gName(u.grade),
+            phone: u.phone,
+            phoneMasked: maskPhone(u.phone),
+            refNo: rNo
+          });
+        }
+      }
+    });
+
+    return list;
+  }
+
   function profileFields(u, isNew) {
     const s = set();
     const v = k => esc(u ? u[k] : '');
@@ -1103,10 +1160,35 @@
         <input name="address" required placeholder="기본 주소" value="${v('address')}">
         <input name="address2" placeholder="상세 주소" value="${v('address2')}">
       </label>
-      <div class="grid2">
-        <label>추천인 이름 <small>착한 창업 가이드</small><input name="refName" value="${u ? v('refName') : esc(s.recommenderName)}" readonly></label>
-        <label>추천인 번호<input name="refNo" value="${u ? v('refNo') : esc(s.recommenderNo)}" readonly></label>
-      </div>`;
+      ${isNew ? `
+        <div class="ref-search-card">
+          <div class="ref-search-title">
+            <b>추천인 및 추천번호 등록</b>
+            <small>착한창업(새움 등급 이상)으로 등록·승인된 추천인 성함을 입력해 주세요.</small>
+          </div>
+          <div class="grid2">
+            <div>
+              <label>추천인 성함 <small>(착한 창업 추천인)</small>
+                <div class="ref-search-input-row">
+                  <input name="refName" id="refNameInput" placeholder="추천인 성함 입력 (예: 이아름)" autocomplete="off" required>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnSearchRef">추천인 확인</button>
+                </div>
+              </label>
+            </div>
+            <div>
+              <label>추천번호 <small>(휴대폰 뒷 4자리 자동 입력)</small>
+                <input name="refNo" id="refNoInput" placeholder="추천인 확인 시 자동 입력" readonly required>
+              </label>
+            </div>
+          </div>
+          <div id="refFeedbackBox" class="ref-feedback-box" style="display:none;"></div>
+        </div>
+      ` : `
+        <div class="grid2">
+          <label>추천인 이름 <small class="lock">수정 불가</small><input name="refName" value="${v('refName')}" readonly></label>
+          <label>추천인 번호 <small class="lock">수정 불가</small><input name="refNo" value="${v('refNo')}" readonly></label>
+        </div>
+      `}`;
   }
   function bindAddress(el) {
     const b = $('#addrBtn', el); if (!b) return;
@@ -1119,6 +1201,92 @@
       } }).open();
     });
   }
+  function bindRefSearch(el) {
+    const input = $('#refNameInput', el);
+    const refNoInput = $('#refNoInput', el);
+    const btn = $('#btnSearchRef', el);
+    const box = $('#refFeedbackBox', el);
+    if (!input || !refNoInput || !btn || !box) return;
+
+    function executeSearch() {
+      const q = (input.value || '').trim();
+      if (!q) {
+        box.style.display = 'block';
+        box.innerHTML = '<div class="ref-msg error">⚠️ 추천인 성함을 먼저 입력해 주세요.</div>';
+        refNoInput.value = '';
+        input.dataset.verified = '';
+        toast('추천인 성함을 입력해 주세요.');
+        input.focus();
+        return;
+      }
+      const list = findRecommendersByName(q);
+      box.style.display = 'block';
+
+      if (list.length === 0) {
+        box.innerHTML = `<div class="ref-msg error">⚠️ <b>'${esc(q)}'</b> 님은 착한창업(새움 등급 이상)으로 등록된 추천인이 아닙니다.<br><small style="font-weight:400;color:#991b1b">추천인의 성함을 정확히 확인해 주세요. (착한창업 미등록 또는 이음·누림 회원은 추천인 등록이 불가합니다)</small></div>`;
+        refNoInput.value = '';
+        input.dataset.verified = '';
+        toast('등록된 착한창업 추천인을 찾을 수 없습니다.');
+      } else if (list.length === 1) {
+        const r = list[0];
+        refNoInput.value = r.refNo;
+        input.dataset.verified = r.name;
+        refNoInput.dataset.verified = r.refNo;
+        box.innerHTML = `<div class="ref-msg success">✓ 추천인 확인 완료: <b>${esc(r.name)}</b> (${esc(r.grade)} · 연락처 ${esc(r.phoneMasked)} · 추천번호 <b>${esc(r.refNo)}</b>) 님이 확인되었습니다.</div>`;
+        toast(`추천인 [${r.name}] 확인 완료 (추천번호: ${r.refNo})`);
+      } else {
+        refNoInput.value = '';
+        input.dataset.verified = '';
+        let html = `<div class="ref-msg multi">
+          <p class="ref-multi-lead">💡 동명이인 추천인이 <b>${list.length}명</b> 검색되었습니다. 소개받으신 추천인의 추천번호(휴대폰 번호 뒷 4자리)를 선택해 주세요:</p>
+          <div class="ref-candidate-list">`;
+        list.forEach((r, idx) => {
+          html += `<button type="button" class="ref-candidate-btn" data-idx="${idx}">
+            <span><b>${esc(r.name)}</b> <small style="color:var(--forest);font-weight:600">(${esc(r.grade)} · ${esc(r.phoneMasked)})</small></span>
+            <span class="badge-no">추천번호: <b>${esc(r.refNo)}</b> 선택</span>
+          </button>`;
+        });
+        html += `</div></div>`;
+        box.innerHTML = html;
+
+        $$('.ref-candidate-btn', box).forEach(b => {
+          b.addEventListener('click', () => {
+            const idx = +b.dataset.idx;
+            const chosen = list[idx];
+            if (!chosen) return;
+            refNoInput.value = chosen.refNo;
+            input.dataset.verified = chosen.name;
+            refNoInput.dataset.verified = chosen.refNo;
+            box.innerHTML = `<div class="ref-msg success">✓ 추천인 선택 완료: <b>${esc(chosen.name)}</b> (${esc(chosen.grade)} · 연락처 ${esc(chosen.phoneMasked)} · 추천번호 <b>${esc(chosen.refNo)}</b>) 님이 선택되었습니다.</div>`;
+            toast(`추천인 [${chosen.name}] 선택 완료 (추천번호: ${chosen.refNo})`);
+          });
+        });
+      }
+    }
+
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      executeSearch();
+    });
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeSearch();
+      }
+    });
+
+    input.addEventListener('input', () => {
+      if (input.dataset.verified && input.value.trim() !== input.dataset.verified) {
+        input.dataset.verified = '';
+        refNoInput.value = '';
+        refNoInput.dataset.verified = '';
+        box.style.display = 'none';
+        box.innerHTML = '';
+      }
+    });
+  }
+
   function viewSignup() {
     return `${pageHead('회원가입', '인연을 잇는 첫걸음, 이음', '가입 즉시 이음 등급이 부여되며 온라인 렌탈 계약 신청이 가능합니다. 렌탈 계약 완료 시 누림 등급으로, 창업 신청 및 교육 접수 시 새움 등급으로 등업됩니다.')}
     <section class="sec"><div class="wrap auth wide">
@@ -1131,13 +1299,21 @@
   }
   function mountSignup(el) {
     bindAddress(el);
+    bindRefSearch(el);
     $('#signupForm', el).addEventListener('submit', async e => {
       e.preventDefault();
       const f = formData(e.target);
       if (f.pw !== f.pw2) return toast('비밀번호가 서로 다릅니다.');
+      const refInput = $('#refNameInput', el);
+      const refNoInput = $('#refNoInput', el);
+      if (!f.refName || !f.refNo || !refInput || refInput.dataset.verified !== f.refName.trim()) {
+        toast('추천인 확인을 먼저 완료해 주세요.');
+        if (refInput) refInput.focus();
+        return;
+      }
       try {
         const u = await S.signup({ loginId: f.loginId, pw: f.pw, name: f.name, birth: f.birth, phone: f.phone, gender: f.gender,
-          zip: f.zip, address: f.address, address2: f.address2, refName: f.refName, refNo: f.refNo });
+          zip: f.zip, address: f.address, address2: f.address2, refName: f.refName.trim(), refNo: f.refNo.trim() });
         toast(`${u.name}님, 이음 등급으로 가입되었습니다!`);
         location.hash = '#/mypage';
       } catch (err) { toast(err.message); }
