@@ -433,19 +433,19 @@
           title: 'R1090 제품 안내',
           subTitle: '중체 하의형 상세 특장점 및 기능 안내',
           desc: '허리·복부·골반을 감싸 바른자세를 잡아주는 중체 하의형 R1090의 상세 특징 및 제품 안내 영상입니다.',
-          thumb: 'assets/products/r1090-skin.jpg',
+          thumb: 'assets/products/r1090_intro_thumb.jpg',
           url: 'assets/products/r1090_intro.mp4', createdAt: t },
         { id: 'mat_sm880_intro', type: 'video', productCode: 'SM880', order: 5,
           title: 'SM880 제품 안내',
           subTitle: '상체 테이핑 보정 상세 특장점 및 기능 안내',
           desc: '굽은 등과 말린 어깨를 바로잡아 상체 정렬을 돕는 테이핑 지퍼형 SM880의 상세 특징 및 제품 안내 영상입니다.',
-          thumb: 'assets/products/sm880.jpg',
+          thumb: 'assets/products/sm880_intro_thumb.jpg',
           url: 'assets/products/sm880_intro.mp4', createdAt: t },
         { id: 'mat_bb484_intro', type: 'video', productCode: 'BB484', order: 6,
           title: 'BB484 제품 안내',
           subTitle: '여성 프리미엄 상체 라인 특장점 및 기능 안내',
           desc: '여성 체형에 최적화된 특허받은 입는 바른자세 BB484의 상세 특징 및 제품 안내 영상입니다.',
-          thumb: 'assets/products/bb484-skin.jpg',
+          thumb: 'assets/products/bb484_intro_thumb.jpg',
           url: 'assets/products/bb484_intro.mp4', createdAt: t },
         { id: 'mat_brochure_doc', type: 'doc', order: 7,
           title: '착한 창업 안내서 (최종본)',
@@ -870,7 +870,7 @@
           title: 'R1090 제품 안내',
           subTitle: '중체 하의형 상세 특장점 및 기능 안내',
           desc: '허리·복부·골반을 감싸 바른자세를 잡아주는 중체 하의형 R1090의 상세 특징 및 제품 안내 영상입니다.',
-          thumb: 'assets/products/r1090-skin.jpg',
+          thumb: 'assets/products/r1090_intro_thumb.jpg',
           url: 'assets/products/r1090_intro.mp4'
         },
         {
@@ -881,7 +881,7 @@
           title: 'SM880 제품 안내',
           subTitle: '상체 테이핑 보정 상세 특장점 및 기능 안내',
           desc: '굽은 등과 말린 어깨를 바로잡아 상체 정렬을 돕는 테이핑 지퍼형 SM880의 상세 특징 및 제품 안내 영상입니다.',
-          thumb: 'assets/products/sm880.jpg',
+          thumb: 'assets/products/sm880_intro_thumb.jpg',
           url: 'assets/products/sm880_intro.mp4'
         },
         {
@@ -892,7 +892,7 @@
           title: 'BB484 제품 안내',
           subTitle: '여성 프리미엄 상체 라인 특장점 및 기능 안내',
           desc: '여성 체형에 최적화된 특허받은 입는 바른자세 BB484의 상세 특징 및 제품 안내 영상입니다.',
-          thumb: 'assets/products/bb484-skin.jpg',
+          thumb: 'assets/products/bb484_intro_thumb.jpg',
           url: 'assets/products/bb484_intro.mp4'
         }
       ];

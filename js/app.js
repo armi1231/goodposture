@@ -788,9 +788,9 @@
   }
   function videoCard(v) {
     const id = ytId(v.url);
-    const fallbackThumb = v.productCode === 'R1090' ? 'assets/products/r1090-skin.jpg'
-      : v.productCode === 'SM880' ? 'assets/products/sm880.jpg'
-      : v.productCode === 'BB484' ? 'assets/products/bb484-skin.jpg'
+    const fallbackThumb = v.productCode === 'R1090' ? 'assets/products/r1090_intro_thumb.jpg'
+      : v.productCode === 'SM880' ? 'assets/products/sm880_intro_thumb.jpg'
+      : v.productCode === 'BB484' ? 'assets/products/bb484_intro_thumb.jpg'
       : '';
     const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : (v.thumb || fallbackThumb);
     const badge = v.productCode ? `<span class="media-badge">${esc(v.productCode)}</span>` : '';
