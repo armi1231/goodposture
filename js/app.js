@@ -249,7 +249,10 @@
               `) : `<a class="btn btn-primary" href="#/consult/write?cat=렌탈상담&title=${encodeURIComponent(p.name + ' 렌탈 신청')}">렌탈 신청하기</a>`}
             </div>` : `
             <div class="product-actions-grid">
-              ${['R1090', 'SM880', 'BB484'].includes(p.code) ? `<button class="btn btn-line btn-sm" data-play-code="${esc(p.code)}">▶ 착용법 영상</button>` : ''}
+              ${['R1090', 'SM880', 'BB484'].includes(p.code) ? `
+                <button class="btn btn-line btn-sm" data-play-code="${esc(p.code)}" data-play-type="intro">▶ 제품안내</button>
+                <button class="btn btn-line btn-sm" data-play-code="${esc(p.code)}" data-play-type="wear">▶ 착용법</button>
+              ` : ''}
               <a class="btn btn-primary btn-sm" href="#/rental">렌탈 신청 →</a>
             </div>`}
         </div>
@@ -785,7 +788,11 @@
   }
   function videoCard(v) {
     const id = ytId(v.url);
-    const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+    const fallbackThumb = v.productCode === 'R1090' ? 'assets/products/r1090-skin.jpg'
+      : v.productCode === 'SM880' ? 'assets/products/sm880.jpg'
+      : v.productCode === 'BB484' ? 'assets/products/bb484-skin.jpg'
+      : '';
+    const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : (v.thumb || fallbackThumb);
     const badge = v.productCode ? `<span class="media-badge">${esc(v.productCode)}</span>` : '';
     return `<button class="media-card" data-video="${esc(v.id)}">
       <div class="media-thumb video ${thumb ? '' : 'noimg'}">${thumb ? `<img src="${thumb}" alt="${esc(v.title)}" loading="lazy">` : ''}<span class="play">▶</span>${badge}</div>
@@ -806,7 +813,7 @@
     const id = ytId(item.url);
     if (id) return `<div class="player"><iframe src="https://www.youtube-nocookie.com/embed/${id}?rel=0" title="${esc(item.title)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>`;
     const src = mediaSrc(item);
-    if (src) return `<div class="player"><video src="${esc(src)}" controls playsinline></video></div>`;
+    if (src) return `<div class="player"><video src="${esc(src)}" controls autoplay playsinline preload="metadata" ${item.thumb ? `poster="${esc(item.thumb)}"` : ''}></video></div>`;
     return `<div class="player empty-player"><p>영상 준비 중입니다</p></div>`;
   }
   function openVideoModal(v) {
@@ -840,7 +847,14 @@
     $$('[data-play-code]', el).forEach(b => b.addEventListener('click', (e) => {
       e.preventDefault();
       const code = b.dataset.playCode;
-      const v = S.data.materials.find(m => m.type === 'video' && m.productCode === code);
+      const type = b.dataset.playType;
+      let v;
+      if (type === 'intro') {
+        v = S.data.materials.find(m => m.type === 'video' && m.productCode === code && (m.id.includes('intro') || m.title.includes('제품 안내')));
+      } else if (type === 'wear') {
+        v = S.data.materials.find(m => m.type === 'video' && m.productCode === code && (m.id.includes('video') || m.title.includes('착용법')));
+      }
+      if (!v) v = S.data.materials.find(m => m.type === 'video' && m.productCode === code);
       if (v) openVideoModal(v);
     }));
     $$('[data-doc]', el).forEach(b => b.addEventListener('click', () => {
@@ -3143,6 +3157,30 @@
     return { parts, query };
   }
 
+  function mountHome(el) {
+    $$('[data-rental-need-login]', el).forEach(b => b.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showRentalLoginModal(b.dataset.rentalNeedLogin || '');
+    }));
+    $$('[data-qr]', el).forEach(b => b.addEventListener('click', () => {
+      modal(`<div class="qr-modal"><h3>${esc(b.dataset.name)}</h3><p class="muted">스마트폰 카메라로 찍으면 렌탈 계약 페이지로 이동합니다.</p><div class="qr big">${qrSvg(b.dataset.qr, 8)}</div><a class="btn btn-primary" href="${esc(b.dataset.qr)}" target="_blank" rel="noopener">링크로 열기</a></div>`);
+    }));
+    $$('[data-play-code]', el).forEach(b => b.addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = b.dataset.playCode;
+      const type = b.dataset.playType;
+      let v;
+      if (type === 'intro') {
+        v = S.data.materials.find(m => m.type === 'video' && m.productCode === code && (m.id.includes('intro') || m.title.includes('제품 안내')));
+      } else if (type === 'wear') {
+        v = S.data.materials.find(m => m.type === 'video' && m.productCode === code && (m.id.includes('video') || m.title.includes('착용법')));
+      }
+      if (!v) v = S.data.materials.find(m => m.type === 'video' && m.productCode === code);
+      if (v) openVideoModal(v);
+    }));
+  }
+
   function render() {
     const { parts, query } = parseHash();
     const [a, b, c] = parts;
@@ -3153,7 +3191,7 @@
       silentSync();
     }
 
-    if (!a) { html = viewHome(); }
+    if (!a) { html = viewHome(); mount = mountHome; }
     else if (a === 'startup') html = viewStartup();
     else if (a === 'products') { html = viewProducts(); mount = mountProducts; }
     else if (a === 'rental') { html = viewRental(); mount = mountRental; }
